@@ -12,7 +12,7 @@ There is a workspace file in `.vscode` which contains the recommended settings f
 
 ## Installation
 ```
-git clone https://github.com/SlyCedix/bitburner-typescript-template.git
+git clone https://github.com/bitburner-official/vscode-template
 npm install
 npm run defs
 ```
