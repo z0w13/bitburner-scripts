@@ -20,9 +20,6 @@ npm run defs
 ## How to use this template
 Write all your typescript source code in the `/src` directory
 
-Ensure you are using absolute paths to .js files in your imports or else the game will not recognize your import paths.  
-Example: use `import {} from '/lib/helpers.js'` instead of `import {} from './lib/helpers'` 
-
 To autocompile as you save, run `npm run watch` in a terminal
 
 To update your Netscript Definitions, run `npm run defs` in a terminal
@@ -30,6 +27,33 @@ To update your Netscript Definitions, run `npm run defs` in a terminal
 Press F1 and Select `Bitburner: Enable File Watcher` to enable auto uploading to the game
 
 If you run `watcher.js` in game, the game will automatically detect file changes and restart the associated scripts
+
+## Imports
+To ensure both the game and typescript have no issues with import paths, your import statements should follow a few formatting rules:
+
+ * Paths must be absolute from the root of `src/`, which will be equivalent to the root directory of your home drive
+ * Paths must contain no leading slash
+ * Paths must end with no file extension
+
+ ### Examples:
+
+To import `helperFunction` from the file `helpers.ts` located in the directory `src/lib/`: 
+
+```js
+import { helperFunction } from 'lib/helpers'
+```
+
+To import all functions from the file `helpers.ts` located in the `src/lib/` directory as the namespace `helpers`:
+
+```js
+import * as helpers from 'lib/helpers'
+```
+
+To import `someFunction` from the file `main.ts` located in the `src/` directory:
+
+```js
+import { someFunction } from 'main'
+```
 
 ## Deugging
 
