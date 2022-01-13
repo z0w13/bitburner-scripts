@@ -18,7 +18,7 @@ module.exports = {
         tsconfigRootDir: __dirname,
     },
     plugins: ["@typescript-eslint"],
-    ignorePatterns: ['NetscriptDefinitions.d.ts', '*.js'],
+    ignorePatterns: ['*.d.ts', '*.js'],
     rules: {
         'no-constant-condition': ['off'],
         "@typescript-eslint/no-floating-promises": "error",
