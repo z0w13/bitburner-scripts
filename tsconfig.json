@@ -1,6 +1,8 @@
 {
   "include": [
     "NetscriptDefinitions.d.ts",
+    "types.d.ts",
+    "global.d.ts",
     "src/**/*",
   ],
   "compilerOptions": {
@@ -22,6 +24,9 @@
       ],
       "@ns": [
         "../NetscriptDefinitions.d.ts"
+      ],
+      "@types": [
+        "../types.d.ts"
       ]
     }
   }
