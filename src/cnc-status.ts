@@ -1,4 +1,5 @@
 import { NS } from "@ns";
+import renderTable from "/lib-render-table";
 
 interface Flags {
   interval: number
@@ -51,14 +52,24 @@ async function printStatus(ns: NS) {
     }
   }
 
-  ns.print(ns.sprintf("%20s | %7s | %13s | %22s", "Target", "Exp/s", "Money/s", "Money (%)"))
-  ns.print("===================================================================")
+  const table: Array<Array<string>> = [
+    ["Target", "Exp/s", "Money/s", "Money (%)", "Security"]
+  ];
+
   for (const key in procDataConsolidated) {
     const data = procDataConsolidated[key];
     const server = ns.getServer(data.target);
 
-    ns.print(ns.sprintf("%20s | %7.2f | %13s | %13s (%5.2f%%)", data.target, data.exp, ns.nFormat(data.money, "$0.00a"), ns.nFormat(server.moneyAvailable, "$0.00a"), (server.moneyAvailable / server.moneyMax) * 100))
+    table.push([
+        data.target,
+        ns.sprintf("%7.2f", data.exp),
+        ns.nFormat(data.money, "$0.00a"),
+        ns.sprintf("%s (%5.2f%%)", ns.nFormat(server.moneyAvailable, "$0.00a"), (server.moneyAvailable / server.moneyMax) * 100),
+        ns.sprintf("%5.2f", server.hackDifficulty),
+    ])
   }
+
+  ns.print(renderTable(ns, table));
 }
 
 export async function main(ns :NS): Promise<void> {

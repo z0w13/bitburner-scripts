@@ -1,6 +1,7 @@
 import { NS } from '@ns'
 
 import scanHost from "./lib-scan-host";
+import renderTable from '/lib-render-table';
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("scan");
@@ -25,8 +26,20 @@ export async function main(ns: NS): Promise<void> {
     results.push({ host, diff: server.minDifficulty, currDiff: server.baseDifficulty, max: server.moneyMax, grow: server.serverGrowth, score });
   }
 
-  ns.print(ns.sprintf("%30s | %4s | %4s | %20s | %6s | %12s", "Host", "Diff", "Curr", "Max Money", "Growth", "Score"))
+  const table = [
+    ["Host", "Diff", "Curr Diff", "Max Money", "Growth", "Score"]
+  ]
+
   for (const result of results.sort((a, b) => b.score - a.score)) {
-    ns.print(ns.sprintf("%30s | %4d | %4d | %20d | %6d | %12d", result.host, result.diff, result.currDiff, result.max, result.grow, result.score))
+    table.push([
+      result.host, 
+      ns.nFormat(result.diff, "0,0"), 
+      ns.nFormat(result.currDiff, "0,0"), 
+      ns.nFormat(result.max, "$0,0"), 
+      ns.nFormat(result.grow, "0,0"), 
+      ns.nFormat(result.score, "0,0"),
+    ])
   }
+
+  ns.print(renderTable(ns, table));
 }
