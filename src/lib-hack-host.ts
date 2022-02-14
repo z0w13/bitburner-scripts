@@ -28,7 +28,7 @@ export default function hackHost(ns: NS, target: string): boolean {
         }
       // falls through
       case 3:
-        if (ns.fileExists("SMTPRelay.exe") && !server.smtpPortOpen) {
+        if (ns.fileExists("relaySMTP.exe") && !server.smtpPortOpen) {
           ns.relaysmtp(target);
         }
       // falls through
