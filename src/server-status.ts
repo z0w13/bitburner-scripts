@@ -1,51 +1,58 @@
 import { NS } from "@ns"
 import getSetupHosts from "./lib-get-setup-hosts"
 
-const SCRIPTS = ["cmd-grow.js", "cmd-weaken.js", "cmd-hack.js"];
-
-async function printStatus(ns: NS): Promise<void> {
-  const hosts = await getSetupHosts(ns)
+function printStatus(ns: NS): void {
+  const hosts = getSetupHosts(ns).concat(["home"])
   const hostLength = hosts.map((h: string) => h.length).sort((a: number, b: number) => b - a).at(0);
 
-  ns.print("=========================================================");
   ns.print(ns.sprintf(
-    "%" + hostLength + "s | %6s | %s",
+    "%" + hostLength + "s | %7s | %27s",
     "Host",
     "Threads",
-    "Log",
+    "RAM",
   ));
+  ns.print("===========================================================================");
 
   let totalThreads = 0;
+  let totalRam = 0;
+  let totalRamUsed = 0;
+
   for (const host of hosts) {
     const processes = ns.ps(host);
+    const server = ns.getServer(host);
 
-    let hackProcess;
+    if (server.maxRam === 0) {
+      continue;
+    }
+
+    let hostThreads = 0;
     for (const process of processes) {
-      if (SCRIPTS.indexOf(process.filename) > -1) {
-        hackProcess = process
-        break;
-      }
+      hostThreads += process.threads;
     }
-
-    let logs = ["Idle"];
-
-    if (hackProcess) {
-      logs = ns.getScriptLogs(hackProcess.filename, host, ...hackProcess.args);
-      totalThreads += hackProcess.threads
-    }
+    
+    totalThreads += hostThreads
+    totalRam += server.maxRam
+    totalRamUsed += server.ramUsed
 
     ns.print(ns.sprintf(
-      "%" + hostLength + "s | %6s | %s",
+      "%" + hostLength + "s | %7s | %7s/%7s (%3d%%) | [%-20s]",
       host,
-      hackProcess ? hackProcess.threads : "",
-      logs.at(-1) ?? "",
+      hostThreads,
+      ns.nFormat(server.ramUsed*1024*1024*1024, "0ib"),
+      ns.nFormat(server.maxRam*1024*1024*1024, "0ib"),
+      (server.ramUsed / server.maxRam) * 100,
+      "=".repeat(Math.ceil((server.ramUsed / server.maxRam) * 20)),
     ));
 
   }
   ns.print(ns.sprintf(
-    "%" + hostLength + "s | %s",
+    "%" + hostLength + "s | %7s | %7s/%7s (%3d%%) | [%-20s]",
     "Total (" + hosts.length + ")",
     totalThreads,
+      ns.nFormat(totalRamUsed*1024*1024*1024, "0ib"),
+      ns.nFormat(totalRam*1024*1024*1024, "0ib"),
+      (totalRamUsed / totalRam) * 100,
+      "=".repeat(Math.ceil((totalRamUsed / totalRam) * 20)),
   ));
 
 }
@@ -57,7 +64,7 @@ export async function main(ns: NS): Promise<void> {
 
   while (true) {
     ns.clearLog();
-    await printStatus(ns);
+    printStatus(ns);
     await ns.asleep(1000);
   }
 }
