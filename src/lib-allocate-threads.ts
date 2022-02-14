@@ -33,7 +33,6 @@ export default function allocateThreads(ns: NS, target: string, script: string, 
 
     threadsRemaining -= hostThreads;
 
-    //ns.print(ns.sprintf("[%s] Running %s with %d threads.", host.host, script, hostThreads));
     const pid = ns.exec(script, host.host, hostThreads, "--target", target, "--threads", hostThreads, unique);
     pids.push(pid);
   }
