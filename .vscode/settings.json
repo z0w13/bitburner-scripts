@@ -23,4 +23,8 @@
             "snippet": "ns-template"
         },
     ],
+    "bitburner.fileWatcher.enable": true,
+    "bitburner.showFileWatcherEnabledNotification": true,
+    "bitburner.showPushSuccessNotification": true,
+    "eslint.packageManager": "yarn",
 }
