@@ -140,14 +140,14 @@ async function runPlan(ns: NS, targetHost: string): Promise<void> {
   // Get money to max
   while (ns.getServerMoneyAvailable(targetHost) < ns.getServerMaxMoney(targetHost)) {
     const target = ns.getServer(targetHost)
-    await waitForPids(ns, await runCommand(ns, await getWeakenCommand(ns, target, ns.getPlayer())));
+    await waitForPids(ns, await runCommand(ns, await getWeakenCommand(ns, target, ns.getPlayer(), target.hackDifficulty - target.minDifficulty)));
     await waitForPids(ns, await runCommand(ns, await getGrowCommand(ns, target, ns.getPlayer())));
   }
 
   // Reset security to min
   while (ns.getServerSecurityLevel(targetHost) > ns.getServerMinSecurityLevel(targetHost)) {
     const target = ns.getServer(targetHost)
-    await waitForPids(ns, await runCommand(ns, await getWeakenCommand(ns, target, ns.getPlayer())));
+    await waitForPids(ns, await runCommand(ns, await getWeakenCommand(ns, target, ns.getPlayer(), target.hackDifficulty - target.minDifficulty)));
   }
 
   while (true) {
