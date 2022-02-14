@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "watch": "npx tsc -w",
+    "watch": "tsc -w",
     "lint": "eslint . --ext .ts",
     "defs": "node ./updateDefs.js"
   },
