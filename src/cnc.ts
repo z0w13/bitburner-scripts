@@ -59,9 +59,7 @@ export async function main(ns: NS): Promise<void> {
     ns.tail("autoinstall.js", flags["host"], ...args)
   }
 
-  //const plan = await planTarget(ns, await ns.getServer(flags["target"]));
-  //await runPlan(ns, plan);
-  await runPlan(ns);
+  await runPlan(ns, flags["target"]);
 }
 
 function runCommand(ns: NS, cmd: Command, unique = ""): Array<number> {
@@ -135,21 +133,20 @@ function getGrowCommand(ns: NS, target: Server, player: Player): Command {
   }
 }
 
-async function runPlan(ns: NS): Promise<void> {
+async function runPlan(ns: NS, targetHost: string): Promise<void> {
   let longestTime = 0;
-  const TARGET_HOST = "the-hub";
 
   // Prepare
   // Get money to max
-  while (ns.getServerMoneyAvailable(TARGET_HOST) < ns.getServerMaxMoney(TARGET_HOST)) {
-    const target = ns.getServer(TARGET_HOST)
+  while (ns.getServerMoneyAvailable(targetHost) < ns.getServerMaxMoney(targetHost)) {
+    const target = ns.getServer(targetHost)
     await waitForPids(ns, await runCommand(ns, await getWeakenCommand(ns, target, ns.getPlayer())));
     await waitForPids(ns, await runCommand(ns, await getGrowCommand(ns, target, ns.getPlayer())));
   }
 
   // Reset security to min
-  while (ns.getServerSecurityLevel(TARGET_HOST) > ns.getServerMinSecurityLevel(TARGET_HOST)) {
-    const target = ns.getServer(TARGET_HOST)
+  while (ns.getServerSecurityLevel(targetHost) > ns.getServerMinSecurityLevel(targetHost)) {
+    const target = ns.getServer(targetHost)
     await waitForPids(ns, await runCommand(ns, await getWeakenCommand(ns, target, ns.getPlayer())));
   }
 
