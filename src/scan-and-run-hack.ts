@@ -3,11 +3,9 @@ import { Command } from "./lib-objects"
 
 import scanHost from "./lib-scan-host"
 import hackHost from "./lib-hack-host"
-import getThreadsAvailable from './lib-get-threads-available';
 import waitForPids from "/lib-wait-for-pids";
 import allocateThreads from './lib-allocate-threads';
 
-const TARGET_HOSTS = ["the-hub", "iron-gym", "n00dles"]
 const SCRIPTS = ["cmd-grow.js", "cmd-weaken.js", "cmd-hack.js"];
 
 function getUsableHosts(ns: NS): Array<string> {
@@ -97,35 +95,8 @@ function runCommand(ns: NS, cmd: Command): Array<number> {
   return []
 }
 
-function getViableTarget(ns: NS): Server {
-  const player = ns.getPlayer();
-  if (player.hacking < 300) {
-    return ns.getServer("n00dles");
-  }
-
-  for (const host of TARGET_HOSTS) {
-    const target = ns.getServer(host);
-    if (target.hasAdminRights) {
-      return target;
-    }
-  }
-
-  return ns.getServer("n00dles"); // Fall back to n00dles, always a safe bet
-}
-
 async function run(ns: NS, target: string): Promise<void> {
-  const hosts = getUsableHosts(ns)
   const targetServer = ns.getServer(target)
-
-  for (const host of hosts) {
-    const processes = await ns.ps(host);
-    for (const process of processes) {
-      // Already running something planned, so just wait
-      if (SCRIPTS.indexOf(process.filename) > -1) {
-        return
-      }
-    }
-  }
 
   if (targetServer.minDifficulty + 1 < targetServer.hackDifficulty) {
     const weaken = await getWeakenCommand(ns, targetServer);
