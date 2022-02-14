@@ -6,7 +6,6 @@ export async function main(ns: NS): Promise<void> {
   ns.disableLog("scan");
 
   const hosts = await scanHost(ns);
-  const player = ns.getPlayer();
   const results = []
   for (const host in hosts) {
     const server = ns.getServer(host)
@@ -14,11 +13,15 @@ export async function main(ns: NS): Promise<void> {
       continue;
     }
 
-    if (server.requiredHackingSkill > player.hacking) {
+    if (!server.hasAdminRights) {
       continue;
     }
 
     const score = server.minDifficulty * server.moneyMax * server.serverGrowth / 1000000;
+    if (score === 0) {
+      continue;
+    }
+
     results.push({ host, diff: server.minDifficulty, currDiff: server.baseDifficulty, max: server.moneyMax, grow: server.serverGrowth, score });
   }
 
