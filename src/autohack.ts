@@ -4,6 +4,7 @@ import hackHost from "./lib-hack-host"
 
 export async function main(ns : NS) : Promise<void> {
   ns.disableLog("scan");
+  ns.disableLog("asleep");
 
   const flags = ns.flags([
     ["interval", 1000]
@@ -15,6 +16,6 @@ export async function main(ns : NS) : Promise<void> {
       await hackHost(ns, hostname);
     }
 
-    await ns.sleep(flags["interval"]);
+    await ns.asleep(flags["interval"]);
   }
 }
