@@ -23,7 +23,7 @@ export async function main(ns: NS): Promise<void> {
       continue;
     }
 
-    results.push({ host, diff: server.minDifficulty, currDiff: server.baseDifficulty, max: server.moneyMax, grow: server.serverGrowth, score });
+    results.push({ host, diff: server.minDifficulty, currDiff: server.hackDifficulty, max: server.moneyMax, grow: server.serverGrowth, score });
   }
 
   const table = [
