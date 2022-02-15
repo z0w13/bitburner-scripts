@@ -1,6 +1,7 @@
 import { NS } from '@ns'
 import scanHost from "./lib-scan-host"
 import isHostSetup from "./lib-is-host-setup"
+import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from '/constants';
 
 export async function main(ns : NS) : Promise<void> {
   ns.disableLog("scan");
@@ -8,13 +9,17 @@ export async function main(ns : NS) : Promise<void> {
   const flags = ns.flags([
     ["interval", 1000],
     ["host", "home"],
-    ["scripts", ["cmd-hack.js", "cmd-weaken.js", "cmd-grow.js"]], // Scripts to install
+    ["scripts", [SCRIPT_HACK, SCRIPT_WEAKEN, SCRIPT_GROW]], // Scripts to install
     ["overwrite", false],
   ])
 
   while (true) {
     const hosts = await scanHost(ns);
     for (const hostname in hosts) {
+      if (hostname === "home") {
+        continue;
+      }
+
       if (! await ns.hasRootAccess(hostname)) {
         continue;
       }
