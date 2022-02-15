@@ -3,7 +3,7 @@ import getSetupHosts from "./lib-get-setup-hosts"
 import renderTable from "/lib-render-table";
 
 function printStatus(ns: NS): void {
-  const hosts = getSetupHosts(ns).concat(["home"])
+  const hosts = getSetupHosts(ns)
 
   const table = [
     [ "Host", "Threads", "RAM" ],
@@ -21,10 +21,6 @@ function printStatus(ns: NS): void {
       continue;
     }
 
-    if (processes.length === 0) {
-      continue;
-    }
-
     let hostThreads = 0;
     for (const process of processes) {
       hostThreads += process.threads;
@@ -33,6 +29,10 @@ function printStatus(ns: NS): void {
     totalThreads += hostThreads
     totalRam += server.maxRam
     totalRamUsed += server.ramUsed
+
+    if (processes.length === 0) {
+      continue;
+    }
 
     table.push([
       host,
