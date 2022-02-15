@@ -1,7 +1,7 @@
 import { NS } from "@ns";
 import getSetupHosts from "/lib-get-setup-hosts";
 
-export default function allocateThreads(ns: NS, target: string, script: string, threads: number, unique = ""): Array<number> {
+export default function allocateThreads(ns: NS, target: string, script: string, threads: number, ...args: Array<string | number>): Array<number> {
   const usableHosts = getSetupHosts(ns);
   const scriptRam = ns.getScriptRam(script)
   const hosts: Array<{ host: string, ram: number }> = [];
@@ -33,7 +33,7 @@ export default function allocateThreads(ns: NS, target: string, script: string, 
 
     threadsRemaining -= hostThreads;
 
-    const pid = ns.exec(script, host.host, hostThreads, "--target", target, "--threads", hostThreads, unique);
+    const pid = ns.exec(script, host.host, hostThreads, "--target", target, "--threads", hostThreads, ...args);
     pids.push(pid);
   }
 
