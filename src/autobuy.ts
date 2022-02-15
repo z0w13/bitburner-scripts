@@ -1,5 +1,7 @@
 import { NS } from '@ns'
 
+const MAX_RAM = 1048576;
+
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("sleep");
   const flags = ns.flags([
@@ -47,7 +49,14 @@ async function buyServers(ns: NS, nextstep = false, minRam = 8): Promise<void> {
       return;
     }
 
-    await ns.purchaseServer("server-" + buyRam, buyRam);
+    if (!nextstep) {
+      buyRam = getHighestTierAffordable(ns, currentMoney);
+      if (buyRam < minRam) {
+        return;
+      }
+    }
+
+    await ns.purchaseServer("zserv", buyRam);
     return;
   }
 
@@ -58,17 +67,19 @@ async function buyServers(ns: NS, nextstep = false, minRam = 8): Promise<void> {
     return;
   }
 
+  if (lowestHost.ram >= MAX_RAM) {
+    ns.print("All servers are max tier")
+    ns.exit();
+  }
+
   buyRam = lowestHost.ram * 2;
 
-  if (currentMoney < await ns.getPurchasedServerCost(buyRam)) {
+  if (currentMoney < ns.getPurchasedServerCost(buyRam)) {
     return;
   }
 
   if (!nextstep) {
-    // We divide currentMoney by 2 so we don't have to divide ram by 2 after
-    while ((currentMoney/2) >= await ns.getPurchasedServerCost(buyRam)) {
-      buyRam *= 2;
-    }
+    getHighestTierAffordable(ns, currentMoney)
   }
 
   if (ownedServers.length >= limit) {
@@ -76,5 +87,14 @@ async function buyServers(ns: NS, nextstep = false, minRam = 8): Promise<void> {
     await ns.deleteServer(lowestHost.host);
   }
 
-  await ns.purchaseServer("server-" + buyRam, buyRam);
+  ns.tprintf("Buying server with %s RAM", ns.nFormat(buyRam * (1024**3), "0.00ib"));
+  await ns.purchaseServer("zserv", buyRam);
+}
+
+function getHighestTierAffordable(ns: NS, money: number): number {
+  let buyRam = 1;
+  while (buyRam < MAX_RAM && (money/2) >= ns.getPurchasedServerCost(buyRam)) {
+    buyRam *= 2;
+  }
+  return buyRam;
 }
