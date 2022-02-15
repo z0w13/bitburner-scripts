@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import getSetupHosts from "/lib-get-setup-hosts";
+import getSetupHosts from "/lib/get-setup-hosts";
 
 export default function allocateThreads(ns: NS, target: string, script: string, threads: number, ...args: Array<string | number>): Array<number> {
   const usableHosts = getSetupHosts(ns);

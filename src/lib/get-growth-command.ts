@@ -1,5 +1,5 @@
 import {NS, Server} from "@ns"
-import { Command } from "./lib-objects"
+import { Command } from "/lib/objects"
 import { SCRIPT_GROW } from "/constants";
 
 export default function getGrowthCommand(ns: NS, target: Server): Command {

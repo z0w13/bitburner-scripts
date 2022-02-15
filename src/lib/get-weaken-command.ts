@@ -1,5 +1,5 @@
 import {NS, Server} from "@ns"
-import { Command } from "./lib-objects"
+import { Command } from "/lib/objects"
 import { SCRIPT_WEAKEN } from "/constants";
 
 export default function getWeakenCommand(ns: NS, target: Server, planSecurity = 0): Command {

@@ -1,8 +1,8 @@
 import { NS, Server, Player } from '@ns'
-import { Command } from "./lib-objects"
-import waitForPids from "./lib-wait-for-pids"
-import allocateThreads from './lib-allocate-threads';
-import setupNsPolyfill from "./lib-ns-polyfill"
+import { Command } from "/lib/objects"
+import waitForPids from "/lib/wait-for-pids"
+import allocateThreads from '/lib/allocate-threads';
+import setupNsPolyfill from "/lib/ns-polyfill"
 import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from '/constants';
 
 interface Flags {

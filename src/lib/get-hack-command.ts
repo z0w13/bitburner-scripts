@@ -1,5 +1,5 @@
 import { NS, Server } from '@ns'
-import { Command } from '/lib-objects';
+import { Command } from '/lib/objects';
 import { SCRIPT_HACK } from '/constants';
 
 export default function getHackCommand(ns: NS, target: Server): Command {

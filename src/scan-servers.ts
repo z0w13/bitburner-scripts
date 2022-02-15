@@ -1,7 +1,7 @@
 import { NS } from '@ns'
 
-import scanHost from "./lib-scan-host";
-import renderTable from '/lib-render-table';
+import scanHost from "/lib/scan-host";
+import renderTable from '/lib/render-table';
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("scan");

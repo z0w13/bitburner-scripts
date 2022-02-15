@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import renderTable from "/lib-render-table";
+import renderTable from "/lib/render-table";
 
 interface Flags {
   interval: number

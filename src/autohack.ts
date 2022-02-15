@@ -1,6 +1,6 @@
 import { NS } from '@ns'
-import scanHost from "./lib-scan-host"
-import hackHost from "./lib-hack-host"
+import scanHost from "/lib/scan-host"
+import hackHost from "/lib/hack-host"
 
 export async function main(ns : NS) : Promise<void> {
   ns.disableLog("scan");

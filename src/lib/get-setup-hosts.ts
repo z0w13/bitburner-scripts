@@ -1,5 +1,5 @@
-import scanHost from "./lib-scan-host";
-import isHostSetup from "./lib-is-host-setup"
+import scanHost from "/lib/scan-host";
+import isHostSetup from "/lib/is-host-setup"
 
 export default function getSetupHosts(ns: NS): Array<string> {
   const hostnames = scanHost(ns);

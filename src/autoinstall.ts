@@ -1,6 +1,6 @@
 import { NS } from '@ns'
-import scanHost from "./lib-scan-host"
-import isHostSetup from "./lib-is-host-setup"
+import scanHost from "/lib/scan-host"
+import isHostSetup from "/lib/is-host-setup"
 import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from '/constants';
 
 export async function main(ns : NS) : Promise<void> {

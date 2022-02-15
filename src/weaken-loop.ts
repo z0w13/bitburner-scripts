@@ -1,9 +1,9 @@
 import { NS } from '@ns'
-import getThreadsAvailable from '/lib-get-threads-available';
-import getWeakenCommand from './lib-get-weaken-command';
-import runCommand from './lib-run-command';
-import waitForPids from '/lib-wait-for-pids';
-import setupPolyfill from "./lib-ns-polyfill"
+import getThreadsAvailable from '/lib/get-threads-available';
+import getWeakenCommand from '/lib/get-weaken-command';
+import runCommand from '/lib/run-command';
+import waitForPids from '/lib/wait-for-pids';
+import setupPolyfill from "/lib/ns-polyfill"
 import { SCRIPT_WEAKEN } from '/constants';
 
 interface Flags {

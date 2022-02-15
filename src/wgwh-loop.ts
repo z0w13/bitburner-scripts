@@ -1,10 +1,10 @@
 import { NS } from "@ns"
 
-import waitForPids from "/lib-wait-for-pids";
-import getWeakenCommand from "/lib-get-weaken-command";
-import getGrowthCommand from "/lib-get-growth-command";
-import getHackCommand from "/lib-get-hack-command";
-import runCommand from "/lib-run-command";
+import waitForPids from "/lib/wait-for-pids";
+import getWeakenCommand from "/lib/get-weaken-command";
+import getGrowthCommand from "/lib/get-growth-command";
+import getHackCommand from "/lib/get-hack-command";
+import runCommand from "/lib/run-command";
 
 async function weakenTillMinSecurity(ns: NS, target: string): Promise<void> {
   while (ns.getServer(target).hackDifficulty > ns.getServerMinSecurityLevel(target)) {

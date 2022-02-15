@@ -1,6 +1,6 @@
 import { NS } from "@ns";
-import renderTable from "/lib-render-table";
-import { Command } from "./lib-objects"
+import renderTable from "/lib/render-table";
+import { Command } from "/lib/objects"
 import { SCRIPT_WGWH_LOOP } from './constants';
 
 interface Flags {

@@ -1,6 +1,6 @@
 import { NS } from "@ns"
-import getSetupHosts from "./lib-get-setup-hosts"
-import renderTable from "/lib-render-table";
+import getSetupHosts from "/lib/get-setup-hosts"
+import renderTable from "/lib/render-table";
 
 function printStatus(ns: NS): void {
   const hosts = getSetupHosts(ns)

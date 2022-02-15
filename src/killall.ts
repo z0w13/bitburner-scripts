@@ -1,5 +1,5 @@
 import { NS } from '@ns'
-import scanHost from '/lib-scan-host'
+import scanHost from '/lib/scan-host'
 
 export async function main(ns : NS) : Promise<void> {
   const hosts = scanHost(ns);

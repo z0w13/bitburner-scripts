@@ -1,6 +1,6 @@
 import { NS } from '@ns'
-import getSetupHosts from '/lib-get-setup-hosts'
-import waitForPids from '/lib-wait-for-pids';
+import getSetupHosts from '/lib/get-setup-hosts'
+import waitForPids from '/lib/wait-for-pids';
 import { SCRIPT_SERVER_STATUS, SCRIPT_WGWH_LOOP, SCRIPT_WGWH_STATUS } from '/constants';
 
 const IGNORE_HOSTS = [

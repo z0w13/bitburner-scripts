@@ -1,5 +1,5 @@
 import { NS } from '@ns'
-import getSetupHosts from '/lib-get-setup-hosts';
+import getSetupHosts from '/lib/get-setup-hosts';
 
 export default function getThreadsAvailable(ns: NS, script: string, host = "home"): number {
   const scriptRam = ns.getScriptRam(script, host);

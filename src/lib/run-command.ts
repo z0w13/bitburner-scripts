@@ -1,6 +1,6 @@
 import { NS } from '@ns'
-import { Command } from "./lib-objects"
-import allocateThreads from './lib-allocate-threads';
+import { Command } from "/lib/objects"
+import allocateThreads from '/lib/allocate-threads';
 
 
 export default function runCommand(ns: NS, cmd: Command): Array<number> {
