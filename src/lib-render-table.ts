@@ -1,9 +1,11 @@
 import { NS } from "@ns"
 
-type TableRow = Array<string>
-type TableData = Array<TableRow>;
+type TableRow = Array<unknown>
+type TableData = Array<Array<string>>
+type RawTableData = Array<Array<unknown>>;
 
-export default function renderTable(ns: NS, data: TableData, headers = true, footers = false): string {
+export default function renderTable(ns: NS, rawData: RawTableData, headers = true, footers = false): string {
+  let data = normalizeRows(rawData)
   const colLengths = getColumnLengths(data);
   data = normalizeRowLenghts(data, colLengths)
   
@@ -24,6 +26,15 @@ export default function renderTable(ns: NS, data: TableData, headers = true, foo
   }
   result += buildDivider(colLengths);
   return result;
+}
+
+function normalizeRows(rawData: RawTableData): TableData {
+  const data: TableData = []
+  for (const rowIdx in rawData) {
+    data.push(rawData[rowIdx].map((v: unknown) : string => typeof v !== "string" ? String(v) : v))
+  }
+
+  return data
 }
 
 function normalizeRowLenghts(data: TableData, colLengths: Array<number>): TableData {
@@ -56,7 +67,7 @@ function buildRowFormatString(row: TableRow, colLengths: Array<number>): string 
 
 function getColumnLengths(data: TableData): Array<number> {
 
-  const longestRow = Math.max(...data.map(row => row.length));
+  const longestRow = Math.max(...data.map(row => row?.length ?? 0));
   const colLengths = new Array<number>(longestRow).fill(0);
 
   for (const row of data) {
