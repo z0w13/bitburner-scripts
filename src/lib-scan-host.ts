@@ -10,6 +10,5 @@ export default function scanHost(ns: NS, seenHosts: Record<string, Array<string>
     }
   }
 
-  delete seenHosts["home"];
   return seenHosts;
 }
