@@ -9,6 +9,7 @@ interface ProcData {
   target: string
   money: number
   exp: number
+  batch: Record<string, unknown>
 }
 
 async function printStatus(ns: NS) {
@@ -25,39 +26,30 @@ async function printStatus(ns: NS) {
         procFlags[proc.args[i].substring(2)] = proc.args[i+1];
       }
 
+      let batch = {}
+      try {
+        batch = JSON.parse(ns.getScriptLogs(proc.filename, "home", ...proc.args).at(-1) ?? "{}")
+      } catch(e) {
+        batch = {}
+      }
+
       procData.push({
         target: 
         procFlags["target"], 
         money: ns.getScriptIncome(proc.filename, "home", ...proc.args),
         exp: ns.getScriptExpGain(proc.filename, "home", ...proc.args),
+        batch,
       });
     } catch (e) {
       //
     }
   }
 
-
-  const procDataConsolidated: Record<string, ProcData> = {};
-  for (const data of procData) {
-    const key = data.target;
-    if (!procDataConsolidated[key]) {
-      procDataConsolidated[key] = {
-        target: data.target,
-        money: data.money,
-        exp: data.exp,
-      }
-    } else {
-      procDataConsolidated[key].money += data.money;
-      procDataConsolidated[key].exp += data.exp;
-    }
-  }
-
-  const table: Array<Array<string>> = [
-    ["Target", "Exp/s", "Money/s", "Money (%)", "Security"]
+  const table: Array<Array<unknown>> = [
+    ["Target", "Exp/s", "Money/s", "Money (%)", "Security", "Batches", "Active", "Success", "Failure", "% Success", "ID"]
   ];
 
-  for (const key in procDataConsolidated) {
-    const data = procDataConsolidated[key];
+  for (const data of procData) {
     const server = ns.getServer(data.target);
 
     table.push([
@@ -65,7 +57,13 @@ async function printStatus(ns: NS) {
         ns.sprintf("%7.2f", data.exp),
         ns.nFormat(data.money, "$0.00a"),
         ns.sprintf("%s (%5.2f%%)", ns.nFormat(server.moneyAvailable, "$0.00a"), (server.moneyAvailable / server.moneyMax) * 100),
-        ns.sprintf("%5.2f", server.hackDifficulty),
+        ns.sprintf("%5.2f/%5.2f", server.hackDifficulty, server.minDifficulty),
+        data.batch?.total ?? 0,
+        data.batch?.active ?? 0,
+        data.batch?.success ?? 0,
+        data.batch?.failure ?? 0,
+        ns.sprintf("%5.2f%%", data.batch?.pct ?? 0),
+        data.batch?.id ?? 0,
     ])
   }
 
