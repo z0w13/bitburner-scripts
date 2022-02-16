@@ -1,15 +1,15 @@
-import { NS, Server } from "@ns"
+import { NS } from "@ns"
 import { Command } from "/lib/objects"
 import { SCRIPT_HACK } from "/constants"
+import ServerWrapper from "/lib/server-wrapper"
 
-export default function getHackCommand(ns: NS, target: Server): Command {
-  const hackAmount = target.moneyMax / 2
-  const hackThreads = Math.ceil(ns.hackAnalyzeThreads(target.hostname, hackAmount))
+export default function getHackCommand(ns: NS, target: ServerWrapper): Command {
+  const hackThreads = target.getHackThreads()
   const hackTime = ns.getHackTime(target.hostname)
   const hackSecurity = ns.hackAnalyzeSecurity(hackThreads)
 
   return {
-    target: target.hostname,
+    target: target,
     threads: hackThreads,
     ram: hackThreads * ns.getScriptRam(SCRIPT_HACK),
     time: hackTime,

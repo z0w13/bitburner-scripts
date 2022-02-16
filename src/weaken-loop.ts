@@ -5,6 +5,7 @@ import runCommand from "/lib/run-command"
 import waitForPids from "/lib/wait-for-pids"
 import setupPolyfill from "/lib/ns-polyfill"
 import { SCRIPT_WEAKEN } from "/constants"
+import ServerWrapper from "/lib/server-wrapper"
 
 interface Flags {
   target: string
@@ -22,7 +23,7 @@ export async function main(ns: NS): Promise<void> {
 
   while (true) {
     const threads = Math.floor(getThreadsAvailable(ns, SCRIPT_WEAKEN) * 0.75)
-    const cmd = getWeakenCommand(ns, ns.getServer(flags.target))
+    const cmd = getWeakenCommand(ns, new ServerWrapper(ns, flags.target))
     cmd.threads = threads
 
     ns.printf("Weaken on %s taking %s", flags.target, ns.tFormat(cmd.time))

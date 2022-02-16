@@ -1,9 +1,10 @@
-import { NS, Server, Player } from "@ns"
+import { NS, Player } from "@ns"
 import { Command } from "/lib/objects"
 import waitForPids from "/lib/wait-for-pids"
-import allocateThreads from "/lib/allocate-threads"
+import runCommand from "/lib/run-command"
 import setupNsPolyfill from "/lib/ns-polyfill"
 import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
+import ServerWrapper from "/lib/server-wrapper"
 
 interface Flags {
   target: string
@@ -74,18 +75,8 @@ export async function main(ns: NS): Promise<void> {
   await runPlan(ns, flags["target"])
 }
 
-function runCommand(ns: NS, cmd: Command, unique = "", delay = 0): Array<number> {
-  if (cmd.threads > 0) {
-    const pids = allocateThreads(ns, cmd.target, cmd.script, cmd.threads, "--delay", delay, unique)
-    return pids
-  }
-
-  ns.print(ns.sprintf("Got cmd %s with target %s with 0 threads ", cmd.script, cmd.target))
-  return []
-}
-
-function getHackCommand(ns: NS, target: Server, player: Player): Command {
-  const server = { ...target }
+function getHackCommand(ns: NS, target: ServerWrapper, player: Player): Command {
+  const server = ns.getServer(target.hostname)
   server.hackDifficulty = target.minDifficulty
   server.moneyAvailable = target.moneyMax
 
@@ -95,7 +86,7 @@ function getHackCommand(ns: NS, target: Server, player: Player): Command {
   const security = ns.hackAnalyzeSecurity(threads)
 
   return {
-    target: target.hostname,
+    target: target,
     script: SCRIPT_HACK,
     time,
     threads,
@@ -104,8 +95,8 @@ function getHackCommand(ns: NS, target: Server, player: Player): Command {
   }
 }
 
-function getWeakenCommand(ns: NS, target: Server, player: Player, addedSecurity = 0): Command {
-  const server = { ...target }
+function getWeakenCommand(ns: NS, target: ServerWrapper, player: Player, addedSecurity = 0): Command {
+  const server = ns.getServer(target.hostname)
   server.hackDifficulty = target.minDifficulty + addedSecurity
   server.moneyAvailable = target.moneyMax
 
@@ -114,7 +105,7 @@ function getWeakenCommand(ns: NS, target: Server, player: Player, addedSecurity 
   const threads = Math.ceil(requiredReduction / ns.weakenAnalyze(1, 1))
 
   return {
-    target: target.hostname,
+    target,
     script: SCRIPT_WEAKEN,
     time,
     threads,
@@ -123,8 +114,8 @@ function getWeakenCommand(ns: NS, target: Server, player: Player, addedSecurity 
   }
 }
 
-function getGrowCommand(ns: NS, target: Server, player: Player, moneyAvailable = 0): Command {
-  const server = { ...target }
+function getGrowCommand(ns: NS, target: ServerWrapper, player: Player, moneyAvailable = 0): Command {
+  const server = ns.getServer(target.hostname)
   server.moneyAvailable = moneyAvailable > 0 ? moneyAvailable : target.moneyMax / 2
   server.hackDifficulty = target.minDifficulty
 
@@ -135,7 +126,7 @@ function getGrowCommand(ns: NS, target: Server, player: Player, moneyAvailable =
   const security = ns.growthAnalyzeSecurity(threads)
 
   return {
-    target: target.hostname,
+    target: target,
     script: SCRIPT_GROW,
     time,
     threads,
@@ -157,25 +148,25 @@ async function runPlan(ns: NS, targetHost: string): Promise<void> {
   // Prepare
   // Get money to max
   while (ns.getServerMoneyAvailable(targetHost) < ns.getServerMaxMoney(targetHost)) {
-    const target = ns.getServer(targetHost)
+    const target = new ServerWrapper(ns, targetHost)
     await waitForPids(
       ns,
-      runCommand(ns, getWeakenCommand(ns, target, ns.getPlayer(), target.hackDifficulty - target.minDifficulty)),
+      runCommand(ns, getWeakenCommand(ns, target, ns.getPlayer(), target.getHackDifficulty() - target.minDifficulty)),
     )
-    await waitForPids(ns, runCommand(ns, getGrowCommand(ns, target, ns.getPlayer(), target.moneyAvailable)))
+    await waitForPids(ns, runCommand(ns, getGrowCommand(ns, target, ns.getPlayer(), target.getMoneyAvailable())))
   }
 
   // Reset security to min
   while (ns.getServerSecurityLevel(targetHost) > ns.getServerMinSecurityLevel(targetHost)) {
-    const target = ns.getServer(targetHost)
+    const target = new ServerWrapper(ns, targetHost)
     await waitForPids(
       ns,
-      runCommand(ns, getWeakenCommand(ns, target, ns.getPlayer(), target.hackDifficulty - target.minDifficulty)),
+      runCommand(ns, getWeakenCommand(ns, target, ns.getPlayer(), target.getHackDifficulty() - target.minDifficulty)),
     )
   }
 
   const player = ns.getPlayer()
-  const target = ns.getServer(targetHost)
+  const target = new ServerWrapper(ns, targetHost)
 
   const hackCommand = { name: "hack", command: getHackCommand(ns, target, player) }
   const hackWeakenCommand = {
@@ -216,7 +207,7 @@ async function runPlan(ns: NS, targetHost: string): Promise<void> {
 
     for (let i = 0; i < runAmount; i++) {
       const player = ns.getPlayer()
-      const target = ns.getServer(targetHost)
+      const target = new ServerWrapper(ns, targetHost)
 
       const hackCommand = { name: "hack", command: getHackCommand(ns, target, player) }
       const hackWeakenCommand = {
@@ -354,7 +345,7 @@ async function delayedCommand(
 
   switch (command.script) {
     case SCRIPT_WEAKEN: {
-      const weakenTime = ns.getWeakenTime(command.target)
+      const weakenTime = command.target.getWeakenTime()
       if (command.time - 10 > weakenTime) {
         await ns.asleep(command.time - weakenTime)
       }
@@ -373,7 +364,7 @@ async function delayedCommand(
       break
     }
     case SCRIPT_GROW: {
-      const growTime = ns.getGrowTime(command.target)
+      const growTime = command.target.getGrowTime()
       if (command.time - 10 > growTime) {
         await ns.asleep(command.time - growTime)
       }
@@ -392,7 +383,7 @@ async function delayedCommand(
       break
     }
     case SCRIPT_HACK: {
-      const hackTime = ns.getHackTime(command.target)
+      const hackTime = command.target.getHackTime()
       // Shorter for some reason wait for a bit
       if (command.time - 10 > hackTime) {
         await ns.asleep(command.time - hackTime)
@@ -410,8 +401,8 @@ async function delayedCommand(
         )
       }
 
-      const moneyAvailable = ns.getServerMoneyAvailable(command.target)
-      const moneyMax = ns.getServerMaxMoney(command.target)
+      const moneyAvailable = command.target.getMoneyAvailable()
+      const moneyMax = command.target.moneyMax
       if (moneyAvailable < moneyMax * 0.95) {
         throw Error(
           ns.sprintf(
@@ -430,7 +421,7 @@ async function delayedCommand(
     }
   }
 
-  const pids = runCommand(ns, command, name + id)
+  const pids = runCommand(ns, command, { args: [name + id] })
   if (pids.includes(0)) {
     pids.filter((pid) => pid !== 0).forEach((pid) => ns.kill(pid))
 

@@ -4,25 +4,27 @@ import waitForPids from "/lib/wait-for-pids"
 import getWeakenCommand from "/lib/get-weaken-command"
 import getGrowthCommand from "/lib/get-growth-command"
 import getHackCommand from "/lib/get-hack-command"
-import runCommand from "/lib/run-command"
+import runCommand from "./lib/run-command"
+import ServerWrapper from "/lib/server-wrapper"
 
 async function weakenTillMinSecurity(ns: NS, target: string): Promise<void> {
   while (ns.getServer(target).hackDifficulty > ns.getServerMinSecurityLevel(target)) {
-    const weaken = getWeakenCommand(ns, ns.getServer(target))
+    const weaken = getWeakenCommand(ns, new ServerWrapper(ns, target))
     ns.print(JSON.stringify(weaken))
-    await waitForPids(ns, runCommand(ns, weaken))
+    await waitForPids(ns, runCommand(ns, weaken, { fill: true }))
   }
 }
+
 async function grow(ns: NS, target: string): Promise<void> {
-  const growth = getGrowthCommand(ns, ns.getServer(target))
+  const growth = getGrowthCommand(ns, new ServerWrapper(ns, target))
   ns.print(JSON.stringify(growth))
-  await waitForPids(ns, runCommand(ns, growth))
+  await waitForPids(ns, runCommand(ns, growth, { fill: true }))
 }
 
 async function hack(ns: NS, target: string): Promise<void> {
-  const hack = getHackCommand(ns, ns.getServer(target))
+  const hack = getHackCommand(ns, new ServerWrapper(ns, target))
   ns.print(JSON.stringify(hack))
-  await waitForPids(ns, runCommand(ns, hack))
+  await waitForPids(ns, runCommand(ns, hack, { fill: true }))
 }
 
 async function run(ns: NS, target: string): Promise<void> {

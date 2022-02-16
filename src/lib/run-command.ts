@@ -1,14 +1,20 @@
 import { NS } from "@ns"
 import { Command } from "/lib/objects"
-import allocateThreads from "/lib/allocate-threads"
+import runCommandRaw from "/lib/run-command-raw"
 
-export default function runCommand(ns: NS, cmd: Command): Array<number> {
-  if (cmd.threads > 0) {
-    const pids = allocateThreads(ns, cmd.target, cmd.script, cmd.threads)
-    return pids
-  } else {
-    ns.print("Got cmd with 0 threads ", cmd)
-  }
+interface RunCommandOptions {
+  fill?: boolean // If true ignore lack of space available
+  args?: Array<string | number>
+}
 
-  return []
+export default function runCommand(ns: NS, cmd: Command, opts: RunCommandOptions = {}): Array<number> {
+  opts.args ??= []
+  opts.fill ??= false
+
+  return runCommandRaw(ns, {
+    script: cmd.script,
+    threads: cmd.threads,
+    fill: opts.fill ?? false,
+    args: ["--target", cmd.target.hostname, "--threads", "__HOST_THREADS__", ...opts.args],
+  })
 }

@@ -1,6 +1,7 @@
 import { NS } from "@ns"
 import getSetupHosts from "/lib/get-setup-hosts"
 
+// TODO(zowie): We need to use MAX_LOAD somehow
 export default function getThreadsAvailable(ns: NS, script: string, host = "home"): number {
   const scriptRam = ns.getScriptRam(script, host)
   const setupHosts = getSetupHosts(ns)
