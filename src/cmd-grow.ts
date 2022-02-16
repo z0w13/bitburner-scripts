@@ -1,4 +1,4 @@
-import { NS } from '@ns'
+import { NS } from "@ns"
 
 interface Flags {
   target: string
@@ -6,18 +6,18 @@ interface Flags {
   delay: number
 }
 
-export async function main(ns : NS) : Promise<void> {
+export async function main(ns: NS): Promise<void> {
   const flags = ns.flags([
     ["target", ""],
     ["threads", 1],
     ["delay", 0],
-  ]) as Flags;
+  ]) as Flags
 
   if (flags.target.length === 0) {
-    ns.tprintf("ERROR: %s - %s No target specified", ns.getHostname(), ns.getScriptName());
+    ns.tprintf("ERROR: %s - %s No target specified", ns.getHostname(), ns.getScriptName())
     return
   }
 
-  await ns.asleep(flags.delay);
-  await ns.grow(flags.target, { threads: flags.threads });
+  await ns.asleep(flags.delay)
+  await ns.grow(flags.target, { threads: flags.threads })
 }

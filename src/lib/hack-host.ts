@@ -1,14 +1,14 @@
-import { NS } from '@ns'
+import { NS } from "@ns"
 
 /**
  * @returns boolean Whether we got admin access on the server
  */
 export default function hackHost(ns: NS, target: string): boolean {
-  const server = ns.getServer(target);
-  const player = ns.getPlayer();
+  const server = ns.getServer(target)
+  const player = ns.getPlayer()
 
   if (server.purchasedByPlayer) {
-    return true;
+    return true
   }
 
   if (!server.hasAdminRights) {
@@ -19,36 +19,36 @@ export default function hackHost(ns: NS, target: string): boolean {
     switch (server.numOpenPortsRequired) {
       case 5:
         if (ns.fileExists("SQLInject.exe") && !server.sqlPortOpen) {
-          ns.sqlinject(target);
+          ns.sqlinject(target)
         }
       // falls through
       case 4:
         if (ns.fileExists("HTTPWorm.exe") && !server.httpPortOpen) {
-          ns.httpworm(target);
+          ns.httpworm(target)
         }
       // falls through
       case 3:
         if (ns.fileExists("relaySMTP.exe") && !server.smtpPortOpen) {
-          ns.relaysmtp(target);
+          ns.relaysmtp(target)
         }
       // falls through
       case 2:
         if (ns.fileExists("FTPCrack.exe") && !server.ftpPortOpen) {
-          ns.ftpcrack(target);
+          ns.ftpcrack(target)
         }
       // falls through
       case 1:
         if (ns.fileExists("BruteSSH.exe") && !server.sshPortOpen) {
-          ns.brutessh(target);
+          ns.brutessh(target)
         }
-        break;
+        break
     }
 
     if (server.numOpenPortsRequired > ns.getServer(server.hostname).openPortCount) {
       return false
     }
 
-    ns.nuke(server.hostname);
+    ns.nuke(server.hostname)
   }
 
   return true

@@ -1,6 +1,4 @@
 {
-    // Linter Settings
-    "typescript.validate.enable": false,
     "javascript.validate.enable": false,
     "eslint.validate": ["typescript", "typescriptreact"],
     "eslint.workingDirectories": ["./src"],
@@ -27,4 +25,8 @@
     "bitburner.showFileWatcherEnabledNotification": true,
     "bitburner.showPushSuccessNotification": true,
     "eslint.packageManager": "yarn",
+    "javascript.format.semicolons": "remove",
+    "typescript.format.semicolons": "remove",
+    "typescript.preferences.quoteStyle": "double",
+    "eslint.format.enable": true,
 }

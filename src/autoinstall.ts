@@ -1,10 +1,10 @@
-import { NS } from '@ns'
+import { NS } from "@ns"
 import scanHost from "/lib/scan-host"
 import isHostSetup from "/lib/is-host-setup"
-import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from '/constants';
+import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
 
-export async function main(ns : NS) : Promise<void> {
-  ns.disableLog("scan");
+export async function main(ns: NS): Promise<void> {
+  ns.disableLog("scan")
 
   const flags = ns.flags([
     ["interval", 1000],
@@ -14,23 +14,23 @@ export async function main(ns : NS) : Promise<void> {
   ])
 
   while (true) {
-    const hosts = await scanHost(ns);
+    const hosts = await scanHost(ns)
     for (const hostname in hosts) {
       if (hostname === "home") {
-        continue;
+        continue
       }
 
-      if (! await ns.hasRootAccess(hostname)) {
-        continue;
+      if (!(await ns.hasRootAccess(hostname))) {
+        continue
       }
 
-      if (!flags["overwrite"] && await isHostSetup(ns, hostname)) {
-        continue;
+      if (!flags["overwrite"] && (await isHostSetup(ns, hostname))) {
+        continue
       }
 
-      await ns.scp(flags["scripts"], flags["host"], hostname);
+      await ns.scp(flags["scripts"], flags["host"], hostname)
     }
 
-    await ns.sleep(flags["interval"]);
+    await ns.sleep(flags["interval"])
   }
 }

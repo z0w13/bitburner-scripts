@@ -1,11 +1,11 @@
-import {NS, Server} from "@ns"
+import { NS, Server } from "@ns"
 import { Command } from "/lib/objects"
-import { SCRIPT_WEAKEN } from "/constants";
+import { SCRIPT_WEAKEN } from "/constants"
 
 export default function getWeakenCommand(ns: NS, target: Server, planSecurity = 0): Command {
-  const requiredReduction = (ns.getServerSecurityLevel(target.hostname) + planSecurity) - target.minDifficulty;
-  const weakenThreads = Math.ceil(requiredReduction / ns.weakenAnalyze(1));
-  const weakenTime = ns.getWeakenTime(target.hostname);
+  const requiredReduction = ns.getServerSecurityLevel(target.hostname) + planSecurity - target.minDifficulty
+  const weakenThreads = Math.ceil(requiredReduction / ns.weakenAnalyze(1))
+  const weakenTime = ns.getWeakenTime(target.hostname)
 
   return {
     target: target.hostname,

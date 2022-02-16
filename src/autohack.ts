@@ -1,21 +1,19 @@
-import { NS } from '@ns'
+import { NS } from "@ns"
 import scanHost from "/lib/scan-host"
 import hackHost from "/lib/hack-host"
 
-export async function main(ns : NS) : Promise<void> {
-  ns.disableLog("scan");
-  ns.disableLog("asleep");
+export async function main(ns: NS): Promise<void> {
+  ns.disableLog("scan")
+  ns.disableLog("asleep")
 
-  const flags = ns.flags([
-    ["interval", 1000]
-  ])
+  const flags = ns.flags([["interval", 1000]])
 
   while (true) {
-    const hosts = await scanHost(ns);
+    const hosts = await scanHost(ns)
     for (const hostname in hosts) {
-      await hackHost(ns, hostname);
+      await hackHost(ns, hostname)
     }
 
-    await ns.asleep(flags["interval"]);
+    await ns.asleep(flags["interval"])
   }
 }
