@@ -14,17 +14,17 @@ export async function main(ns: NS): Promise<void> {
   ])
 
   while (true) {
-    const hosts = await scanHost(ns)
+    const hosts = scanHost(ns)
     for (const hostname in hosts) {
       if (hostname === "home") {
         continue
       }
 
-      if (!(await ns.hasRootAccess(hostname))) {
+      if (!ns.hasRootAccess(hostname)) {
         continue
       }
 
-      if (!flags["overwrite"] && (await isHostSetup(ns, hostname))) {
+      if (!flags["overwrite"] && isHostSetup(ns, hostname)) {
         continue
       }
 

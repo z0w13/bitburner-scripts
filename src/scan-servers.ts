@@ -6,7 +6,7 @@ import renderTable from "/lib/render-table"
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("scan")
 
-  const hosts = await scanHost(ns)
+  const hosts = scanHost(ns)
   const results = []
   for (const host in hosts) {
     const server = ns.getServer(host)

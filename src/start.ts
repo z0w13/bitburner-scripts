@@ -67,7 +67,7 @@ export async function main(ns: NS): Promise<void> {
   }
 
   for (const pid of pids) {
-    await ns.kill(pid)
+    ns.kill(pid)
   }
 
   await waitForPids(ns, pids)

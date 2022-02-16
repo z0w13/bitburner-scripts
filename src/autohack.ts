@@ -9,9 +9,9 @@ export async function main(ns: NS): Promise<void> {
   const flags = ns.flags([["interval", 1000]])
 
   while (true) {
-    const hosts = await scanHost(ns)
+    const hosts = scanHost(ns)
     for (const hostname in hosts) {
-      await hackHost(ns, hostname)
+      hackHost(ns, hostname)
     }
 
     await ns.asleep(flags["interval"])

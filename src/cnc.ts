@@ -160,12 +160,9 @@ async function runPlan(ns: NS, targetHost: string): Promise<void> {
     const target = ns.getServer(targetHost)
     await waitForPids(
       ns,
-      await runCommand(
-        ns,
-        await getWeakenCommand(ns, target, ns.getPlayer(), target.hackDifficulty - target.minDifficulty),
-      ),
+      runCommand(ns, getWeakenCommand(ns, target, ns.getPlayer(), target.hackDifficulty - target.minDifficulty)),
     )
-    await waitForPids(ns, await runCommand(ns, await getGrowCommand(ns, target, ns.getPlayer(), target.moneyAvailable)))
+    await waitForPids(ns, runCommand(ns, getGrowCommand(ns, target, ns.getPlayer(), target.moneyAvailable)))
   }
 
   // Reset security to min
@@ -173,10 +170,7 @@ async function runPlan(ns: NS, targetHost: string): Promise<void> {
     const target = ns.getServer(targetHost)
     await waitForPids(
       ns,
-      await runCommand(
-        ns,
-        await getWeakenCommand(ns, target, ns.getPlayer(), target.hackDifficulty - target.minDifficulty),
-      ),
+      runCommand(ns, getWeakenCommand(ns, target, ns.getPlayer(), target.hackDifficulty - target.minDifficulty)),
     )
   }
 
@@ -436,7 +430,7 @@ async function delayedCommand(
     }
   }
 
-  const pids = await runCommand(ns, command, name + id)
+  const pids = runCommand(ns, command, name + id)
   if (pids.includes(0)) {
     pids.filter((pid) => pid !== 0).forEach((pid) => ns.kill(pid))
 

@@ -15,7 +15,7 @@ export async function main(ns: NS): Promise<void> {
   ])
 
   while (true) {
-    const hosts = await scanHost(ns)
+    const hosts = scanHost(ns)
     for (const hostname in hosts) {
       if (isHostSetup(ns, hostname)) {
         continue

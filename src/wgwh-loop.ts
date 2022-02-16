@@ -10,19 +10,19 @@ async function weakenTillMinSecurity(ns: NS, target: string): Promise<void> {
   while (ns.getServer(target).hackDifficulty > ns.getServerMinSecurityLevel(target)) {
     const weaken = getWeakenCommand(ns, ns.getServer(target))
     ns.print(JSON.stringify(weaken))
-    await waitForPids(ns, await runCommand(ns, weaken))
+    await waitForPids(ns, runCommand(ns, weaken))
   }
 }
 async function grow(ns: NS, target: string): Promise<void> {
   const growth = getGrowthCommand(ns, ns.getServer(target))
   ns.print(JSON.stringify(growth))
-  await waitForPids(ns, await runCommand(ns, growth))
+  await waitForPids(ns, runCommand(ns, growth))
 }
 
 async function hack(ns: NS, target: string): Promise<void> {
-  const hack = await getHackCommand(ns, ns.getServer(target))
+  const hack = getHackCommand(ns, ns.getServer(target))
   ns.print(JSON.stringify(hack))
-  await waitForPids(ns, await runCommand(ns, hack))
+  await waitForPids(ns, runCommand(ns, hack))
 }
 
 async function run(ns: NS, target: string): Promise<void> {
