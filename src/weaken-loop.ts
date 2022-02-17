@@ -22,7 +22,9 @@ export async function main(ns: NS): Promise<void> {
   const flags = ns.flags([["target", "n00dles"]]) as Flags
 
   while (true) {
-    const threads = Math.floor(getThreadsAvailable(ns, SCRIPT_WEAKEN) * 0.75)
+    const threads = Math.floor(
+      getThreadsAvailable(ns, { file: SCRIPT_WEAKEN, ram: ns.getScriptRam(SCRIPT_WEAKEN) }) * 0.75,
+    )
     const cmd = getWeakenCommand(ns, new ServerWrapper(ns, flags.target))
     cmd.threads = threads
 

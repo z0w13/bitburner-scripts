@@ -1,4 +1,6 @@
 import { NS } from "@ns"
+import { Job } from "/daemon"
+import ServerWrapper from "/lib/server-wrapper"
 
 const MAX_RAM = 1048576
 
@@ -82,6 +84,23 @@ async function buyServers(ns: NS, nextstep = false, minRam = 8): Promise<void> {
   }
 
   if (ownedServers.length >= limit) {
+    const data = JSON.parse(ns.read("jobs.json.txt")) as {
+      preppedTargets: number
+      prepLoad: number
+      load: number
+      jobs: Array<Job>
+    }
+    const server = new ServerWrapper(ns, lowestHost.host)
+
+    if (!server.isDraining()) {
+      await server.drain()
+    }
+
+    while (data.jobs.findIndex((j) => j.target.hostname === server.hostname) > -1 && !server.isDrained()) {
+      await server.waitTillDrained()
+      await ns.asleep(1)
+    }
+
     ns.killall(lowestHost.host)
     ns.deleteServer(lowestHost.host)
   }

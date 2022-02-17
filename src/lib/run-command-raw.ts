@@ -1,9 +1,10 @@
 import { NS } from "@ns"
 import getSetupHosts from "/lib/get-setup-hosts"
 import getThreadsAvailable from "/lib/get-threads-available"
+import { Script } from "/lib/objects"
 
 interface RunCommandRawOptions {
-  script: string
+  script: Script
   threads: number
   fill?: boolean // If true ignore lack of space available
   args?: Array<string | number>
@@ -11,7 +12,6 @@ interface RunCommandRawOptions {
 
 export default function runCommand(ns: NS, opts: RunCommandRawOptions): Array<number> {
   const usableHosts = getSetupHosts(ns)
-  const scriptRam = ns.getScriptRam(opts.script)
   const hosts: Array<{ host: string; ram: number }> = []
   const availableThreads = getThreadsAvailable(ns, opts.script)
 
@@ -19,12 +19,12 @@ export default function runCommand(ns: NS, opts: RunCommandRawOptions): Array<nu
   opts.fill ??= false
 
   if (opts.threads === 0) {
-    ns.print(`ERROR: Received ${opts.script} with 0 threads.`)
+    ns.print(`ERROR: Received ${opts.script.file} with 0 threads.`)
   }
 
   if (getThreadsAvailable(ns, opts.script) < opts.threads && !opts.fill) {
     ns.print(
-      `ERROR: Not enough threads available to run ${opts.script} with args ${opts.args ?? []} need ${
+      `ERROR: Not enough threads available to run ${opts.script.file} with args ${opts.args ?? []} need ${
         opts.threads
       } have ${availableThreads}.`,
     )
@@ -42,17 +42,17 @@ export default function runCommand(ns: NS, opts: RunCommandRawOptions): Array<nu
   while (threadsRemaining > 0) {
     const host = hosts.pop()
     if (!host) {
-      ns.print(`WARN: Ran out of hosts to run ${opts.script}, ${threadsRemaining} not allocated`)
+      ns.print(`WARN: Ran out of hosts to run ${opts.script.file}, ${threadsRemaining} not allocated`)
       break
     }
 
-    let hostThreads = Math.floor(host.ram / scriptRam)
+    let hostThreads = Math.floor(host.ram / opts.script.ram)
     if (hostThreads === 0) {
       continue
     }
 
     if (threadsRemaining < hostThreads) {
-      host.ram -= hostThreads * scriptRam
+      host.ram -= hostThreads * opts.script.ram
       hostThreads = threadsRemaining
       hosts.push(host)
     }
@@ -60,7 +60,7 @@ export default function runCommand(ns: NS, opts: RunCommandRawOptions): Array<nu
     threadsRemaining -= hostThreads
 
     const pid = ns.exec(
-      opts.script,
+      opts.script.file,
       host.host,
       hostThreads,
       ...opts.args.map((a) => String(a).replace("__HOST_THREADS__", hostThreads.toString())),

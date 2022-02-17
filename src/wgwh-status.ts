@@ -52,7 +52,7 @@ async function printStatus(ns: NS) {
         target: procFlags["target"],
         money,
         exp,
-        script: data?.script ?? "",
+        script: data?.script?.file ?? "",
         time: Math.ceil((data?.time ?? 0) / 1000),
         threads: data?.threads ?? 0,
       })

@@ -1,8 +1,12 @@
 import { NS } from "@ns"
-import { SCRIPT_HACK } from "/constants"
+import { COPY_SCRIPTS } from "/constants"
 
 export default function isHostSetup(ns: NS, hostname: string): boolean {
   const haveRoot = ns.hasRootAccess(hostname)
-  const scriptInstalled = ns.fileExists(SCRIPT_HACK, hostname)
-  return haveRoot && scriptInstalled
+  const scriptsInstalled = COPY_SCRIPTS.map((s) => ns.fileExists(s, hostname)).reduce(
+    (acc, val) => (acc = !acc ? acc : val),
+    true,
+  )
+
+  return haveRoot && scriptsInstalled
 }

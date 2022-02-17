@@ -1,7 +1,8 @@
-import { NS } from "@ns"
-import { PERCENTAGE_TO_HACK, HACK_MIN_MONEY, TARGET_TIME_THRESHOLD } from "/config"
-import { SCRIPT_HACK } from "/constants"
+import { NS, ProcessInfo } from "@ns"
+import { PERCENTAGE_TO_HACK, HACK_MIN_MONEY, TARGET_TIME_THRESHOLD, SECURITY_WIGGLE, MONEY_WIGGLE } from "/config"
+import { SCRIPT_HACK, SCRIPT_WRITE_FILE } from "/constants"
 import getThreadsAvailable from "/lib/get-threads-available"
+import waitForPids from "/lib/wait-for-pids"
 
 export default class ServerWrapper {
   ns: NS
@@ -38,6 +39,27 @@ export default class ServerWrapper {
     this.purchasedByPlayer = server.purchasedByPlayer
   }
 
+  isDraining(): boolean {
+    return this.ns.fileExists("draining.txt", this.hostname)
+  }
+
+  isDrained(): boolean {
+    return this.getProcesses().length === 0
+  }
+
+  async waitTillDrained(): Promise<void> {
+    await waitForPids(
+      this.ns,
+      this.getProcesses().map((p) => p.pid),
+    )
+  }
+
+  async drain(): Promise<void> {
+    if (!this.isDraining()) {
+      await waitForPids(this.ns, [this.ns.exec(SCRIPT_WRITE_FILE, this.hostname, 1, ...["--filename", "draining.txt"])])
+    }
+  }
+
   isRooted(): boolean {
     return this.root ? true : (this.root = this.ns.hasRootAccess(this.hostname))
   }
@@ -59,11 +81,11 @@ export default class ServerWrapper {
   }
 
   hasMaxMoney(): boolean {
-    return this.moneyMax == this.getMoneyAvailable()
+    return this.getMoneyAvailable() >= this.moneyMax * (1 - MONEY_WIGGLE)
   }
 
   hasMinSecurity(): boolean {
-    return this.minDifficulty == this.getHackDifficulty()
+    return this.getHackDifficulty() <= this.minDifficulty * (1 + SECURITY_WIGGLE)
   }
 
   getRamUsed(): number {
@@ -86,7 +108,24 @@ export default class ServerWrapper {
     return this.ns.getWeakenTime(this.hostname)
   }
 
+  getProfitPerSecond(): number {
+    if (!this.isPrepped()) {
+      return 0
+    }
+
+    const totalTime = this.getWeakenTime() * 2 + this.getHackTime() + this.getGrowTime()
+    return this.moneyMax / totalTime
+  }
+
+  getGrowTime(): number {
+    return this.ns.getGrowTime(this.hostname)
+  }
+
   getInitialGrowThreads(): number {
+    if (this.moneyMax === 0) {
+      return 0
+    }
+
     if (this.ns.getServerMoneyAvailable(this.hostname) === this.moneyMax) {
       return 0
     }
@@ -95,11 +134,11 @@ export default class ServerWrapper {
     )
   }
 
-  getGrowTime(): number {
-    return this.ns.getGrowTime(this.hostname)
-  }
-
   getGrowThreads(initialMoney?: number): number {
+    if (this.moneyMax === 0) {
+      return 0
+    }
+
     if (initialMoney === undefined) {
       initialMoney = this.moneyMax * (1 - PERCENTAGE_TO_HACK)
     }
@@ -128,12 +167,16 @@ export default class ServerWrapper {
     )
   }
 
+  getProcesses(): Array<ProcessInfo> {
+    return this.ns.ps(this.hostname)
+  }
+
   getMaxTimeRequired(): number {
     return Math.max(this.getHackTime(), this.getWeakenTime(), this.getGrowTime())
   }
 
   isRecommendedTarget(): { recommended: boolean; rejectReason: string } {
-    const threadsAvail = getThreadsAvailable(this.ns, SCRIPT_HACK)
+    const threadsAvail = getThreadsAvailable(this.ns, { file: SCRIPT_HACK, ram: this.ns.getScriptRam(SCRIPT_HACK) })
     if (this.purchasedByPlayer) {
       return {
         recommended: false,
@@ -174,5 +217,9 @@ export default class ServerWrapper {
     }
 
     return { recommended: true, rejectReason: "" }
+  }
+
+  isTargetable(): boolean {
+    return this.moneyMax > 0
   }
 }

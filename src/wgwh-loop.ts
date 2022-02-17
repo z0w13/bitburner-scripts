@@ -2,7 +2,7 @@ import { NS } from "@ns"
 
 import waitForPids from "/lib/wait-for-pids"
 import getWeakenCommand from "/lib/get-weaken-command"
-import getGrowthCommand from "/lib/get-growth-command"
+import getGrowthCommand from "./lib/get-grow-command"
 import getHackCommand from "/lib/get-hack-command"
 import runCommand from "./lib/run-command"
 import ServerWrapper from "/lib/server-wrapper"

@@ -2,7 +2,7 @@ import { NS } from "@ns"
 import scanHost from "/lib/scan-host"
 import hackHost from "/lib/hack-host"
 import isHostSetup from "/lib/is-host-setup"
-import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
+import { COPY_SCRIPTS } from "/constants"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("scan")
@@ -11,7 +11,7 @@ export async function main(ns: NS): Promise<void> {
   const flags = ns.flags([
     ["interval", 1000],
     ["host", "home"],
-    ["scripts", [SCRIPT_HACK, SCRIPT_WEAKEN, SCRIPT_GROW]], // Scripts to install
+    ["scripts", COPY_SCRIPTS], // Scripts to install
   ])
 
   while (true) {

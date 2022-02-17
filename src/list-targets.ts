@@ -19,7 +19,7 @@ export async function main(ns: NS): Promise<void> {
 
   const servers = Object.keys(scanHost(ns))
     .map((h) => new ServerWrapper(ns, h))
-    .filter((s) => !s.isRecommendedTarget())
+    .filter((s) => s.isRecommendedTarget().recommended || (flags.all && s.moneyMax > 0))
     .sort((a, b) => a.hostname.localeCompare(b.hostname))
 
   const table: Array<Array<unknown>> = [
@@ -60,12 +60,14 @@ export async function main(ns: NS): Promise<void> {
     ]
 
     if (flags.all) {
-      row.push(server.isRecommendedTarget() ? "Y" : "")
+      row.push(server.isRecommendedTarget().recommended ? "Y" : "")
     }
 
     table.push(row)
   }
 
   ns.print(renderTable(ns, table))
-  ns.print(`Current Threads Available: ${getThreadsAvailable(ns, SCRIPT_HACK)}`)
+  ns.print(
+    `Current Threads Available: ${getThreadsAvailable(ns, { file: SCRIPT_HACK, ram: ns.getScriptRam(SCRIPT_HACK) })}`,
+  )
 }

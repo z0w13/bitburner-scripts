@@ -2,7 +2,7 @@ import { NS } from "@ns"
 
 type TableRow = Array<unknown>
 type TableData = Array<Array<string>>
-type RawTableData = Array<Array<unknown>>
+export type RawTableData = Array<Array<unknown>>
 
 export default function renderTable(ns: NS, rawData: RawTableData, headers = true, footers = false): string {
   let data = normalizeRows(rawData)
