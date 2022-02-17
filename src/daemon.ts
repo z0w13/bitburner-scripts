@@ -310,12 +310,17 @@ class JobScheduler {
         const newRam = newThreads * command.script.ram
 
         this.log.debug(
-          `Changed command ${command.script.file} to ${newThreads} from ${command.threads} threads and ${newRam} RAM from ${command.ram}`,
+          "Changed command '%s' for '%s' to %d from %d threads and %.2fGiB RAM from %.2fGiB",
+          command.script.file,
+          command.target.hostname,
+          newThreads,
+          command.threads,
+          newRam,
+          command.ram,
         )
-        command.threads = newThreads
-        command.ram = newRam
 
-        newCommands.push(command)
+        command.threads = newThreads
+        command.ram = newRam % newCommands.push(command)
       }
     }
 
