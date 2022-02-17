@@ -578,7 +578,6 @@ class JobScheduler {
 // TODO(zowie): Figure out how to semi-accurately calculate stuff without Formulas.exe
 // TODO(zowie): Hack and setup scripts, maybe periodic script?
 // TODO(zowie): Tests for various classes
-// TODO(zowie): Why you negative ram VirtualNetworkState
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
