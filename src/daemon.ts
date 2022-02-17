@@ -46,8 +46,23 @@ class VirtualNetworkState {
     return Math.floor(threads * MAX_LOAD)
   }
 
+  getAllocatableMaxPrepThreads(script: Script): number {
+    const threads = sum(this.snapshot.map((h) => Math.floor(h.maxRam / script.ram)))
+    return Math.floor(threads * MAX_PREP_LOAD)
+  }
+
   getAllocatableThreads(script: Script): number {
     const totalThreads = this.getAllocatableMaxThreads(script)
+    const usedThreads = sum(this.snapshot.map((h) => Math.floor((h.maxRam - h.availableRam) / script.ram)))
+
+    // We can have more used threads than all total allocatable threads so in that case there's none available
+    const allocatableThreads = Math.max(0, totalThreads - usedThreads)
+
+    return allocatableThreads
+  }
+
+  getAllocatablePrepThreads(script: Script): number {
+    const totalThreads = this.getAllocatableMaxPrepThreads(script)
     const usedThreads = sum(this.snapshot.map((h) => Math.floor((h.maxRam - h.availableRam) / script.ram)))
 
     // We can have more used threads than all total allocatable threads so in that case there's none available
@@ -312,6 +327,7 @@ class JobScheduler {
     this.preppingTargets = []
   }
 
+  // Should only ever used for prep, so use prep allocatable threads
   recalculateCommandsForRam(
     commands: Array<Command>,
     networkState: VirtualNetworkState,
@@ -320,12 +336,12 @@ class JobScheduler {
     let changed = false
 
     for (const command of commands) {
-      if (networkState.getAllocatableThreads(command.script) >= command.threads) {
+      if (networkState.getAllocatablePrepThreads(command.script) >= command.threads) {
         newCommands.push(command)
       } else {
         changed = true
 
-        const newThreads = networkState.getAllocatableThreads(command.script)
+        const newThreads = networkState.getAllocatablePrepThreads(command.script)
         const newRam = newThreads * command.script.ram
 
         if (newThreads === 0) {
