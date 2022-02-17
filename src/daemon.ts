@@ -552,6 +552,7 @@ class JobScheduler {
 
   async writeJobStatus(): Promise<void> {
     const serialized: SerializedDaemonStatus = {
+      lastUpdate: Date.now(),
       preppedTargets: this.preppedTargets,
       prepLoad: this.jobMgr.currentPrepLoad(),
       stopping: this.ns.fileExists("finish-daemon.txt", "home"),

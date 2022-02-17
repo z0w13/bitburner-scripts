@@ -23,6 +23,8 @@ export async function main(ns: NS): Promise<void> {
 }
 function renderStatusTable(ns: NS, data: SerializedDaemonStatus) {
   const preppedByProfit = [...data.preppedTargets].sort((a, b) => b.profitPerSecond - a.profitPerSecond)
+  const lastUpdate = new Date(data.lastUpdate)
+  const updatedSecondsAgo = Math.round((Date.now() - data.lastUpdate) / 1000)
 
   const table: RawTableData = [
     ["Load", ns.nFormat(data.load * 100, "0.00")],
@@ -31,8 +33,10 @@ function renderStatusTable(ns: NS, data: SerializedDaemonStatus) {
     ["Exp/s", ns.nFormat(data.expPerSecond, "0,0.00")],
     ["Prepped", data.preppedTargets.length],
     ["Stopping", data.stopping],
+    ["Last Update", ns.sprintf("%02d:%02d:%02d", lastUpdate.getHours(), lastUpdate.getMinutes(), lastUpdate.getSeconds())],
+    ["", ns.sprintf("(%ds ago)", updatedSecondsAgo)],
     [],
-    ["Most Profitable", preppedByProfit[0]?.hostname],
+    ["Most Profitable", preppedByProfit[0]?.hostname ?? ""],
     [],
   ]
 

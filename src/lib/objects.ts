@@ -57,6 +57,7 @@ export interface PreppedTargetInfo {
 
 export interface SerializedDaemonStatus {
   preppedTargets: Array<PreppedTargetInfo>
+  lastUpdate: number,
   prepLoad: number
   profitPerSecond: number
   expPerSecond: number
