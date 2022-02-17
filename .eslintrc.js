@@ -7,7 +7,6 @@ module.exports = {
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:prettier/recommended",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -16,13 +15,14 @@ module.exports = {
     ecmaFeatures: {
       experimentalObjectRestSpread: true,
     },
-    project: ['./tsconfig.json'],
+    project: ["./tsconfig.json"],
     tsconfigRootDir: __dirname,
   },
   plugins: ["@typescript-eslint", "prettier"],
-  ignorePatterns: ['*.d.ts', '*.js'],
+  ignorePatterns: ["*.d.ts", "*.js"],
   rules: {
-    'no-constant-condition': ['off'],
+    "no-constant-condition": "off",
+    "no-extra-parens": ["error", "all", {"conditionalAssign": "false"}],
     "@typescript-eslint/await-thenable": "error",
     "@typescript-eslint/no-floating-promises": "error",
   }
