@@ -20,11 +20,14 @@ export async function main(ns: NS): Promise<void> {
       jobs: Array<Job>
     }
 
-    const table: RawTableData = [["Target", "Job Type", "Total Commands", "Done", "Current", "Threads", "RAM", "Time"]]
+    const table: RawTableData = [
+      ["Target", "Job Type", "Partial", "Total Commands", "Done", "Current", "Threads", "RAM", "Time"],
+    ]
     for (const entry of data.jobs) {
       table.push([
         entry.target.hostname,
         entry.type,
+        entry.partial ? "Y" : "N",
         entry.commands.length,
         entry.jobsDone,
         entry.current?.script.file ?? "",

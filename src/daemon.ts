@@ -26,6 +26,7 @@ export interface Job {
   commands: Array<Command>
   current?: Command
   jobsDone: number
+  partial: boolean
   done: boolean
 }
 
@@ -289,14 +290,23 @@ class JobScheduler {
       .map((s) => ({ hostname: s.hostname, profitPerSecond: s.getProfitPerSecond() }))
   }
 
-  recalculateCommandsForRam(commands: Array<Command>, networkState: VirtualNetworkState): Array<Command> {
+  recalculateCommandsForRam(
+    commands: Array<Command>,
+    networkState: VirtualNetworkState,
+  ): { changed: boolean; commands: Array<Command> } {
     const newCommands = []
+    let changed = false
 
     for (const command of commands) {
       if (networkState.getAllocatableThreads(command.script) >= command.threads) {
         newCommands.push(command)
       } else {
+        changed = true
+
         const newThreads = networkState.getAllocatableThreads(command.script)
+        if (newThreads === 0) {
+          continue
+        }
         const newRam = newThreads * command.script.ram
 
         this.log.debug(
@@ -306,11 +316,10 @@ class JobScheduler {
         command.ram = newRam
 
         newCommands.push(command)
-        break
       }
     }
 
-    return newCommands
+    return { changed: changed, commands: newCommands }
   }
 
   planHwgwJobs(networkState: VirtualNetworkState): Array<Job> {
@@ -331,6 +340,7 @@ class JobScheduler {
       const job = {
         type: JobType.HackWeakenGrowWeaken,
         done: false,
+        partial: false,
         target,
         jobsDone: 0,
         commands: [
@@ -365,15 +375,18 @@ class JobScheduler {
         continue
       }
 
-      const weaken = getWeakenCommand(this.ns, target)
-      const grow = getGrowCommand(this.ns, target)
+      const recalc = this.recalculateCommandsForRam(
+        [getWeakenCommand(this.ns, target), getGrowCommand(this.ns, target)],
+        networkState,
+      )
 
       const job = {
         type: JobType.Prep,
         done: false,
+        partial: recalc.changed,
         target,
         jobsDone: 0,
-        commands: this.recalculateCommandsForRam([weaken, grow], networkState).filter((c) => c.threads > 0),
+        commands: recalc.commands,
       }
 
       if (job.commands.length === 0 || !this.jobMgr.canSchedulePrep(job)) {
