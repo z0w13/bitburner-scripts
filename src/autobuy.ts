@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { Job } from "/daemon"
+import { SerializedDaemonStatus } from "/lib/objects"
 import ServerWrapper from "/lib/server-wrapper"
 
 const MAX_RAM = 1048576
@@ -84,19 +84,14 @@ async function buyServers(ns: NS, nextstep = false, minRam = 8): Promise<void> {
   }
 
   if (ownedServers.length >= limit) {
-    const data = JSON.parse(ns.read("jobs.json.txt")) as {
-      preppedTargets: number
-      prepLoad: number
-      load: number
-      jobs: Array<Job>
-    }
+    const data = JSON.parse(ns.read("jobs.json.txt")) as SerializedDaemonStatus
     const server = new ServerWrapper(ns, lowestHost.host)
 
     if (!server.isDraining()) {
       await server.drain()
     }
 
-    while (data.jobs.findIndex((j) => j.target.hostname === server.hostname) > -1 && !server.isDrained()) {
+    while (data.jobs.findIndex((j) => j.target === server.hostname) > -1 && !server.isDrained()) {
       await server.waitTillDrained()
       await ns.asleep(1)
     }
@@ -105,8 +100,8 @@ async function buyServers(ns: NS, nextstep = false, minRam = 8): Promise<void> {
     ns.deleteServer(lowestHost.host)
   }
 
-  ns.tprintf("Buying server with %s RAM", ns.nFormat(buyRam * 1024 ** 3, "0.00ib"))
-  ns.purchaseServer("zserv", buyRam)
+  const hostname = ns.purchaseServer("zserv", buyRam)
+  ns.tprintf("Bought server %s with %s RAM", hostname, ns.nFormat(buyRam * 1024 ** 3, "0.00ib"))
 }
 
 function getHighestTierAffordable(ns: NS, money: number): number {

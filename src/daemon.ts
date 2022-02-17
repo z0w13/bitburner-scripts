@@ -1,33 +1,19 @@
 import { NS } from "@ns"
 import { LOG_LEVEL, MAX_LOAD, MAX_PREP_LOAD } from "/config"
 import LoadManager from "/lib/load-manager"
-import { Command, FlagSchema, Script } from "/lib/objects"
+import { Command, FlagSchema, Job, JobType, PreppedTargetInfo, Script, SerializedDaemonStatus } from "/lib/objects"
 import getWeakenCommand from "/lib/get-weaken-command"
 import getGrowCommand from "./lib/get-grow-command"
 import ServerWrapper from "/lib/server-wrapper"
 import getHackCommand from "/lib/get-hack-command"
 import waitForPids from "/lib/wait-for-pids"
-import Logger from "/lib/logger"
+import Logger, { LogLevel } from "/lib/logger"
+import { isScriptRunning, sum } from "/lib/util"
 
 const flagSchema: FlagSchema = [["once", false]]
 
 interface Flags {
   once: boolean
-}
-
-enum JobType {
-  Prep = "prep",
-  HackWeakenGrowWeaken = "hwgw",
-}
-
-export interface Job {
-  type: JobType
-  target: ServerWrapper
-  commands: Array<Command>
-  current?: Command
-  jobsDone: number
-  partial: boolean
-  done: boolean
 }
 
 interface ServerSnapshot {
@@ -36,14 +22,6 @@ interface ServerSnapshot {
   maxRam: number
 }
 
-function sum(values: Array<number>): number {
-  return values.reduce((acc, val) => acc + val, 0)
-}
-
-// TODO(zowie): Expand calculations, account for MAX_LOAD, etc.
-// MAX_LOAD needs to be across the network, not just per server
-// can't rely on RAM because that doesn't accurately represent space due to scripts not always fitting
-// also can't just AVAIL_THREADS * MAX_LOAD as that'll just continue filling up the pool
 class VirtualNetworkState {
   ns: NS
   snapshot: Array<ServerSnapshot>
@@ -69,19 +47,43 @@ class VirtualNetworkState {
   }
 
   getAllocatableThreads(script: Script): number {
-    const max = this.getAllocatableMaxThreads(script)
-    const allocated = sum(this.snapshot.map((h) => Math.floor((h.maxRam - h.availableRam) / script.ram)))
-    //this.log.debug(`allocated ${allocated} of ${max} threads, ${max - allocated} available`)
-    return max - allocated
+    const totalThreads = this.getAllocatableMaxThreads(script)
+    const usedThreads = sum(this.snapshot.map((h) => Math.floor((h.maxRam - h.availableRam) / script.ram)))
+
+    // We can have more used threads than all total allocatable threads so in that case there's none available
+    const allocatableThreads = Math.max(0, totalThreads - usedThreads)
+
+    return allocatableThreads
   }
 
   getAllocatableRam(script: Script): number {
     return this.getAllocatableThreads(script) * script.ram
   }
 
+  canAllocateJob(job: Job): boolean {
+    const biggestCommand = [...job.commands].sort((a, b) => b.threads - a.threads)[0]
+    return this.canAllocateCommand(biggestCommand)
+  }
+
+  canAllocateCommand(command: Command): boolean {
+    return command.threads <= this.getAllocatableThreads(command.script)
+  }
+
   allocateCommand(command: Command) {
     let threadsRemaining = command.threads
     const availableServers = [...this.snapshot]
+
+    if (!this.canAllocateCommand(command)) {
+      const err = this.ns.sprintf(
+        "Tried to allocate '%s' with %d threads but only %d available",
+        command.script.file,
+        command.threads,
+        this.getAllocatableThreads(command.script),
+      )
+
+      this.log.error(err)
+      throw new Error(err)
+    }
 
     while (threadsRemaining > 0) {
       const server = availableServers.pop()
@@ -91,6 +93,15 @@ class VirtualNetworkState {
       }
 
       const serverThreads = Math.min(Math.floor(server.availableRam / command.script.ram), threadsRemaining)
+
+      if (server.availableRam - serverThreads * command.script.ram < 0) {
+        this.log.error(
+          "Server %s available ram hit below 0, current value %f, skipping, rounding error?",
+          server.hostname,
+          server.availableRam,
+        )
+        throw Error("AAAAA")
+      }
 
       server.availableRam -= serverThreads * command.script.ram
       threadsRemaining -= serverThreads
@@ -107,6 +118,19 @@ class VirtualNetworkState {
 
   allocateJob(job: Job) {
     const biggestCommand = [...job.commands].sort((a, b) => b.threads - a.threads)[0]
+    if (!this.canAllocateJob(job)) {
+      const err = this.ns.sprintf(
+        "Job for '%s' Tried to allocate '%s' with %d threads but only %d available",
+        job.target,
+        biggestCommand.script.file,
+        biggestCommand.threads,
+        this.getAllocatableThreads(biggestCommand.script),
+      )
+
+      this.log.error(err)
+      throw new Error(err)
+    }
+
     this.allocateCommand(biggestCommand)
   }
 
@@ -262,11 +286,6 @@ class JobManager {
   }
 }
 
-interface PreppedTargetInfo {
-  hostname: string
-  profitPerSecond: number
-}
-
 class JobScheduler {
   ns: NS
   log: Logger
@@ -275,6 +294,7 @@ class JobScheduler {
   jobMgr: JobManager
 
   preppedTargets: Array<PreppedTargetInfo>
+  preppingTargets: Array<ServerWrapper>
 
   constructor(ns: NS, loadMgr: LoadManager, jobMgr: JobManager) {
     this.ns = ns
@@ -288,6 +308,8 @@ class JobScheduler {
       .getTargetableServers()
       .filter((s) => s.isPrepped())
       .map((s) => ({ hostname: s.hostname, profitPerSecond: s.getProfitPerSecond() }))
+
+    this.preppingTargets = []
   }
 
   recalculateCommandsForRam(
@@ -304,13 +326,14 @@ class JobScheduler {
         changed = true
 
         const newThreads = networkState.getAllocatableThreads(command.script)
+        const newRam = newThreads * command.script.ram
+
         if (newThreads === 0) {
           continue
         }
-        const newRam = newThreads * command.script.ram
 
         this.log.debug(
-          "Changed command '%s' for '%s' to %d from %d threads and %.2fGiB RAM from %.2fGiB",
+          "Changed '%s' for '%s' to %d from %d threads and %.2fGiB from %.2fGiB RAM",
           command.script.file,
           command.target.hostname,
           newThreads,
@@ -320,7 +343,9 @@ class JobScheduler {
         )
 
         command.threads = newThreads
-        command.ram = newRam % newCommands.push(command)
+        command.ram = newRam
+
+        newCommands.push(command)
       }
     }
 
@@ -348,6 +373,7 @@ class JobScheduler {
         partial: false,
         target,
         jobsDone: 0,
+        createdAt: Date.now(),
         commands: [
           hackCommand,
           getWeakenCommand(this.ns, target, hackCommand.security),
@@ -357,6 +383,12 @@ class JobScheduler {
       }
 
       if (!this.jobMgr.canSchedule(job)) {
+        this.log.debug("Can't schedule %s job for %s in job manager", job.type, job.target.hostname)
+        continue
+      }
+
+      if (!networkState.canAllocateJob(job)) {
+        this.log.debug("Can't allocate %s job for %s in virtual network state", job.type, job.target.hostname)
         continue
       }
 
@@ -369,8 +401,11 @@ class JobScheduler {
 
   planPrepJobs(networkState: VirtualNetworkState): Array<Job> {
     const targets = this.loadMgr.getTargetableServers()
+    const targetsByLowestTime = [...targets].sort((a, b) => a.getHackTime() - b.getHackTime())
+    const alreadyPreppingByLowestTime = [...this.preppingTargets].sort((a, b) => a.getHackTime() - b.getHackTime())
     const prepJobs: Array<Job> = []
-    for (const target of [...targets].sort((a, b) => a.getHackTime() - b.getHackTime())) {
+
+    for (const target of [...alreadyPreppingByLowestTime, ...targetsByLowestTime]) {
       if (
         !target.isRooted() ||
         target.isPrepped() ||
@@ -391,14 +426,26 @@ class JobScheduler {
         partial: recalc.changed,
         target,
         jobsDone: 0,
+        createdAt: Date.now(),
         commands: recalc.commands,
       }
 
-      if (job.commands.length === 0 || !this.jobMgr.canSchedulePrep(job)) {
+      if (job.commands.length === 0) {
+        this.log.debug("Can't schedule %s job for %s no commands left after recalc", job.type, job.target.hostname)
         continue
       }
 
-      this.log.debug("Target %s not prepped, creating prep job", target.hostname)
+      if (!this.jobMgr.canSchedule(job)) {
+        this.log.debug("Can't schedule %s job for %s in job manager", job.type, job.target.hostname)
+        continue
+      }
+
+      if (!networkState.canAllocateJob(job)) {
+        this.log.debug("Can't allocate %s job for %s in virtual network state", job.type, job.target.hostname)
+        continue
+      }
+
+      this.log.debug("%s not prepped, creating prep job", target.hostname)
       networkState.allocateJob(job)
       prepJobs.push(job)
     }
@@ -424,7 +471,7 @@ class JobScheduler {
       if (!this.jobMgr.canSchedulePrep(job)) {
         if (this.jobMgr.hasHwgwJobs()) {
           this.log.info(
-            "Can't schedule prep job for %s with %d Thr %.2f RAM would exceed %f load with %f",
+            "Can't schedule prep job for %s with %d Thr %.2f RAM would exceed %.2f prep load with %.2f",
             job.target.hostname,
             Math.max(...job.commands.map((c) => c.ram)),
             this.jobMgr.getUsedRamForJobs([job]),
@@ -433,12 +480,12 @@ class JobScheduler {
           )
         } else {
           this.log.info(
-            "Can't schedule prep job for %s with %d Thr %.2f RAM would exceed %f load with %f",
+            "Can't schedule prep job for %s with %d Thr %.2f RAM would exceed %.2f load with %.2f",
             job.target.hostname,
             Math.max(...job.commands.map((c) => c.ram)),
             this.jobMgr.getUsedRamForJobs([job]),
             MAX_LOAD,
-            this.jobMgr.calculateMaxLoad(this.jobMgr.getPrepJobs().concat(job)),
+            this.jobMgr.calculateMaxLoad(this.jobMgr.getJobs().concat(job)),
           )
         }
 
@@ -450,11 +497,12 @@ class JobScheduler {
         .then((j) => {
           // Might not be fully prepped if we didn't have the capacity for another prep job
           if (j.target.isPrepped()) {
+            this.preppingTargets.splice(this.preppingTargets.indexOf(j.target))
             this.preppedTargets.push({ hostname: j.target.hostname, profitPerSecond: j.target.getProfitPerSecond() })
           }
         })
         .catch((r) => this.log.warning(r))
-
+      this.preppingTargets.push(job.target)
       await this.ns.asleep(5)
     }
   }
@@ -464,11 +512,12 @@ class JobScheduler {
       const server = this.loadMgr.getserver(preppedTarget.hostname)
       if (!this.jobMgr.isJobRunning(server) && !server.isPrepped()) {
         this.log.warning(
-          `Server ${
-            server.hostname
-          } no longer prepped, removing from prepped list. Sec: ${server.getHackDifficulty()}/${
-            server.minDifficulty
-          } | Money: ${server.getMoneyAvailable()}/${server.moneyMax}`,
+          "Server %s no longer prepped, removing. Sec: %.2f/%d | Money: %d/%d",
+          server.hostname,
+          server.getHackDifficulty(),
+          server.minDifficulty,
+          Math.round(server.getMoneyAvailable()),
+          server.moneyMax,
         )
         this.preppedTargets.splice(this.preppedTargets.indexOf(preppedTarget))
       }
@@ -502,23 +551,33 @@ class JobScheduler {
   }
 
   async writeJobStatus(): Promise<void> {
-    await this.ns.write(
-      "jobs.json",
-      JSON.stringify({
-        preppedTargets: this.preppedTargets.length,
-        prepLoad: this.jobMgr.currentPrepLoad(),
-        load: this.jobMgr.currentMaxLoad(),
-        jobs: this.jobMgr.jobs,
-      }),
-      "w",
-    )
+    const serialized: SerializedDaemonStatus = {
+      preppedTargets: this.preppedTargets,
+      prepLoad: this.jobMgr.currentPrepLoad(),
+      stopping: this.ns.fileExists("finish-daemon.txt", "home"),
+      profitPerSecond: this.ns.getScriptIncome("daemon.js", "home"),
+      expPerSecond: this.ns.getScriptExpGain("daemon.js", "home"),
+      load: this.jobMgr.currentMaxLoad(),
+      jobs: this.jobMgr.jobs.map((j) => ({
+        ...j,
+        target: j.target.hostname,
+        commands: j.commands.map((c) => ({
+          ...c,
+
+          target: c.target.hostname,
+        })),
+      })),
+    }
+
+    await this.ns.write("jobs.json", JSON.stringify(serialized), "w")
   }
 }
 
-// TODO(zowie): Globally check for RAM rounding as we shouldn't do that really
 // TODO(zowie): Elegantly handle upgrading servers?
 // TODO(zowie): Figure out how to semi-accurately calculate stuff without Formulas.exe
-// TODO: Hack and setup scripts, maybe periodic script?
+// TODO(zowie): Hack and setup scripts, maybe periodic script?
+// TODO(zowie): Tests for various classes
+// TODO(zowie): Why you negative ram VirtualNetworkState
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
@@ -528,11 +587,11 @@ export async function main(ns: NS): Promise<void> {
   const jobMgr = new JobManager(ns, loadMgr)
   const jobScheduler = new JobScheduler(ns, loadMgr, jobMgr)
 
-  //const autosetupPid = ns.exec("autosetup.js", "home")
-  //ns.tail(autosetupPid)
-
-  //const autobuyPid = ns.exec("autobuy.js", "home")
-  //ns.tail(autobuyPid)
+  for (const script of ["autosetup.js", "autobuy.js", "server-status.js", "daemon-status.js"]) {
+    if (!isScriptRunning(ns, script, "home")) {
+      ns.tail(ns.exec(script, "home"))
+    }
+  }
 
   while (true) {
     await jobScheduler.schedule()
@@ -545,8 +604,9 @@ export async function main(ns: NS): Promise<void> {
   }
 
   while (jobMgr.hasJobs()) {
-    await jobScheduler.writeJobStatus()
     jobMgr.clearFinishedJobs()
+    ns.print(`Waiting for ${jobMgr.getJobs().length} to finish`)
+    await jobScheduler.writeJobStatus()
     await ns.asleep(1000)
   }
 }

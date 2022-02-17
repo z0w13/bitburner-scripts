@@ -1,6 +1,7 @@
 import { NS } from "@ns"
-import { Job } from "/daemon"
+import { SerializedDaemonStatus, SerializedJob } from "/lib/objects"
 import renderTable, { RawTableData } from "/lib/render-table"
+import { sum } from "/lib/util"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
@@ -13,38 +14,64 @@ export async function main(ns: NS): Promise<void> {
       continue
     }
 
-    const data = JSON.parse(ns.read("jobs.json.txt")) as {
-      preppedTargets: number
-      prepLoad: number
-      load: number
-      jobs: Array<Job>
-    }
-
-    const table: RawTableData = [
-      ["Target", "Job Type", "Partial", "Total Commands", "Done", "Current", "Threads", "RAM", "Time"],
-    ]
-    for (const entry of data.jobs) {
-      table.push([
-        entry.target.hostname,
-        entry.type,
-        entry.partial ? "Y" : "N",
-        entry.commands.length,
-        entry.jobsDone,
-        entry.current?.script.file ?? "",
-        entry.current?.threads ?? 0,
-        Math.round(entry.current?.ram ?? 0),
-        Math.round((entry.current?.time ?? 0) / 1000),
-      ])
-    }
-
-    table.push([
-      "Total Jobs: " + data.jobs.length,
-      "Prep Load: " + Math.round(data.prepLoad * 100),
-      "Load: " + Math.round(data.load * 100),
-      "Prepped: " + data.preppedTargets,
-    ])
-
-    ns.print(renderTable(ns, table, true, true))
+    const data = JSON.parse(ns.read("jobs.json.txt")) as SerializedDaemonStatus
+    ns.print(renderStatusTable(ns, data))
+    ns.print("")
+    ns.print(renderJobTable(ns, data.jobs))
     await ns.asleep(1000)
   }
+}
+function renderStatusTable(ns: NS, data: SerializedDaemonStatus) {
+  const preppedByProfit = [...data.preppedTargets].sort((a, b) => b.profitPerSecond - a.profitPerSecond)
+
+  const table: RawTableData = [
+    ["Load", ns.nFormat(data.load * 100, "0.00")],
+    ["Prep Load", ns.nFormat(data.prepLoad * 100, "0.00")],
+    ["Profit/s", ns.nFormat(data.profitPerSecond, "$0,0.00a")],
+    ["Exp/s", ns.nFormat(data.expPerSecond, "0,0.00")],
+    ["Prepped", data.preppedTargets.length],
+    ["Stopping", data.stopping],
+    [],
+    ["Most Profitable", preppedByProfit[0]?.hostname],
+    [],
+  ]
+
+  preppedByProfit.slice(0, 3).forEach((val, idx) => {
+    table.push([idx + ". " + val.hostname, ns.nFormat(val.profitPerSecond, "$0,0.00a")])
+  })
+
+  return renderTable(ns, table, false)
+}
+
+function renderJobTable(ns: NS, jobs: Array<SerializedJob>) {
+  const table: RawTableData = [
+    ["Target", "Job Type", "Partial", "Total Commands", "Done", "Current", "Threads", "RAM", "Job Time", "~Time Left"],
+  ]
+
+  const sortedJobs = [...jobs].sort((a, b) => {
+    const aTime = sum(a.commands.map((c) => c.time))
+    const bTime = sum(b.commands.map((c) => c.time))
+
+    return (a.createdAt + aTime) - (b.createdAt + bTime)
+  })
+
+  for (const entry of sortedJobs) {
+    const totalTime = sum(entry.commands.map((c) => c.time))
+    const timeRemaining = Math.max(0, totalTime - (Date.now() - entry.createdAt))
+
+    table.push([
+      entry.target,
+      entry.type,
+      entry.partial ? "Y" : "N",
+      entry.commands.length,
+      entry.jobsDone,
+      entry.current?.script.file ?? "",
+      entry.current?.threads ?? 0,
+      Math.round(entry.current?.ram ?? 0),
+      Math.round(totalTime / 1000) + "s",
+      Math.round(timeRemaining / 1000) + "s",
+    ])
+  }
+
+  return renderTable(ns, table)
 }

@@ -1,5 +1,14 @@
-import numeral from "numeral"
+import {NS} from "@ns"
+import { notStrictEqual } from "assert"
 
-export function ramFormat(ram: number): string {
-  return numeral(ram).format("0.00") + "GiB"
+export function sum(values: Array<number>): number {
+  return values.reduce((acc, val) => acc + val, 0)
+}
+
+export function isScriptRunning(ns: NS, file: string, host: string, args?: Array<string>) : boolean {
+  if (args) {
+    return ns.isRunning(file, host, ...args)
+  } else {
+    return ns.ps(host).filter(p => p.filename === file).length > 0
+  }
 }
