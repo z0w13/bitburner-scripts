@@ -10,11 +10,17 @@ export default class Logger {
   ns: NS
   level: LogLevel
   prefix: string
+  fmt: string
 
-  constructor(ns: NS, level: LogLevel = LogLevel.Warning, prefix = "main") {
+  constructor(ns: NS, level: LogLevel = LogLevel.Warning, prefix = "main", fmt = "%s [%s] %s: %s") {
     this.ns = ns
     this.level = level
     this.prefix = prefix
+    this.fmt = fmt
+  }
+
+  setLogLevel(newLevel: LogLevel): void {
+    this.level = newLevel
   }
 
   levelToString(level: LogLevel): string {
@@ -61,8 +67,13 @@ export default class Logger {
     }
   }
 
+  getTime(): string {
+    const now = new Date()
+    return this.ns.sprintf("%02d:%02d:%02d", now.getHours(), now.getMinutes(), now.getSeconds())
+  }
+
   log(level: LogLevel, fmt: string, ...args: Array<unknown>): void {
-    const formatString = this.ns.sprintf("%s - %s - %s", this.prefix, this.levelToString(level), fmt)
+    const formatString = this.ns.sprintf(this.fmt, this.getTime(), this.prefix, this.levelToString(level), fmt)
     this.ns.print(this.ns.vsprintf(formatString, args))
   }
 }
