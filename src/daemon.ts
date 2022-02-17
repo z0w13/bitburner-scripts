@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { MAX_LOAD, MAX_PREP_LOAD } from "/config"
+import { LOG_LEVEL, MAX_LOAD, MAX_PREP_LOAD } from "/config"
 import LoadManager from "/lib/load-manager"
 import { Command, FlagSchema, Script } from "/lib/objects"
 import getWeakenCommand from "/lib/get-weaken-command"
@@ -7,7 +7,7 @@ import getGrowCommand from "./lib/get-grow-command"
 import ServerWrapper from "/lib/server-wrapper"
 import getHackCommand from "/lib/get-hack-command"
 import waitForPids from "/lib/wait-for-pids"
-import Logger, { LogLevel } from "/lib/logger"
+import Logger from "/lib/logger"
 
 const flagSchema: FlagSchema = [["once", false]]
 
@@ -46,10 +46,12 @@ function sum(values: Array<number>): number {
 class VirtualNetworkState {
   ns: NS
   snapshot: Array<ServerSnapshot>
+  log: Logger
 
   constructor(ns: NS, snapshot: Array<ServerSnapshot>) {
     this.ns = ns
     this.snapshot = [...snapshot.map((s) => ({ ...s }))]
+    this.log = new Logger(ns, LOG_LEVEL, "VirtualNetworkState")
   }
 
   // Considering we can't run half a script on a host
@@ -68,7 +70,7 @@ class VirtualNetworkState {
   getAllocatableThreads(script: Script): number {
     const max = this.getAllocatableMaxThreads(script)
     const allocated = sum(this.snapshot.map((h) => Math.floor((h.maxRam - h.availableRam) / script.ram)))
-    //this.ns.print(`allocated ${allocated} of ${max} threads, ${max - allocated} available`)
+    //this.log.debug(`allocated ${allocated} of ${max} threads, ${max - allocated} available`)
     return max - allocated
   }
 
@@ -92,15 +94,13 @@ class VirtualNetworkState {
       server.availableRam -= serverThreads * command.script.ram
       threadsRemaining -= serverThreads
 
-      // this.ns.print(
-      //   this.ns.sprintf(
-      //     "Allocated %d threads on %s which now has %.2f RAM left, %d left to place",
-      //     serverThreads,
-      //     server.hostname,
-      //     server.availableRam,
-      //     threadsRemaining,
-      //   ),
-      // )
+      this.log.debug(
+        "Allocated %d threads on %s which now has %.2f RAM left, %d left to place",
+        serverThreads,
+        server.hostname,
+        server.availableRam,
+        threadsRemaining,
+      )
     }
   }
 
@@ -119,13 +119,18 @@ class VirtualNetworkState {
 
 class JobManager {
   ns: NS
+  log: Logger
+
   loadMgr: LoadManager
 
   jobs: Array<Job>
 
   constructor(ns: NS, loadMgr: LoadManager) {
     this.ns = ns
+    this.log = new Logger(ns, LOG_LEVEL, "JobManager")
+
     this.loadMgr = loadMgr
+
     this.jobs = []
   }
 
@@ -256,34 +261,6 @@ class JobManager {
   }
 }
 
-function recalculateCommandsForRam(
-  ns: NS,
-  commands: Array<Command>,
-  networkState: VirtualNetworkState,
-): Array<Command> {
-  const newCommands = []
-
-  for (const command of commands) {
-    if (networkState.getAllocatableThreads(command.script) >= command.threads) {
-      newCommands.push(command)
-    } else {
-      const newThreads = networkState.getAllocatableThreads(command.script)
-      const newRam = newThreads * command.script.ram
-
-      // ns.print(
-      //   `Changed command ${command.script.file} to ${newThreads} from ${command.threads} threads and ${newRam} RAM from ${command.ram}`,
-      // )
-      command.threads = newThreads
-      command.ram = newRam
-
-      newCommands.push(command)
-      break
-    }
-  }
-
-  return newCommands
-}
-
 interface PreppedTargetInfo {
   hostname: string
   profitPerSecond: number
@@ -291,21 +268,49 @@ interface PreppedTargetInfo {
 
 class JobScheduler {
   ns: NS
+  log: Logger
+
   loadMgr: LoadManager
   jobMgr: JobManager
+
   preppedTargets: Array<PreppedTargetInfo>
-  log: Logger
 
   constructor(ns: NS, loadMgr: LoadManager, jobMgr: JobManager) {
     this.ns = ns
+    this.log = new Logger(ns, LOG_LEVEL, "JobScheduler")
+
     this.loadMgr = loadMgr
     this.jobMgr = jobMgr
-    this.log = new Logger(ns, LogLevel.Info, "JobScheduler")
 
+    // Add any targets that are already prepped
     this.preppedTargets = this.loadMgr
       .getTargetableServers()
       .filter((s) => s.isPrepped())
       .map((s) => ({ hostname: s.hostname, profitPerSecond: s.getProfitPerSecond() }))
+  }
+
+  recalculateCommandsForRam(commands: Array<Command>, networkState: VirtualNetworkState): Array<Command> {
+    const newCommands = []
+
+    for (const command of commands) {
+      if (networkState.getAllocatableThreads(command.script) >= command.threads) {
+        newCommands.push(command)
+      } else {
+        const newThreads = networkState.getAllocatableThreads(command.script)
+        const newRam = newThreads * command.script.ram
+
+        this.log.debug(
+          `Changed command ${command.script.file} to ${newThreads} from ${command.threads} threads and ${newRam} RAM from ${command.ram}`,
+        )
+        command.threads = newThreads
+        command.ram = newRam
+
+        newCommands.push(command)
+        break
+      }
+    }
+
+    return newCommands
   }
 
   planHwgwJobs(networkState: VirtualNetworkState): Array<Job> {
@@ -360,8 +365,6 @@ class JobScheduler {
         continue
       }
 
-      //const availRam = hwgwJobs.length > 0 ? this.jobMgr.availablePrepRam(prepJobs) : this.jobMgr.availableRam(prepJobs)
-
       const weaken = getWeakenCommand(this.ns, target)
       const grow = getGrowCommand(this.ns, target)
 
@@ -370,7 +373,7 @@ class JobScheduler {
         done: false,
         target,
         jobsDone: 0,
-        commands: recalculateCommandsForRam(this.ns, [weaken, grow], networkState).filter((c) => c.threads > 0),
+        commands: this.recalculateCommandsForRam([weaken, grow], networkState).filter((c) => c.threads > 0),
       }
 
       if (job.commands.length === 0 || !this.jobMgr.canSchedulePrep(job)) {
