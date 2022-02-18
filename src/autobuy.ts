@@ -101,7 +101,9 @@ async function buyServers(ns: NS, nextstep = false, minRam = 8): Promise<void> {
   }
 
   const hostname = ns.purchaseServer("zserv", buyRam)
-  ns.tprintf("Bought server %s with %s RAM", hostname, ns.nFormat(buyRam * 1024 ** 3, "0.00ib"))
+  if (hostname !== "") {
+    ns.tprintf("Bought server %s with %s RAM", hostname, ns.nFormat(buyRam * 1024 ** 3, "0.00ib"))
+  }
 }
 
 function getHighestTierAffordable(ns: NS, money: number): number {
