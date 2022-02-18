@@ -49,7 +49,7 @@ function renderStatusTable(ns: NS, data: SerializedDaemonStatus) {
 
 function renderJobTable(ns: NS, jobs: Array<SerializedJob>) {
   const table: RawTableData = [
-    ["Target", "Job Type", "Partial", "Total Commands", "Done", "Current", "Threads", "RAM", "Job Time", "~Time Left"],
+    ["Target", "Sec", "$ %", "Job Type", "Partial", "Cmds", "Done", "Current", "Threads", "RAM", "Job Time", "~Time Left"],
   ]
 
   const sortedJobs = [...jobs].sort((a, b) => {
@@ -65,6 +65,8 @@ function renderJobTable(ns: NS, jobs: Array<SerializedJob>) {
 
     table.push([
       entry.target,
+      ns.sprintf("%5.2f/%5.2f", ns.getServerSecurityLevel(entry.target), ns.getServerMinSecurityLevel(entry.target)),
+      Math.round((ns.getServerMoneyAvailable(entry.target) / ns.getServerMaxMoney(entry.target)) * 100),
       entry.type,
       entry.partial ? "Y" : "N",
       entry.commands.length,
