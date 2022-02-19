@@ -1,6 +1,7 @@
 import { NS } from "@ns"
-import { SerializedDaemonStatus, SerializedJob } from "/lib/objects"
+import { JobType, SerializedDaemonStatus, SerializedJob } from "/lib/objects"
 import renderTable, { RawTableData } from "/lib/render-table"
+import ServerWrapper from "/lib/server-wrapper"
 import { sum } from "/lib/util"
 
 export async function main(ns: NS): Promise<void> {
@@ -16,8 +17,19 @@ export async function main(ns: NS): Promise<void> {
 
     const data = JSON.parse(ns.read("jobs.json.txt")) as SerializedDaemonStatus
     ns.print(renderStatusTable(ns, data))
+    ns.print(
+      renderJobTable(
+        ns,
+        data.jobs.filter((j) => j.type == JobType.HackWeakenGrowWeaken),
+      ),
+    )
     ns.print("")
-    ns.print(renderJobTable(ns, data.jobs))
+    ns.print(
+      renderJobTable(
+        ns,
+        data.jobs.filter((j) => j.type == JobType.Prep),
+      ),
+    )
     await ns.asleep(1000)
   }
 }
@@ -33,7 +45,10 @@ function renderStatusTable(ns: NS, data: SerializedDaemonStatus) {
     ["Exp/s", ns.nFormat(data.expPerSecond, "0,0.00")],
     ["Prepped", data.preppedTargets.length],
     ["Stopping", data.stopping],
-    ["Last Update", ns.sprintf("%02d:%02d:%02d", lastUpdate.getHours(), lastUpdate.getMinutes(), lastUpdate.getSeconds())],
+    [
+      "Last Update",
+      ns.sprintf("%02d:%02d:%02d", lastUpdate.getHours(), lastUpdate.getMinutes(), lastUpdate.getSeconds()),
+    ],
     ["", ns.sprintf("(%ds ago)", updatedSecondsAgo)],
     [],
     ["Most Profitable", preppedByProfit[0]?.hostname ?? ""],
@@ -49,14 +64,14 @@ function renderStatusTable(ns: NS, data: SerializedDaemonStatus) {
 
 function renderJobTable(ns: NS, jobs: Array<SerializedJob>) {
   const table: RawTableData = [
-    ["Target", "Sec", "$ %", "Job Type", "Partial", "Cmds", "Done", "Current", "Threads", "RAM", "Job Time", "~Time Left"],
+    ["Target", "Sec", "$ %", "Type", "P", "Cmds", "Current", "Thr", "RAM", "Time", "~Left", "$/s"],
   ]
 
   const sortedJobs = [...jobs].sort((a, b) => {
     const aTime = sum(a.commands.map((c) => c.time))
     const bTime = sum(b.commands.map((c) => c.time))
 
-    return (a.createdAt + aTime) - (b.createdAt + bTime)
+    return a.createdAt + aTime - (b.createdAt + bTime)
   })
 
   for (const entry of sortedJobs) {
@@ -69,13 +84,13 @@ function renderJobTable(ns: NS, jobs: Array<SerializedJob>) {
       Math.round((ns.getServerMoneyAvailable(entry.target) / ns.getServerMaxMoney(entry.target)) * 100),
       entry.type,
       entry.partial ? "Y" : "N",
-      entry.commands.length,
-      entry.jobsDone,
+      `${entry.jobsDone}/${entry.commands.length}`,
       entry.current?.script.file ?? "",
       entry.current?.threads ?? 0,
       Math.round(entry.current?.ram ?? 0),
       Math.round(totalTime / 1000) + "s",
       Math.round(timeRemaining / 1000) + "s",
+      ns.nFormat(new ServerWrapper(ns, entry.target).getProfitPerSecond(), "$0,0a") + "/s",
     ])
   }
 

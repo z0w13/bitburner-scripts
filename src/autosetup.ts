@@ -1,12 +1,14 @@
 import { NS } from "@ns"
-import scanHost from "/lib/scan-host"
+import getHosts from "/lib/get-hosts"
 import hackHost from "/lib/hack-host"
 import isHostSetup from "/lib/is-host-setup"
 import { COPY_SCRIPTS } from "/constants"
+import setupPolyfill from "/lib/ns-polyfill"
 
 export async function main(ns: NS): Promise<void> {
-  ns.disableLog("scan")
-  ns.disableLog("asleep")
+  setupPolyfill(ns)
+
+  ns.disableLog("ALL")
 
   const flags = ns.flags([
     ["interval", 1000],
@@ -15,8 +17,8 @@ export async function main(ns: NS): Promise<void> {
   ])
 
   while (true) {
-    const hosts = scanHost(ns)
-    for (const hostname in hosts) {
+    const hosts = getHosts(ns)
+    for (const hostname of hosts) {
       if (isHostSetup(ns, hostname)) {
         continue
       }
@@ -26,6 +28,7 @@ export async function main(ns: NS): Promise<void> {
       }
 
       await ns.scp(flags["scripts"], flags["host"], hostname)
+      ns.printf("Set up %s", hostname)
     }
 
     await ns.asleep(flags["interval"])

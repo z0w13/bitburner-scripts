@@ -1,7 +1,7 @@
 import { NS } from "@ns"
 import { SCRIPT_HACK } from "/constants"
 import renderTable from "/lib/render-table"
-import scanHost from "/lib/scan-host"
+import getHosts from "/lib/get-hosts"
 import ServerWrapper from "/lib/server-wrapper"
 import getThreadsAvailable from "/lib/get-threads-available"
 import { FlagSchema } from "/lib/objects"
@@ -17,27 +17,29 @@ export async function main(ns: NS): Promise<void> {
 
   const flags = ns.flags(flagSchema) as Flags
 
-  const servers = Object.keys(scanHost(ns))
+  const servers = getHosts(ns)
     .map((h) => new ServerWrapper(ns, h))
     .filter((s) => s.isRecommendedTarget().recommended || (flags.all && s.moneyMax > 0))
-    .sort((a, b) => a.hostname.localeCompare(b.hostname))
+    .sort((a, b) => a.getProfitPerSecond() - b.getProfitPerSecond())
 
   const table: Array<Array<unknown>> = [
     [
       "Name",
       "Min Sec",
       "Base Sec",
-      "Curr Sec",
-      "Curr Money",
-      "Max Money",
-      "Growth",
-      "Hack Skill",
-      "Initial Weaken Time",
+      "Sec",
+      "Curr $",
+      "Max $",
+      "Grow",
+      "Skill",
+      "I. Weak S",
+      "Thr",
+      "Hack S",
+      "I. Grow S",
       "Threads",
-      "Hack Time",
-      "Initial Grow Time",
-      "Threads",
-      "Grow Threads",
+      "Grow Thr",
+      "Prep Ratio",
+      "$/s",
     ],
   ]
 
@@ -57,6 +59,8 @@ export async function main(ns: NS): Promise<void> {
       Math.round(server.getGrowTime() / 1000),
       ns.nFormat(server.getInitialGrowThreads(), "0,0"),
       ns.nFormat(server.getGrowThreads(), "0,0"),
+      ns.nFormat((server.getWeakenTime() / server.getProfitPerSecond()) * 1000, ".0000"),
+      ns.nFormat(server.getProfitPerSecond(), "$0,0"),
     ]
 
     if (flags.all) {

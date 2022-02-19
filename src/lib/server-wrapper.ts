@@ -1,24 +1,34 @@
-import { NS, ProcessInfo } from "@ns"
-import { PERCENTAGE_TO_HACK, HACK_MIN_MONEY, TARGET_TIME_THRESHOLD, SECURITY_WIGGLE, MONEY_WIGGLE } from "/config"
+import { NS, ProcessInfo, Server } from "@ns"
+import {
+  PERCENTAGE_TO_HACK,
+  HACK_MIN_MONEY,
+  TARGET_MAX_WEAKEN_TIME,
+  SECURITY_WIGGLE,
+  MONEY_WIGGLE,
+  TARGET_MAX_PREP_WEAKEN_TIME,
+} from "/config"
 import { SCRIPT_HACK, SCRIPT_WRITE_FILE } from "/constants"
+import { calculateGrowTime, calculateHackingTime, calculateWeakenTime } from "/lib/formulas"
 import getThreadsAvailable from "/lib/get-threads-available"
+import { ServerSnapshot } from "/lib/objects"
+import { sum } from "/lib/util"
 import waitForPids from "/lib/wait-for-pids"
 
 export default class ServerWrapper {
-  ns: NS
-  hostname: string
+  private readonly ns: NS
+  readonly hostname: string
 
-  moneyMax: number
-  serverGrowth: number
-  maxRam: number
+  readonly moneyMax: number
+  readonly serverGrowth: number
+  readonly maxRam: number
 
-  minDifficulty: number
-  baseDifficulty: number
-  requiredHackingSkill: number
+  readonly minDifficulty: number
+  readonly baseDifficulty: number
+  readonly requiredHackingSkill: number
 
-  backdoor: boolean
-  root: boolean
-  purchasedByPlayer: boolean
+  private backdoor: boolean
+  private root: boolean
+  private readonly purchasedByPlayer: boolean
 
   constructor(ns: NS, hostname: string) {
     this.ns = ns
@@ -37,6 +47,23 @@ export default class ServerWrapper {
     this.root = server.hasAdminRights
     this.backdoor = server.backdoorInstalled
     this.purchasedByPlayer = server.purchasedByPlayer
+  }
+
+  getServer(): Server {
+    return this.ns.getServer(this.hostname)
+  }
+
+  /**
+   * Return a modified server object that has the values set to what they would be if prepped
+   */
+  getPreppedServer(): Server {
+    const server = this.getServer()
+    return {
+      ...server,
+
+      hackDifficulty: server.minDifficulty,
+      moneyAvailable: server.moneyMax,
+    }
   }
 
   isDraining(): boolean {
@@ -65,7 +92,7 @@ export default class ServerWrapper {
   }
 
   isBackdoored(): boolean {
-    return this.backdoor ? true : (this.backdoor = this.ns.getServer(this.hostname).backdoorInstalled)
+    return this.backdoor ? true : (this.backdoor = this.getServer().backdoorInstalled)
   }
 
   isPrepped(): boolean {
@@ -92,6 +119,17 @@ export default class ServerWrapper {
     return this.ns.getServerUsedRam(this.hostname)
   }
 
+  /**
+   * Get ram used by non command scripts, aka anything not starting with cmd-
+   */
+  getNonCommandRamUsed(): number {
+    return sum(
+      this.getProcesses()
+        .filter((p) => !p.filename.startsWith("cmd-")) // Filter out command scripts
+        .map((p) => this.ns.getScriptRam(p.filename, this.hostname) * p.threads), // Calculate ram usage of other scripts
+    )
+  }
+
   getHackDifficulty(): number {
     return this.ns.getServerSecurityLevel(this.hostname)
   }
@@ -109,11 +147,19 @@ export default class ServerWrapper {
   }
 
   getProfitPerSecond(): number {
-    if (!this.isPrepped()) {
-      return 0
-    }
+    const player = this.ns.getPlayer()
+    const server = this.ns.getServer(this.hostname)
+    server.hackDifficulty = server.minDifficulty
 
-    const totalTime = this.getWeakenTime() * 2 + this.getHackTime() + this.getGrowTime()
+    const hackSecurityIncrease = this.ns.hackAnalyzeSecurity(this.getHackThreads())
+    const growSecurityIncrease = this.ns.growthAnalyzeSecurity(this.getGrowThreads())
+
+    const totalTime =
+      calculateHackingTime(server, player) +
+      calculateWeakenTime({ ...server, hackDifficulty: server.minDifficulty + hackSecurityIncrease }, player) +
+      calculateGrowTime(server, player) +
+      calculateWeakenTime({ ...server, hackDifficulty: server.minDifficulty + growSecurityIncrease }, player)
+
     return this.moneyMax / totalTime
   }
 
@@ -172,7 +218,7 @@ export default class ServerWrapper {
   }
 
   getMaxTimeRequired(): number {
-    return Math.max(this.getHackTime(), this.getWeakenTime(), this.getGrowTime())
+    return this.getWeakenTime()
   }
 
   isRecommendedTarget(): { recommended: boolean; rejectReason: string } {
@@ -200,12 +246,12 @@ export default class ServerWrapper {
       }
     }
 
-    if (this.getMaxTimeRequired() > TARGET_TIME_THRESHOLD) {
+    if (this.getWeakenTime() > TARGET_MAX_PREP_WEAKEN_TIME) {
       return {
         recommended: false,
-        rejectReason: `Time of ${Math.round(this.getMaxTimeRequired() / 1000)} exceeds threshold of ${
-          TARGET_TIME_THRESHOLD / 1000
-        }`,
+        rejectReason: `Time of ${Math.round(this.getMaxTimeRequired() / 1000)} exceeds threshold of ${Math.round(
+          TARGET_MAX_PREP_WEAKEN_TIME / 1000,
+        )}`,
       }
     }
 
@@ -221,5 +267,41 @@ export default class ServerWrapper {
 
   isTargetable(): boolean {
     return this.moneyMax > 0
+  }
+
+  getSnapshot(): ServerSnapshot {
+    const recommended = this.isRecommendedTarget()
+    return {
+      hostname: this.hostname,
+
+      moneyAvailable: this.getMoneyAvailable(),
+      moneyMax: this.moneyMax,
+      profitPerSecond: this.getProfitPerSecond(),
+
+      serverGrowth: this.serverGrowth,
+
+      maxRam: this.maxRam,
+      usedRam: this.getRamUsed(),
+
+      minDifficulty: this.minDifficulty,
+      baseDifficulty: this.baseDifficulty,
+      hackDifficulty: this.getHackDifficulty(),
+      requiredHackingSkill: this.requiredHackingSkill,
+
+      weakenTime: this.getWeakenTime(),
+      hackTime: this.getHackTime(),
+      growTime: this.getGrowTime(),
+
+      backdoor: this.isBackdoored(),
+      root: this.isRooted(),
+      purchasedByPlayer: this.purchasedByPlayer,
+
+      prepped: this.isPrepped(),
+      draining: this.isDraining(),
+      setup: this.isSetup(),
+
+      recommended: recommended.recommended,
+      rejectReason: recommended.recommended ? "" : recommended.rejectReason,
+    }
   }
 }

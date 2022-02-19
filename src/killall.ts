@@ -1,10 +1,10 @@
 import { NS } from "@ns"
-import scanHost from "/lib/scan-host"
+import getHosts from "/lib/get-hosts"
 
 export async function main(ns: NS): Promise<void> {
-  const hosts = scanHost(ns)
+  const hosts = getHosts(ns)
   let totalKilled = 0
-  for (const host in hosts) {
+  for (const host of hosts) {
     const procs = ns.ps(host).filter((v) => v.filename !== "killall.js")
     if (procs.length === 0) {
       continue

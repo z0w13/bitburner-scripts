@@ -57,8 +57,9 @@ export interface PreppedTargetInfo {
 
 export interface SerializedDaemonStatus {
   preppedTargets: Array<PreppedTargetInfo>
-  lastUpdate: number,
+  lastUpdate: number
   prepLoad: number
+  prepOrder: Array<string>
   profitPerSecond: number
   expPerSecond: number
   load: number
@@ -67,3 +68,36 @@ export interface SerializedDaemonStatus {
 }
 
 export type FlagSchema = Array<[string, string | number | boolean | string[]]>
+
+export interface ServerSnapshot {
+  hostname: string
+
+  moneyAvailable: number
+  moneyMax: number
+  profitPerSecond: number
+
+  serverGrowth: number
+
+  maxRam: number
+  usedRam: number
+
+  minDifficulty: number
+  baseDifficulty: number
+  hackDifficulty: number
+  requiredHackingSkill: number
+
+  weakenTime: number
+  hackTime: number
+  growTime: number
+
+  backdoor: boolean
+  root: boolean
+  purchasedByPlayer: boolean
+
+  prepped: boolean
+  draining: boolean
+  setup: boolean
+
+  recommended: boolean
+  rejectReason: string
+}

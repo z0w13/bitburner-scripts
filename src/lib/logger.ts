@@ -1,4 +1,5 @@
 import { NS } from "@ns"
+import { LOG_LEVELS } from "/config"
 export enum LogLevel {
   Error = 1,
   Warning,
@@ -12,10 +13,14 @@ export default class Logger {
   prefix: string
   fmt: string
 
-  constructor(ns: NS, level: LogLevel = LogLevel.Warning, prefix = "main", fmt = "%s [%s] %s: %s") {
+  constructor(ns: NS, level: LogLevel = LogLevel.Warning, name = "main", fmt = "%s [%s] %s: %s") {
     this.ns = ns
-    this.level = level
-    this.prefix = prefix
+    if (name in LOG_LEVELS) {
+      this.level = LOG_LEVELS[name]
+    } else {
+      this.level = level
+    }
+    this.prefix = name
     this.fmt = fmt
   }
 

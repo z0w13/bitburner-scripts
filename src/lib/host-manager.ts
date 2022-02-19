@@ -1,37 +1,49 @@
 import { NS } from "@ns"
 import ServerWrapper from "/lib/server-wrapper"
-import scanHost from "/lib/scan-host"
+import getHosts from "/lib/get-hosts"
 import { Command, Script } from "/lib/objects"
+import { DEPRIORITIZE_HOME } from "/config"
 
-export default class LoadManager {
-  ns: NS
-  servers: Record<string, ServerWrapper>
+export default class HostManager {
+  private ns: NS
+  private servers: Record<string, ServerWrapper>
+  private serversLastUpdated: number
 
   constructor(ns: NS) {
     this.ns = ns
     this.servers = {}
+    this.serversLastUpdated = Date.now()
 
-    Object.keys(scanHost(this.ns)).forEach((h) => (this.servers[h] = new ServerWrapper(this.ns, h)))
+    getHosts(this.ns).forEach((h) => (this.servers[h] = new ServerWrapper(this.ns, h)))
+  }
+
+  updateServers() {
+    // Only update if server list hasn't been in 30 seconds
+    if (Date.now() - this.serversLastUpdated > 30 * 1000) {
+      getHosts(this.ns).forEach((h) => (this.servers[h] = new ServerWrapper(this.ns, h)))
+    }
   }
 
   getServers(): Array<ServerWrapper> {
+    this.updateServers()
     return Object.values(this.servers)
   }
 
   getUsableServers(): Array<ServerWrapper> {
-    return Object.values(this.servers).filter((s) => s.isSetup() && !s.isDraining())
+    return this.getServers().filter((s) => s.isSetup() && !s.isDraining())
   }
 
   getRecommendedServers(): Array<ServerWrapper> {
-    return Object.values(this.servers).filter((s) => s.isRecommendedTarget().recommended)
+    return this.getServers().filter((s) => s.isRecommendedTarget().recommended)
   }
 
-  getserver(hostname: string): ServerWrapper {
+  getServer(hostname: string): ServerWrapper {
+    this.updateServers()
     return this.servers[hostname] || (this.servers[hostname] = new ServerWrapper(this.ns, hostname))
   }
 
   getTargetableServers(): Array<ServerWrapper> {
-    return Object.values(this.servers).filter((s) => s.isTargetable())
+    return this.getServers().filter((s) => s.isTargetable())
   }
 
   getCurrentLoad(): number {
@@ -68,6 +80,10 @@ export default class LoadManager {
 
   runCommandRaw(opts: RunCommandRawOptions): Array<number> {
     const usableServers = this.getUsableServers()
+    if (DEPRIORITIZE_HOME && usableServers.findIndex((s) => s.hostname === "home") > 0) {
+      usableServers.push(...usableServers.splice(usableServers.findIndex((s) => s.hostname === "home")))
+    }
+
     const hosts: Array<{ host: string; ram: number }> = []
     const availableThreads = this.getThreadsAvailable(opts.script)
 

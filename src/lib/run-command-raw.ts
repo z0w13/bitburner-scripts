@@ -1,4 +1,5 @@
 import { NS } from "@ns"
+import { DEPRIORITIZE_HOME } from "/config"
 import getSetupHosts from "/lib/get-setup-hosts"
 import getThreadsAvailable from "/lib/get-threads-available"
 import { Script } from "/lib/objects"
@@ -12,6 +13,11 @@ interface RunCommandRawOptions {
 
 export default function runCommand(ns: NS, opts: RunCommandRawOptions): Array<number> {
   const usableHosts = getSetupHosts(ns)
+
+  if (DEPRIORITIZE_HOME && usableHosts.indexOf("home") > 0) {
+    usableHosts.push(...usableHosts.splice(usableHosts.indexOf("home")))
+  }
+
   const hosts: Array<{ host: string; ram: number }> = []
   const availableThreads = getThreadsAvailable(ns, opts.script)
 

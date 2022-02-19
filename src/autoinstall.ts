@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import scanHost from "/lib/scan-host"
+import getHosts from "/lib/get-hosts"
 import isHostSetup from "/lib/is-host-setup"
 import { COPY_SCRIPTS } from "/constants"
 
@@ -14,8 +14,8 @@ export async function main(ns: NS): Promise<void> {
   ])
 
   while (true) {
-    const hosts = scanHost(ns)
-    for (const hostname in hosts) {
+    const hosts = getHosts(ns)
+    for (const hostname of hosts) {
       if (hostname === "home") {
         continue
       }
