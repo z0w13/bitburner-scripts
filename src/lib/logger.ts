@@ -1,11 +1,6 @@
 import { NS } from "@ns"
 import { LOG_LEVELS } from "/config"
-export enum LogLevel {
-  Error = 1,
-  Warning,
-  Info,
-  Debug,
-}
+import { LogLevel } from "/lib/objects"
 
 export default class Logger {
   ns: NS
@@ -15,6 +10,7 @@ export default class Logger {
 
   constructor(ns: NS, level: LogLevel = LogLevel.Warning, name = "main", fmt = "%s [%s] %s: %s") {
     this.ns = ns
+    // Override log level if specified in LOG_LEVELS
     if (name in LOG_LEVELS) {
       this.level = LOG_LEVELS[name]
     } else {

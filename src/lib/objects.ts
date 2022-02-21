@@ -101,3 +101,10 @@ export interface ServerSnapshot {
   recommended: boolean
   rejectReason: string
 }
+
+export enum LogLevel {
+  Error = 1,
+  Warning,
+  Info,
+  Debug,
+}
