@@ -8,3 +8,6 @@ export const SCRIPT_WGWH_LOOP = "wgwh-loop.js"
 export const SCRIPT_WGWH_STATUS = "wgwh-status.js"
 export const SCRIPT_SERVER_STATUS = "server-status.js"
 export const SCRIPT_LIST_TARGETS = "list-targets.js"
+
+// from src/Constants.ts
+export const SERVER_WEAKEN_AMOUNT = 0.05

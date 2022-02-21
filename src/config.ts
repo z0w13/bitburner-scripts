@@ -1,4 +1,4 @@
-import { LogLevel } from "/lib/logger"
+import { LogLevel } from "/lib/objects"
 
 export const SERVER_PREFIX = "zserv-" // Prefix for when we buy servers
 export const DEPRIORITIZE_HOME = true // Schedule jobs on home last
@@ -14,7 +14,7 @@ export const MAX_LOAD = 0.9 // Don't exceed 90% of available power in general
 export const MAX_SIMULTANEOUS_PREP_JOBS = 10000
 
 export const SECURITY_WIGGLE = 0.05 // Allow security to be % off target security
-export const MONEY_WIGGLE = 0.05 // Allow money to be % off target money
+export const MONEY_WIGGLE = 0.1 // Allow money to be % off target money
 
 export const LOG_LEVEL = LogLevel.Info
 

@@ -21,3 +21,11 @@ export function isScriptRunning(ns: NS, file: string, host: string, args?: Array
     return ns.ps(host).filter((p) => p.filename === file).length > 0
   }
 }
+
+export function filterUndefinedFunc<T>(): (
+  value: T | undefined,
+  index: number,
+  array: (T | undefined)[],
+) => value is T {
+  return (value: T | undefined, _index: number, _array: (T | undefined)[]): value is T => value !== undefined
+}

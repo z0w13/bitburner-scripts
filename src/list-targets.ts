@@ -48,7 +48,7 @@ export async function main(ns: NS): Promise<void> {
       server.hostname,
       server.minDifficulty,
       server.baseDifficulty,
-      Math.round(server.getHackDifficulty()),
+      Math.round(server.getSecurityLevel()),
       Math.round(server.getMoneyAvailable()),
       server.moneyMax,
       server.serverGrowth,

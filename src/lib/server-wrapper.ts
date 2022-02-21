@@ -1,14 +1,7 @@
 import { NS, ProcessInfo, Server } from "@ns"
-import {
-  PERCENTAGE_TO_HACK,
-  HACK_MIN_MONEY,
-  TARGET_MAX_WEAKEN_TIME,
-  SECURITY_WIGGLE,
-  MONEY_WIGGLE,
-  TARGET_MAX_PREP_WEAKEN_TIME,
-} from "/config"
+import { PERCENTAGE_TO_HACK, HACK_MIN_MONEY, SECURITY_WIGGLE, MONEY_WIGGLE, TARGET_MAX_PREP_WEAKEN_TIME } from "/config"
 import { SCRIPT_HACK, SCRIPT_WRITE_FILE } from "/constants"
-import { calculateGrowTime, calculateHackingTime, calculateWeakenTime } from "/lib/formulas"
+import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads-formulas"
 import getThreadsAvailable from "/lib/get-threads-available"
 import { ServerSnapshot } from "/lib/objects"
 import { sum } from "/lib/util"
@@ -36,6 +29,7 @@ export default class ServerWrapper {
 
     const server = ns.getServer(hostname)
 
+    // Static values
     this.moneyMax = server.moneyMax
     this.serverGrowth = server.serverGrowth
     this.maxRam = server.maxRam
@@ -56,13 +50,16 @@ export default class ServerWrapper {
   /**
    * Return a modified server object that has the values set to what they would be if prepped
    */
-  getPreppedServer(): Server {
+  getPreppedServer(overrides: Partial<Server> = {}): Server {
     const server = this.getServer()
+
     return {
       ...server,
 
       hackDifficulty: server.minDifficulty,
       moneyAvailable: server.moneyMax,
+
+      ...overrides,
     }
   }
 
@@ -103,6 +100,10 @@ export default class ServerWrapper {
     return this.ns.fileExists(SCRIPT_HACK) && this.isRooted()
   }
 
+  isTargetable(): boolean {
+    return this.moneyMax > 0
+  }
+
   hasScript(filename: string): boolean {
     return this.ns.fileExists(filename, this.hostname)
   }
@@ -112,7 +113,7 @@ export default class ServerWrapper {
   }
 
   hasMinSecurity(): boolean {
-    return this.getHackDifficulty() <= this.minDifficulty * (1 + SECURITY_WIGGLE)
+    return this.getSecurityLevel() <= this.minDifficulty * (1 + SECURITY_WIGGLE)
   }
 
   getRamUsed(): number {
@@ -130,41 +131,83 @@ export default class ServerWrapper {
     )
   }
 
-  getHackDifficulty(): number {
+  getMoneyAvailable(): number {
+    return this.ns.getServerMoneyAvailable(this.hostname)
+  }
+
+  getProcesses(): Array<ProcessInfo> {
+    return this.ns.ps(this.hostname)
+  }
+
+  getSecurityLevel(): number {
     return this.ns.getServerSecurityLevel(this.hostname)
-  }
-
-  getInitialWeakenThreads(): number {
-    return Math.ceil(this.baseDifficulty / this.ns.weakenAnalyze(1, 1))
-  }
-
-  getWeakenThreads(additionalDiff = 0): number {
-    return Math.ceil((this.getHackDifficulty() - this.minDifficulty + additionalDiff) / this.ns.weakenAnalyze(1, 1))
-  }
-
-  getWeakenTime(): number {
-    return this.ns.getWeakenTime(this.hostname)
   }
 
   getProfitPerSecond(): number {
     const player = this.ns.getPlayer()
-    const server = this.ns.getServer(this.hostname)
-    server.hackDifficulty = server.minDifficulty
-
+    const server = this.getPreppedServer()
     const hackSecurityIncrease = this.ns.hackAnalyzeSecurity(this.getHackThreads())
     const growSecurityIncrease = this.ns.growthAnalyzeSecurity(this.getGrowThreads())
 
     const totalTime =
-      calculateHackingTime(server, player) +
-      calculateWeakenTime({ ...server, hackDifficulty: server.minDifficulty + hackSecurityIncrease }, player) +
-      calculateGrowTime(server, player) +
-      calculateWeakenTime({ ...server, hackDifficulty: server.minDifficulty + growSecurityIncrease }, player)
+      this.getHackTime() +
+      this.ns.formulas.hacking.weakenTime(
+        { ...server, hackDifficulty: server.minDifficulty + hackSecurityIncrease },
+        player,
+      ) +
+      this.getGrowTime() +
+      this.ns.formulas.hacking.weakenTime(
+        { ...server, hackDifficulty: server.minDifficulty + growSecurityIncrease },
+        player,
+      )
 
     return this.moneyMax / totalTime
   }
 
-  getGrowTime(): number {
-    return this.ns.getGrowTime(this.hostname)
+  //////////////////////////////////////////////
+  //                TIME STUFF                //
+  //////////////////////////////////////////////
+
+  getWeakenTime(prepped = true, additionalSec = 0): number {
+    const server = prepped ? this.getPreppedServer() : this.getServer()
+    const player = this.ns.getPlayer()
+
+    return this.ns.formulas.hacking.weakenTime(
+      { ...server, hackDifficulty: server.hackDifficulty + additionalSec },
+      player,
+    )
+  }
+
+  getGrowTime(prepped = true): number {
+    const server = prepped ? this.getPreppedServer() : this.getServer()
+    const player = this.ns.getPlayer()
+
+    return this.ns.formulas.hacking.growTime(server, player)
+  }
+
+  getHackTime(prepped = true): number {
+    const server = prepped ? this.getPreppedServer() : this.getServer()
+    const player = this.ns.getPlayer()
+
+    return this.ns.formulas.hacking.hackTime(server, player)
+  }
+
+  getMaxTimeRequired(prepped = true): number {
+    return this.getWeakenTime(prepped)
+  }
+
+  //////////////////////////////////////////////
+  //////////////// THREAD STUFF ////////////////
+  //////////////////////////////////////////////
+
+  getInitialWeakenThreads(): number {
+    return this.getWeakenThreads(false)
+  }
+
+  getWeakenThreads(prepped = true, additionalSec = 0): number {
+    const server = prepped ? this.getPreppedServer() : this.getServer()
+
+    return getWeakenThreads(server, additionalSec)
   }
 
   getInitialGrowThreads(): number {
@@ -172,36 +215,25 @@ export default class ServerWrapper {
       return 0
     }
 
-    if (this.ns.getServerMoneyAvailable(this.hostname) === this.moneyMax) {
-      return 0
-    }
-    return Math.ceil(
-      this.ns.growthAnalyze(this.hostname, this.moneyMax / this.ns.getServerMoneyAvailable(this.hostname)),
-    )
-  }
-
-  getGrowThreads(initialMoney?: number): number {
-    if (this.moneyMax === 0) {
+    if (this.getMoneyAvailable() === this.moneyMax) {
       return 0
     }
 
-    if (initialMoney === undefined) {
-      initialMoney = this.moneyMax * (1 - PERCENTAGE_TO_HACK)
-    }
-
-    return Math.ceil(this.ns.growthAnalyze(this.hostname, this.moneyMax / initialMoney))
+    return this.getGrowThreads(false)
   }
 
-  getMoneyAvailable(): number {
-    return this.ns.getServerMoneyAvailable(this.hostname)
+  getGrowThreads(prepped = true): number {
+    const server = prepped ? this.getPreppedServer() : this.getServer()
+    const player = this.ns.getPlayer()
+
+    return getGrowThreads(this.ns, server, player)
   }
 
-  getHackTime(): number {
-    return this.ns.getHackTime(this.hostname)
-  }
+  getHackThreads(prepped = true): number {
+    const server = prepped ? this.getPreppedServer() : this.getServer()
+    const player = this.ns.getPlayer()
 
-  getHackThreads(): number {
-    return Math.floor(this.ns.hackAnalyzeThreads(this.hostname, this.moneyMax * PERCENTAGE_TO_HACK))
+    return getHackThreads(this.ns, server, player, PERCENTAGE_TO_HACK)
   }
 
   getMaxThreadsRequired(): number {
@@ -211,14 +243,6 @@ export default class ServerWrapper {
       this.getInitialWeakenThreads(),
       this.getGrowThreads(),
     )
-  }
-
-  getProcesses(): Array<ProcessInfo> {
-    return this.ns.ps(this.hostname)
-  }
-
-  getMaxTimeRequired(): number {
-    return this.getWeakenTime()
   }
 
   isRecommendedTarget(): { recommended: boolean; rejectReason: string } {
@@ -246,10 +270,10 @@ export default class ServerWrapper {
       }
     }
 
-    if (this.getWeakenTime() > TARGET_MAX_PREP_WEAKEN_TIME) {
+    if (this.getMaxTimeRequired(false) > TARGET_MAX_PREP_WEAKEN_TIME) {
       return {
         recommended: false,
-        rejectReason: `Time of ${Math.round(this.getMaxTimeRequired() / 1000)} exceeds threshold of ${Math.round(
+        rejectReason: `Time of ${Math.round(this.getMaxTimeRequired(false) / 1000)} exceeds threshold of ${Math.round(
           TARGET_MAX_PREP_WEAKEN_TIME / 1000,
         )}`,
       }
@@ -263,10 +287,6 @@ export default class ServerWrapper {
     }
 
     return { recommended: true, rejectReason: "" }
-  }
-
-  isTargetable(): boolean {
-    return this.moneyMax > 0
   }
 
   getSnapshot(): ServerSnapshot {
@@ -285,7 +305,7 @@ export default class ServerWrapper {
 
       minDifficulty: this.minDifficulty,
       baseDifficulty: this.baseDifficulty,
-      hackDifficulty: this.getHackDifficulty(),
+      hackDifficulty: this.getSecurityLevel(),
       requiredHackingSkill: this.requiredHackingSkill,
 
       weakenTime: this.getWeakenTime(),

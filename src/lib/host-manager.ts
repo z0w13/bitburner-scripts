@@ -20,7 +20,10 @@ export default class HostManager {
   updateServers() {
     // Only update if server list hasn't been in 30 seconds
     if (Date.now() - this.serversLastUpdated > 30 * 1000) {
+      // Update hosts with new data
       getHosts(this.ns).forEach((h) => (this.servers[h] = new ServerWrapper(this.ns, h)))
+      // Remove deleted hosts
+      Object.keys(this.servers).forEach((h) => this.ns.serverExists(h) || delete this.servers[h])
     }
   }
 
@@ -37,8 +40,16 @@ export default class HostManager {
     return this.getServers().filter((s) => s.isRecommendedTarget().recommended)
   }
 
-  getServer(hostname: string): ServerWrapper {
+  hasServer(hostname: string): boolean {
+    return hostname in this.servers || this.ns.serverExists(hostname)
+  }
+
+  getServer(hostname: string): ServerWrapper | undefined {
     this.updateServers()
+    if (!this.ns.serverExists(hostname)) {
+      return undefined
+    }
+
     return this.servers[hostname] || (this.servers[hostname] = new ServerWrapper(this.ns, hostname))
   }
 
@@ -150,7 +161,7 @@ export default class HostManager {
       script: cmd.script,
       threads: cmd.threads,
       fill: opts.fill ?? false,
-      args: ["--target", cmd.target.hostname, "--threads", "__HOST_THREADS__", ...opts.args],
+      args: ["--target", cmd.target, ...opts.args],
     })
   }
 }

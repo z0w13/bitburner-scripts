@@ -15,6 +15,6 @@ export default function runCommand(ns: NS, cmd: Command, opts: RunCommandOptions
     script: cmd.script,
     threads: cmd.threads,
     fill: opts.fill ?? false,
-    args: ["--target", cmd.target.hostname, "--threads", "__HOST_THREADS__", ...opts.args],
+    args: ["--target", cmd.target, "--threads", "__HOST_THREADS__", ...opts.args],
   })
 }

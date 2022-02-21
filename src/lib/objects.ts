@@ -1,3 +1,4 @@
+import { BitNodeMultipliers } from "@ns"
 import ServerWrapper from "/lib/server-wrapper"
 
 export interface Script {
@@ -6,7 +7,7 @@ export interface Script {
 }
 
 export interface Command {
-  target: ServerWrapper
+  target: string
   threads: number
   ram: number
   time: number
@@ -23,6 +24,13 @@ interface SerializedCommand {
   script: Script
 }
 
+export enum CantScheduleReason {
+  AlreadyRunning = "AlreadyRunning",
+  ExceedsLoad = "ExceedsLoad",
+  ExceedsPrepLoad = "ExceedsPrepLoad",
+  AtMaxPrepJobs = "AtMaxPrepJobs",
+}
+
 export enum JobType {
   Prep = "prep",
   HackWeakenGrowWeaken = "hwgw",
@@ -31,6 +39,8 @@ export enum JobType {
 export interface Job {
   type: JobType
   target: ServerWrapper
+  snapshot?: ServerSnapshot
+  reason?: CantScheduleReason
   commands: Array<Command>
   current?: Command
   jobsDone: number

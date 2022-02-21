@@ -1,9 +1,7 @@
 import { NS } from "@ns"
 import { LOG_LEVEL, MAX_LOAD, MAX_PREP_LOAD } from "/config"
 import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
-import getGrowthCommand from "/lib/get-grow-command"
-import getHackCommand from "/lib/get-hack-command"
-import getWeakenCommand from "/lib/get-weaken-command"
+import { getGrowCommand, getHackCommand, getWeakenCommand } from "/lib/commands-formulas"
 import HostManager from "/lib/host-manager"
 import Logger from "/lib/logger"
 import { Command, Job, JobType } from "/lib/objects"
@@ -48,16 +46,23 @@ export default class JobManager {
   }
 
   recalculateCommand(job: Job, cmd: Command): Command {
+    // Only recalculate HWGW tbh
+    if (job.type === JobType.Prep) {
+      return cmd
+    }
+
+    const player = this.ns.getPlayer()
+
     let newCmd: Command
     switch (cmd.script.file) {
       case SCRIPT_GROW:
-        newCmd = getGrowthCommand(this.ns, cmd.target)
+        newCmd = getGrowCommand(this.ns, this.ns.getServer(cmd.target), player)
         break
       case SCRIPT_WEAKEN:
-        newCmd = getWeakenCommand(this.ns, cmd.target)
+        newCmd = getWeakenCommand(this.ns, this.ns.getServer(cmd.target), player)
         break
       case SCRIPT_HACK:
-        newCmd = getHackCommand(this.ns, cmd.target)
+        newCmd = getHackCommand(this.ns, this.ns.getServer(cmd.target), player)
         break
       default:
         newCmd = cmd
@@ -189,7 +194,11 @@ export default class JobManager {
     return this.hostMgr.getTotalRam() * (MAX_PREP_LOAD - this.currentPrepLoad()) - this.getUsedRamForJobs(prepJobs)
   }
 
-  hasJobRunning(target: ServerWrapper): boolean {
+  hasJobRunning(target: string | ServerWrapper): boolean {
+    if (typeof target === "string") {
+      return this.serversWithJobs.has(target)
+    }
+
     return this.serversWithJobs.has(target.hostname)
   }
 

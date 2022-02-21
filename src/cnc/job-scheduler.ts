@@ -1,23 +1,22 @@
-import { sum } from "/lib/util"
+import { filterUndefinedFunc, sum } from "/lib/util"
 import JobManager from "/cnc/job-manager"
 import {
   LOG_LEVEL,
   MAX_LOAD,
   MAX_PREP_LOAD,
   MAX_SIMULTANEOUS_PREP_JOBS,
+  PERCENTAGE_TO_HACK,
   TARGET_MAX_PREP_WEAKEN_TIME,
   TARGET_MAX_WEAKEN_TIME,
 } from "/config"
-import getGrowCommand from "/lib/get-grow-command"
-import getHackCommand from "/lib/get-hack-command"
-import getWeakenCommand from "/lib/get-weaken-command"
+import { getGrowCommand, getHackCommand, getWeakenCommand } from "/lib/commands-formulas"
 import HostManager from "/lib/host-manager"
 import Logger from "/lib/logger"
-import { Command, Job, JobType, PreppedTargetInfo, SerializedDaemonStatus } from "/lib/objects"
+import { CantScheduleReason, Command, Job, JobType, PreppedTargetInfo, SerializedDaemonStatus } from "/lib/objects"
 import ServerWrapper from "/lib/server-wrapper"
 import { sortFunc } from "/lib/util"
 import VirtualNetworkState from "/lib/virtual-network-state"
-import ServerBuyer from "/lib/buy-servers"
+import ServerBuyer from "/lib/server-buyer"
 
 // TODO(zowie): Move draining stuff to JobManager
 export default class JobScheduler {
@@ -29,7 +28,7 @@ export default class JobScheduler {
   private readonly serverBuyer: ServerBuyer
 
   private readonly preppedTargets: Record<string, PreppedTargetInfo>
-  private readonly preppingTargets: Array<ServerWrapper>
+  private readonly preppingTargets: Record<string, ServerWrapper>
 
   private draining: boolean
 
@@ -43,25 +42,37 @@ export default class JobScheduler {
 
     // Add any targets that are already prepped
     this.preppedTargets = {}
-    this.preppingTargets = []
+    this.preppingTargets = {}
     this.hostMgr
       .getTargetableServers()
       .filter((s) => s.isPrepped() && s.getWeakenTime() <= TARGET_MAX_WEAKEN_TIME)
-      .forEach((s) => this.addPreppedTarget(s.hostname))
+      .forEach((s) => this.addPreppedTarget(s))
 
     this.draining = false
   }
 
-  addPreppedTarget(hostname: string) {
-    if ("hostname" in this.preppedTargets) {
+  addPreppingTarget(server: ServerWrapper) {
+    if (server.hostname in this.preppingTargets) {
       return
     }
 
-    this.preppedTargets[hostname] = { hostname, profitPerSecond: this.hostMgr.getServer(hostname).getProfitPerSecond() }
+    this.preppingTargets[server.hostname] = server
+  }
+
+  addPreppedTarget(server: ServerWrapper) {
+    if (server.hostname in this.preppedTargets) {
+      return
+    }
+
+    this.preppedTargets[server.hostname] = { hostname: server.hostname, profitPerSecond: server.getProfitPerSecond() }
   }
 
   getPreppedTargets(): Array<PreppedTargetInfo> {
     return Object.values(this.preppedTargets)
+  }
+
+  getPreppingTargets(): Array<ServerWrapper> {
+    return Object.values(this.preppingTargets)
   }
 
   drain(): void {
@@ -98,7 +109,7 @@ export default class JobScheduler {
         this.log.debug(
           "Changed '%s' for '%s' to %d from %d threads and %.2fGiB from %.2fGiB RAM",
           command.script.file,
-          command.target.hostname,
+          command.target,
           newThreads,
           command.threads,
           newRam,
@@ -120,28 +131,47 @@ export default class JobScheduler {
     const targetsOrderedForMoney = this.getPreppedTargets()
       .sort((a, b) => b.profitPerSecond - a.profitPerSecond)
       .map((t) => this.hostMgr.getServer(t.hostname))
+      .filter<ServerWrapper>(filterUndefinedFunc())
 
     return targetsOrderedForMoney.find((target) => {
-      const hackCommand = getHackCommand(this.ns, target)
-      const growCommand = getGrowCommand(this.ns, target)
-
-      const job = {
-        type: JobType.HackWeakenGrowWeaken,
-        done: false,
-        partial: false,
-        target,
-        jobsDone: 0,
-        createdAt: Date.now(),
-        commands: [
-          hackCommand,
-          getWeakenCommand(this.ns, target, hackCommand.security),
-          growCommand,
-          getWeakenCommand(this.ns, target, growCommand.security),
-        ],
-      }
-
+      const job = this.createHwgwJob(target)
       return emptyNetworkState.canAllocateJob(job) && !networkState.canAllocateJob(job)
     })
+  }
+
+  createHwgwJob(target: ServerWrapper): Job {
+    const player = this.ns.getPlayer()
+
+    const hackCommand = getHackCommand(this.ns, target.getPreppedServer(), player)
+    const growCommand = getGrowCommand(
+      this.ns,
+      target.getPreppedServer({ moneyAvailable: target.moneyMax * (1 - PERCENTAGE_TO_HACK) }),
+      player,
+    )
+
+    return {
+      type: JobType.HackWeakenGrowWeaken,
+      done: false,
+      partial: false,
+      target,
+      snapshot: target.getSnapshot(),
+      jobsDone: 0,
+      createdAt: Date.now(),
+      commands: [
+        hackCommand,
+        getWeakenCommand(
+          this.ns,
+          target.getPreppedServer({ hackDifficulty: target.minDifficulty + hackCommand.security }),
+          player,
+        ),
+        growCommand,
+        getWeakenCommand(
+          this.ns,
+          target.getPreppedServer({ hackDifficulty: target.minDifficulty + growCommand.security }),
+          player,
+        ),
+      ],
+    }
   }
 
   planHwgwJobs(networkState: VirtualNetworkState): Array<Job> {
@@ -152,27 +182,11 @@ export default class JobScheduler {
 
     this.log.debug("Planning targets")
     for (const target of targetsOrderedForMoney) {
-      if (!target.isPrepped() || this.jobMgr.hasJobRunning(target)) {
+      if (!target || !target.isPrepped() || this.jobMgr.hasJobRunning(target)) {
         continue
       }
 
-      const hackCommand = getHackCommand(this.ns, target)
-      const growCommand = getGrowCommand(this.ns, target)
-
-      const job = {
-        type: JobType.HackWeakenGrowWeaken,
-        done: false,
-        partial: false,
-        target,
-        jobsDone: 0,
-        createdAt: Date.now(),
-        commands: [
-          hackCommand,
-          getWeakenCommand(this.ns, target, hackCommand.security),
-          growCommand,
-          getWeakenCommand(this.ns, target, growCommand.security),
-        ],
-      }
+      const job = this.createHwgwJob(target)
 
       if (!this.jobMgr.canSchedule(job)) {
         this.log.debug("Can't schedule %s job for %s in job manager", job.type, job.target.hostname)
@@ -188,6 +202,7 @@ export default class JobScheduler {
       networkState.allocateJob(job)
       hwgwJobs.push(job)
     }
+
     return hwgwJobs
   }
 
@@ -199,7 +214,7 @@ export default class JobScheduler {
     const targetsByProfit = [...targets].sort(sortFunc((v) => v.getProfitPerSecond() / v.getWeakenTime(), true))
 
     // Also sort targets we're prepping by profit
-    const alreadyPreppingByProfit = [...this.preppingTargets].sort(sortFunc((v) => v.getProfitPerSecond(), true))
+    const alreadyPreppingByProfit = this.getPreppingTargets().sort(sortFunc((v) => v.getProfitPerSecond(), true))
 
     // Prioritize targets we're already prepping over others
     const targetsByPrep = [...alreadyPreppingByProfit, ...targetsByProfit]
@@ -216,6 +231,7 @@ export default class JobScheduler {
 
   planPrepJobs(networkState: VirtualNetworkState): Array<Job> {
     const targets = this.getPrepOrder()
+    const player = this.ns.getPlayer()
     const prepJobs: Array<Job> = []
 
     for (const target of targets) {
@@ -230,11 +246,11 @@ export default class JobScheduler {
 
       const commands = []
       if (!target.hasMinSecurity()) {
-        commands.push(getWeakenCommand(this.ns, target))
+        commands.push(getWeakenCommand(this.ns, target.getServer(), player))
       }
 
       if (!target.hasMaxMoney()) {
-        commands.push(getGrowCommand(this.ns, target))
+        commands.push(getGrowCommand(this.ns, target.getServer(), player))
       }
 
       const recalc = this.recalculateCommandsForRam(commands, networkState)
@@ -244,6 +260,7 @@ export default class JobScheduler {
         done: false,
         partial: recalc.changed,
         target,
+        //snapshot: target.getSnapshot(),
         jobsDone: 0,
         createdAt: Date.now(),
         commands: recalc.commands,
@@ -276,12 +293,13 @@ export default class JobScheduler {
     this.log.info("Scheduling %d hwgw jobs", jobs.length)
     for (const job of jobs) {
       if (!this.jobMgr.canSchedule(job)) {
+        job.reason = CantScheduleReason.ExceedsLoad
         this.log.info("Can't schedule hwgw job for %s", job.target.hostname)
-        await this.serverBuyer.buy()
         continue
       }
 
       if (this.jobMgr.hasJobRunning(job.target)) {
+        job.reason = CantScheduleReason.AlreadyRunning
         this.log.debug("Can't schedule hwgw job for %s as it already has a job running", job.target.hostname)
         continue
       }
@@ -294,13 +312,17 @@ export default class JobScheduler {
   async schedulePrepJobs(jobs: Array<Job>): Promise<void> {
     this.log.info("Scheduling %d prep jobs", jobs.length)
     const activePrepJobs = this.jobMgr.getPrepJobs().length
-    if (activePrepJobs >= MAX_SIMULTANEOUS_PREP_JOBS) {
-      this.log.debug("Ät max prep jobs of %d not scheduling any more", MAX_SIMULTANEOUS_PREP_JOBS)
-    }
 
     for (const job of jobs.slice(0, MAX_SIMULTANEOUS_PREP_JOBS - activePrepJobs)) {
+      if (activePrepJobs >= MAX_SIMULTANEOUS_PREP_JOBS) {
+        this.log.debug("Ät max prep jobs of %d not scheduling any more", MAX_SIMULTANEOUS_PREP_JOBS)
+        job.reason = CantScheduleReason.AtMaxPrepJobs
+        continue
+      }
+
       if (!this.jobMgr.canSchedulePrep(job)) {
         if (this.jobMgr.hasHwgwJobs()) {
+          job.reason = CantScheduleReason.ExceedsPrepLoad
           this.log.debug(
             "Can't schedule prep job for %s with %d Thr %.2f RAM would exceed %.2f prep load with %.2f",
             job.target.hostname,
@@ -310,6 +332,7 @@ export default class JobScheduler {
             this.jobMgr.calculatePrepLoad(this.jobMgr.getPrepJobs().concat(job)),
           )
         } else {
+          job.reason = CantScheduleReason.ExceedsPrepLoad
           this.log.debug(
             "Can't schedule prep job for %s with %d Thr %.2f RAM would exceed %.2f load with %.2f",
             job.target.hostname,
@@ -320,11 +343,11 @@ export default class JobScheduler {
           )
         }
 
-        await this.serverBuyer.buy()
         continue
       }
 
       if (this.jobMgr.hasJobRunning(job.target)) {
+        job.reason = CantScheduleReason.AlreadyRunning
         this.log.debug("Can't schedule prep job for %s as it already has a job running", job.target.hostname)
         continue
       }
@@ -334,12 +357,12 @@ export default class JobScheduler {
         .then((j) => {
           // Might not be fully prepped if we didn't have the capacity for another prep job
           if (j.target.isPrepped()) {
-            this.preppingTargets.splice(this.preppingTargets.indexOf(j.target))
-            this.addPreppedTarget(j.target.hostname)
+            delete this.preppingTargets[j.target.hostname]
+            this.addPreppedTarget(j.target)
           }
         })
         .catch((r) => this.log.warning(r))
-      this.preppingTargets.push(job.target)
+      this.addPreppingTarget(job.target)
       await this.ns.asleep(5)
     }
   }
@@ -347,11 +370,17 @@ export default class JobScheduler {
   removeUnpreppedTargets(): void {
     for (const preppedTarget of this.getPreppedTargets()) {
       const server = this.hostMgr.getServer(preppedTarget.hostname)
+      if (!server) {
+        this.log.info("Server %s no longer exists, removing", preppedTarget.hostname)
+        delete this.preppedTargets[preppedTarget.hostname]
+        continue
+      }
+
       if (!this.jobMgr.hasJobRunning(server) && !server.isPrepped()) {
         this.log.warning(
           "Server %s no longer prepped, removing. Sec: %.2f/%d | Money: %d/%d",
           server.hostname,
-          server.getHackDifficulty(),
+          server.getSecurityLevel(),
           server.minDifficulty,
           Math.round(server.getMoneyAvailable()),
           server.moneyMax,
@@ -362,7 +391,11 @@ export default class JobScheduler {
     }
   }
 
-  async schedule(): Promise<void> {
+  canSchedule(): boolean {
+    return !this.jobMgr.atMaxLoad() && !this.draining
+  }
+
+  async schedule(): Promise<Array<Job>> {
     const networkState = VirtualNetworkState.fromServers(this.ns, this.hostMgr.getUsableServers())
 
     this.log.debug("Clearing finished jobs")
@@ -375,7 +408,7 @@ export default class JobScheduler {
     this.updateDrainingStatus()
 
     // We're at our maximum (theoretical) load, or waiting for jobs to drain sleep
-    if (!this.jobMgr.atMaxLoad() && !this.draining) {
+    if (this.canSchedule()) {
       const hwgwJobs = this.planHwgwJobs(networkState)
       const prepJobs = this.planPrepJobs(networkState)
 
@@ -383,7 +416,7 @@ export default class JobScheduler {
         await this.scheduleHwgwJobs(hwgwJobs)
       }
 
-      if (prepJobs.length > 0 && this.jobMgr.getPrepJobs().length < MAX_SIMULTANEOUS_PREP_JOBS) {
+      if (prepJobs.length > 0) {
         await this.schedulePrepJobs(prepJobs)
       }
 
@@ -398,9 +431,13 @@ export default class JobScheduler {
           this.ns.nFormat(currentProfitPerSecond, "$0,0.00a"),
         )
       }
+
+      await this.writeJobStatus()
+      return [...hwgwJobs, ...prepJobs]
     }
 
     await this.writeJobStatus()
+    return []
   }
 
   async writeJobStatus(): Promise<void> {
@@ -419,7 +456,7 @@ export default class JobScheduler {
         commands: j.commands.map((c) => ({
           ...c,
 
-          target: c.target.hostname,
+          target: c.target,
         })),
       })),
     }

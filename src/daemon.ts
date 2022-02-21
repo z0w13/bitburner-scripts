@@ -2,11 +2,12 @@ import setupPolyfill from "/lib/ns-polyfill"
 import { NS } from "@ns"
 import { FlagSchema } from "/lib/objects"
 import { isScriptRunning } from "/lib/util"
-import { LOAD_BUY_THRESHOLD } from "/config"
 import HostManager from "/lib/host-manager"
 import JobManager from "/cnc/job-manager"
 import JobScheduler from "/cnc/job-scheduler"
-import ServerBuyer from "/lib/buy-servers"
+import ServerBuyer from "./lib/server-buyer"
+import { LOAD_BUY_THRESHOLD } from "/config"
+import waitForPids from "/lib/wait-for-pids"
 
 const flagSchema: FlagSchema = [["once", false]]
 
