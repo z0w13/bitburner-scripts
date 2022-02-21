@@ -3,6 +3,7 @@ import { PERCENTAGE_TO_HACK } from "/config"
 import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
 import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads"
 import { Command } from "/lib/objects"
+import renderTable from "/lib/render-table"
 
 export function getWeakenCommand(ns: NS, target: string, additionalSec = 0): Command {
   const weakenThreads = getWeakenThreads(ns, target, additionalSec)
@@ -22,6 +23,8 @@ export function getGrowCommand(ns: NS, target: string): Command {
   const threads = getGrowThreads(ns, target)
   const time = ns.getGrowTime(target)
   const sec = ns.growthAnalyzeSecurity(threads)
+
+  ns.print("Grow Threads: ", threads)
 
   return getCommand(ns, target, SCRIPT_GROW, threads, time, sec)
 }
@@ -47,4 +50,17 @@ export function getCommand(
     time: time,
     security: security,
   }
+}
+
+export function printCommand(ns: NS, command: Command) {
+  const renderCmd = {
+    ...command,
+
+    script: command.script.file,
+    threads: ns.nFormat(command.threads, "0,0").replace(",", " "),
+    time: ns.nFormat(Math.round(command.time / 1000), "0,0").replace(",", " ") + "s",
+    ram: ns.nFormat(command.ram, "0,0.00").replace(",", " ") + "GiB",
+    security: ns.nFormat(command.security, "0,0.00").replace(",", " "),
+  }
+  ns.print(renderTable(ns, Object.entries(renderCmd), false))
 }

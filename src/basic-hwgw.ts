@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { getHackCommand, getGrowCommand, getWeakenCommand } from "/lib/commands-basic"
+import { getHackCommand, getGrowCommand, getWeakenCommand, printCommand } from "/lib/commands-basic"
 import { FlagSchema } from "/lib/objects"
 import { MONEY_WIGGLE, SECURITY_WIGGLE } from "/config"
 import waitForPids from "/lib/wait-for-pids"
@@ -15,6 +15,10 @@ interface Flags {
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")
   ns.disableLog("scan")
+  ns.disableLog("getServerMoneyAvailable")
+  ns.disableLog("getServerMaxMoney")
+  ns.disableLog("getServerSecurityLevel")
+  ns.disableLog("getServerMinSecurityLevel")
 
   const flags = ns.flags(flagSchema) as Flags
 
@@ -24,18 +28,28 @@ export async function main(ns: NS): Promise<void> {
         ns.getServerSecurityLevel(flags.target) >
         ns.getServerMinSecurityLevel(flags.target) * (1 + SECURITY_WIGGLE)
       ) {
-        await waitForPids(ns, runCommand(ns, getWeakenCommand(ns, flags.target), { fill: true }))
+        const command = getWeakenCommand(ns, flags.target)
+        printCommand(ns, command)
+        await waitForPids(ns, runCommand(ns, command, { fill: true }))
       }
-      await waitForPids(ns, runCommand(ns, getGrowCommand(ns, flags.target), { fill: true }))
+
+      const command = getGrowCommand(ns, flags.target)
+      printCommand(ns, command)
+      await waitForPids(ns, runCommand(ns, command, { fill: true }))
     }
 
     while (
       ns.getServerSecurityLevel(flags.target) >
       ns.getServerMinSecurityLevel(flags.target) * (1 + SECURITY_WIGGLE)
     ) {
-      await waitForPids(ns, runCommand(ns, getWeakenCommand(ns, flags.target), { fill: true }))
+      const command = getWeakenCommand(ns, flags.target)
+      printCommand(ns, command)
+      await waitForPids(ns, runCommand(ns, command, { fill: true }))
     }
-    await waitForPids(ns, runCommand(ns, getHackCommand(ns, flags.target), { fill: true }))
+
+    const command = getHackCommand(ns, flags.target)
+    printCommand(ns, command)
+    await waitForPids(ns, runCommand(ns, command, { fill: true }))
 
     await ns.asleep(1)
   }
