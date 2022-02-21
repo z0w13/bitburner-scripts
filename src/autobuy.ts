@@ -1,6 +1,6 @@
 import { NS } from "@ns"
 import setupPolyfill from "/lib/ns-polyfill"
-import ServerBuyer from "/lib/buy-servers"
+import ServerBuyer from "/lib/server-buyer"
 
 export async function main(ns: NS): Promise<void> {
   setupPolyfill(ns)

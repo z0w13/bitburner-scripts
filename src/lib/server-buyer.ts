@@ -37,10 +37,16 @@ export default class ServerBuyer {
     while (buyRam < MAX_RAM && money / 2 >= this.ns.getPurchasedServerCost(buyRam)) {
       buyRam *= 2
     }
+    this.log.debug(
+      "Highest tier affordable is %dGiB of RAM for %s",
+      buyRam,
+      this.ns.nFormat(this.ns.getPurchasedServerCost(buyRam), "$0,0.00a"),
+    )
     return buyRam
   }
 
   async buy(nextstep = false): Promise<boolean> {
+    this.log.debug("Attempting to buy server, nextstep: %s", nextstep ? "true" : "false")
     const limit = this.ns.getPurchasedServerLimit()
     const ownedServers = this.getPurchasedServers()
     const player = this.ns.getPlayer()
@@ -50,12 +56,14 @@ export default class ServerBuyer {
     // If we're not at the limit just buy the lowest tier
     if (ownedServers.length < limit) {
       if (currentMoney < this.ns.getPurchasedServerCost(this.minRam)) {
+        this.log.debug("Cheapest server costs more than available money, can't buy")
         return false
       }
 
       if (!nextstep) {
         buyRam = this.getHighestTierAffordable(currentMoney)
         if (buyRam < this.minRam) {
+          this.log.debug("buyRam %.2f is less than minRam %.2f, can't buy", buyRam, this.minRam)
           return false
         }
       }
@@ -74,14 +82,10 @@ export default class ServerBuyer {
       return false
     }
 
-    buyRam = lowestHosts.ram * 2
+    buyRam = nextstep ? lowestHosts.ram * 2 : this.getHighestTierAffordable(currentMoney)
 
     if (currentMoney < this.ns.getPurchasedServerCost(buyRam)) {
       return false
-    }
-
-    if (!nextstep) {
-      this.getHighestTierAffordable(currentMoney)
     }
 
     if (ownedServers.length >= limit) {
