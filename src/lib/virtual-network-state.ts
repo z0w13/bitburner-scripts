@@ -21,7 +21,7 @@ export default class VirtualNetworkState {
     this.name = name
     this.ns = ns
     this.snapshot = [...snapshot.map((s) => ({ ...s }))]
-    this.log = new Logger(ns, LOG_LEVEL, "VirtualNetworkState" + name !== "" ? `-${name}` : "")
+    this.log = new Logger(ns, LOG_LEVEL, "VirtualNetworkState" + (name !== "" ? `-${name}` : ""))
   }
 
   getLoad(): number {
