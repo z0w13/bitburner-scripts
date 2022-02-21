@@ -23,6 +23,7 @@ module.exports = {
   ignorePatterns: ["*.d.ts", "*.js"],
   rules: {
     "no-constant-condition": "off",
+    "@typescript-eslint/no-unused-vars": ["error", { varsIgnorePattern: "^_", argsIgnorePattern: "^_" }],
     "@typescript-eslint/await-thenable": "error",
     "@typescript-eslint/no-floating-promises": "error",
   }
