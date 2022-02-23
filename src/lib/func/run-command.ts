@@ -1,10 +1,10 @@
 import { NS } from "@ns"
 import { Command } from "/lib/objects"
-import runCommandRaw from "/lib/run-command-raw"
+import runCommandRaw from "/lib/func/run-command-raw"
 
 interface RunCommandOptions {
   fill?: boolean // If true ignore lack of space available
-  args?: Array<string | number>
+  args?: Array<string | number | boolean>
 }
 
 export default function runCommand(ns: NS, cmd: Command, opts: RunCommandOptions = {}): Array<number> {
@@ -15,6 +15,6 @@ export default function runCommand(ns: NS, cmd: Command, opts: RunCommandOptions
     script: cmd.script,
     threads: cmd.threads,
     fill: opts.fill ?? false,
-    args: ["--target", cmd.target, "--threads", "__HOST_THREADS__", ...opts.args],
+    args: ["--target", cmd.target, "--threads", "__HOST_THREADS__", ...(cmd.script.args ?? []), ...opts.args],
   })
 }

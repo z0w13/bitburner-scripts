@@ -395,7 +395,7 @@ export default class JobScheduler {
     return !this.jobMgr.atMaxLoad() && !this.draining
   }
 
-  async schedule(): Promise<Array<Job>> {
+  async schedule(prepOnly = false): Promise<Array<Job>> {
     const networkState = VirtualNetworkState.fromServers(this.ns, this.hostMgr.getUsableServers())
 
     this.log.debug("Clearing finished jobs")
@@ -409,10 +409,10 @@ export default class JobScheduler {
 
     // We're at our maximum (theoretical) load, or waiting for jobs to drain sleep
     if (this.canSchedule()) {
-      const hwgwJobs = this.planHwgwJobs(networkState)
+      const hwgwJobs = prepOnly ? [] : this.planHwgwJobs(networkState)
       const prepJobs = this.planPrepJobs(networkState)
 
-      if (hwgwJobs.length > 0) {
+      if (hwgwJobs.length > 0 && !prepOnly) {
         await this.scheduleHwgwJobs(hwgwJobs)
       }
 
@@ -420,16 +420,18 @@ export default class JobScheduler {
         await this.schedulePrepJobs(prepJobs)
       }
 
-      const theoreticalBest = this.getBestTheoreticalHwgwJob(networkState)
-      const currentProfitPerSecond = sum(this.jobMgr.getHwgwJobs().map((j) => j.target.getProfitPerSecond()))
-      if (theoreticalBest && theoreticalBest.getProfitPerSecond() > currentProfitPerSecond) {
-        this.drain()
-        this.log.info(
-          "Draining, found theoretical best in %s with %s profit beating current jobs' %s",
-          theoreticalBest.hostname,
-          this.ns.nFormat(theoreticalBest.getProfitPerSecond(), "$0,0.00a"),
-          this.ns.nFormat(currentProfitPerSecond, "$0,0.00a"),
-        )
+      if (!prepOnly) {
+        const theoreticalBest = this.getBestTheoreticalHwgwJob(networkState)
+        const currentProfitPerSecond = sum(this.jobMgr.getHwgwJobs().map((j) => j.target.getProfitPerSecond()))
+        if (theoreticalBest && theoreticalBest.getProfitPerSecond() > currentProfitPerSecond) {
+          this.drain()
+          this.log.info(
+            "Draining, found theoretical best in %s with %s profit beating current jobs' %s",
+            theoreticalBest.hostname,
+            this.ns.nFormat(theoreticalBest.getProfitPerSecond(), "$0,0.00a"),
+            this.ns.nFormat(currentProfitPerSecond, "$0,0.00a"),
+          )
+        }
       }
 
       await this.writeJobStatus()

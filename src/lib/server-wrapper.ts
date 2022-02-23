@@ -2,10 +2,10 @@ import { NS, ProcessInfo, Server } from "@ns"
 import { PERCENTAGE_TO_HACK, HACK_MIN_MONEY, SECURITY_WIGGLE, MONEY_WIGGLE, TARGET_MAX_PREP_WEAKEN_TIME } from "/config"
 import { SCRIPT_HACK, SCRIPT_WRITE_FILE } from "/constants"
 import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads-formulas"
-import getThreadsAvailable from "/lib/get-threads-available"
+import getThreadsAvailable from "/lib/func/get-threads-available"
 import { ServerSnapshot } from "/lib/objects"
 import { sum } from "/lib/util"
-import waitForPids from "/lib/wait-for-pids"
+import waitForPids from "/lib/func/wait-for-pids"
 
 export default class ServerWrapper {
   private readonly ns: NS
@@ -152,12 +152,12 @@ export default class ServerWrapper {
     const totalTime =
       this.getHackTime() +
       this.ns.formulas.hacking.weakenTime(
-        { ...server, hackDifficulty: server.minDifficulty + hackSecurityIncrease },
+        this.getPreppedServer({ hackDifficulty: server.minDifficulty + hackSecurityIncrease }),
         player,
       ) +
       this.getGrowTime() +
       this.ns.formulas.hacking.weakenTime(
-        { ...server, hackDifficulty: server.minDifficulty + growSecurityIncrease },
+        this.getPreppedServer({ hackDifficulty: server.minDifficulty + growSecurityIncrease }),
         player,
       )
 
@@ -197,7 +197,7 @@ export default class ServerWrapper {
   }
 
   //////////////////////////////////////////////
-  //////////////// THREAD STUFF ////////////////
+  //               THREAD STUFF               //
   //////////////////////////////////////////////
 
   getInitialWeakenThreads(): number {

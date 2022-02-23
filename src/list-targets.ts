@@ -1,9 +1,9 @@
 import { NS } from "@ns"
 import { SCRIPT_HACK } from "/constants"
-import renderTable from "/lib/render-table"
-import getHosts from "/lib/get-hosts"
+import renderTable from "/lib/func/render-table"
+import getHosts from "/lib/func/get-hosts"
 import ServerWrapper from "/lib/server-wrapper"
-import getThreadsAvailable from "/lib/get-threads-available"
+import getThreadsAvailable from "/lib/func/get-threads-available"
 import { FlagSchema } from "/lib/objects"
 
 const flagSchema: FlagSchema = [["all", false]]

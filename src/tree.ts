@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import getHostTree, { TreeNode } from "/lib/get-host-tree"
+import getHostTree, { TreeNode } from "/lib/func/get-host-tree"
 import { FlagSchema } from "/lib/objects"
 
 const IMPORTANT_HOSTS = new Set(["The-Cave", "I.I.I.I", "run4theh111z", "CSEC", "avmnite-02h"])

@@ -1,6 +1,6 @@
 import { NS } from "@ns"
 import ServerWrapper from "/lib/server-wrapper"
-import getHosts from "/lib/get-hosts"
+import getHosts from "/lib/func/get-hosts"
 import { Command, Script } from "/lib/objects"
 import { DEPRIORITIZE_HOME } from "/config"
 

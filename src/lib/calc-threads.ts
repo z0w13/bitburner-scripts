@@ -8,7 +8,7 @@ export function getGrowThreads(ns: NS, hostname: string): number {
     return 0
   }
 
-  return Math.ceil(ns.growthAnalyze(hostname, server.moneyMax / server.moneyAvailable, 1))
+  return Math.ceil(ns.growthAnalyze(hostname, server.moneyMax / server.moneyAvailable))
 }
 
 export function getHackThreads(ns: NS, hostname: string, pctToHack: number): number {

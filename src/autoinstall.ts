@@ -1,6 +1,6 @@
 import { NS } from "@ns"
-import getHosts from "/lib/get-hosts"
-import isHostSetup from "/lib/is-host-setup"
+import getHosts from "/lib/func/get-hosts"
+import isHostSetup from "/lib/func/is-host-setup"
 import { COPY_SCRIPTS } from "/constants"
 
 export async function main(ns: NS): Promise<void> {

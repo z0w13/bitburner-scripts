@@ -2,8 +2,8 @@ import { NS } from "@ns"
 import { getHackCommand, getGrowCommand, getWeakenCommand, printCommand } from "/lib/commands-basic"
 import { FlagSchema } from "/lib/objects"
 import { MONEY_WIGGLE, SECURITY_WIGGLE } from "/config"
-import waitForPids from "/lib/wait-for-pids"
-import runCommand from "/lib/run-command"
+import waitForPids from "/lib/func/wait-for-pids"
+import runCommand from "/lib/func/run-command"
 
 const flagSchema: FlagSchema = [["target", "n00dles"]]
 
@@ -13,12 +13,8 @@ interface Flags {
 
 // TODO(zowie): Find a way to optimise, probably make command calculation not use ServerWrapper
 export async function main(ns: NS): Promise<void> {
-  ns.disableLog("asleep")
-  ns.disableLog("scan")
-  ns.disableLog("getServerMoneyAvailable")
-  ns.disableLog("getServerMaxMoney")
-  ns.disableLog("getServerSecurityLevel")
-  ns.disableLog("getServerMinSecurityLevel")
+  ns.disableLog("ALL")
+  ns.enableLog("exec")
 
   const flags = ns.flags(flagSchema) as Flags
 

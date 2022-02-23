@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import getHosts from "/lib/get-hosts"
+import getHosts from "/lib/func/get-hosts"
 
 export async function main(ns: NS): Promise<void> {
   const hosts = getHosts(ns)

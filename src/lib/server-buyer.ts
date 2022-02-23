@@ -1,5 +1,6 @@
 import { NS } from "@ns"
 import { LOG_LEVEL } from "/config"
+import { getMoneyToReserve } from "/lib/func/get-money-to-reserve"
 import Logger from "/lib/logger"
 import { SerializedDaemonStatus } from "/lib/objects"
 import ServerWrapper from "/lib/server-wrapper"
@@ -50,7 +51,7 @@ export default class ServerBuyer {
     const limit = this.ns.getPurchasedServerLimit()
     const ownedServers = this.getPurchasedServers()
     const player = this.ns.getPlayer()
-    const currentMoney = player.money
+    const currentMoney = Math.max(0, player.money - getMoneyToReserve(this.ns))
     let buyRam = this.minRam
 
     // If we're not at the limit just buy the lowest tier
@@ -88,11 +89,17 @@ export default class ServerBuyer {
       return false
     }
 
+    if (buyRam <= lowestHosts.ram) {
+      this.log.debug("buyRam %.2f is less than or equal to lowest host RAM %.2f, can't buy", buyRam, lowestHosts.ram)
+      return false
+    }
+
     if (ownedServers.length >= limit) {
-      const data = JSON.parse(this.ns.read("jobs.json.txt")) as SerializedDaemonStatus
+      //const data = JSON.parse(this.ns.read("jobs.json.txt")) as SerializedDaemonStatus
       // First look for any owned servers of the lowest tier that are idle, if found delete it
       for (const server of lowestHosts.servers) {
-        if (server.getProcesses().length > 0 || data.jobs.findIndex((j) => j.target === server.hostname) > -1) {
+        //if (server.getProcesses().length > 0 || data.jobs.findIndex((j) => j.target === server.hostname) > -1) {
+        if (server.getProcesses().length > 0) {
           continue
         }
 
@@ -112,7 +119,8 @@ export default class ServerBuyer {
         await server.drain()
       }
 
-      while (data.jobs.findIndex((j) => j.target === server.hostname) > -1 && !server.isDrained()) {
+      //while (data.jobs.findIndex((j) => j.target === server.hostname) > -1 && !server.isDrained()) {
+      while (!server.isDrained()) {
         await server.waitTillDrained()
         await this.ns.asleep(1000)
       }

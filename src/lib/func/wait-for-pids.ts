@@ -1,6 +1,10 @@
 import { NS } from "@ns"
 
 export default async function waitForPids(ns: NS, pids: Array<number>, interval = 1000): Promise<void> {
+  if (pids.filter((p) => p < 1).length > 0) {
+    ns.print("WARNING: pids contains failed execs")
+  }
+
   let newPids = pids
   do {
     for (const pid of pids) {

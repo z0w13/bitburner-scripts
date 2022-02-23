@@ -7,7 +7,7 @@ import Logger from "/lib/logger"
 import { Command, Job, JobType } from "/lib/objects"
 import ServerWrapper from "/lib/server-wrapper"
 import { sum } from "/lib/util"
-import waitForPids from "/lib/wait-for-pids"
+import waitForPids from "/lib/func/wait-for-pids"
 
 export default class JobManager {
   private readonly ns: NS

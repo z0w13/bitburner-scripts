@@ -1,9 +1,10 @@
 import { NS } from "@ns"
-import getSetupHosts from "/lib/get-setup-hosts"
-import renderTable from "/lib/render-table"
+import getSetupHosts from "/lib/func/get-setup-hosts"
+import renderTable from "/lib/func/render-table"
 
 function printStatus(ns: NS): void {
   const hosts = getSetupHosts(ns)
+  hosts.sort((a, b) => ns.getServerMaxRam(a) - ns.getServerMaxRam(b))
 
   const table = [["Host", "Threads", "RAM"]]
 
@@ -59,9 +60,7 @@ function printStatus(ns: NS): void {
 }
 
 export async function main(ns: NS): Promise<void> {
-  ns.disableLog("getServerUsedRam")
-  ns.disableLog("scan")
-  ns.disableLog("asleep")
+  ns.disableLog("ALL")
 
   while (true) {
     ns.clearLog()

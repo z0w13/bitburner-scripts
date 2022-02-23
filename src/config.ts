@@ -13,6 +13,10 @@ export const MAX_PREP_LOAD = 0.5 // Use a maximum of 10% of available power to p
 export const MAX_LOAD = 0.9 // Don't exceed 90% of available power in general
 export const MAX_SIMULTANEOUS_PREP_JOBS = 10000
 
+export const BATCH_INTERVAL = 300 // Time between batch jobs
+export const BATCH_WEAKEN_MULTIPLIER = 1.5 // How much to mutliply weaken threads with to offset player level gain
+export const BATCH_GROW_MULTIPLIER = 2.5 // How much to mutliply grow threads with to offset player level gain
+
 export const SECURITY_WIGGLE = 0.05 // Allow security to be % off target security
 export const MONEY_WIGGLE = 0.1 // Allow money to be % off target money
 

@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import getSetupHosts from "/lib/get-setup-hosts"
+import getSetupHosts from "/lib/func/get-setup-hosts"
 import { Script } from "/lib/objects"
 
 // TODO(zowie): We need to use MAX_LOAD correctly

@@ -1,7 +1,7 @@
 import { NS } from "@ns"
-import getHosts from "/lib/get-hosts"
-import hackHost from "/lib/hack-host"
-import isHostSetup from "/lib/is-host-setup"
+import getHosts from "/lib/func/get-hosts"
+import hackHost from "/lib/func/hack-host"
+import isHostSetup from "/lib/func/is-host-setup"
 import { COPY_SCRIPTS } from "/constants"
 import setupPolyfill from "/lib/ns-polyfill"
 

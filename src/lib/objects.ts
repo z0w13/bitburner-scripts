@@ -4,6 +4,7 @@ import ServerWrapper from "/lib/server-wrapper"
 export interface Script {
   file: string
   ram: number
+  args?: Array<string | number | boolean>
 }
 
 export interface Command {
@@ -13,6 +14,14 @@ export interface Command {
   time: number
   security: number
   script: Script
+}
+
+export interface CommandBatch {
+  target: string
+  threads: number
+  ram: number
+  time: number
+  commands: Array<Command>
 }
 
 interface SerializedCommand {
@@ -117,4 +126,13 @@ export enum LogLevel {
   Warning,
   Info,
   Debug,
+}
+
+export interface StaticData {
+  bitnode_mult: BitNodeMultipliers
+  player_mult: {
+    hacking_money: number
+    hacking_speed: number
+    hacking_grow: number
+  }
 }

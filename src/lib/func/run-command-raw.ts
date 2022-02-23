@@ -1,22 +1,17 @@
 import { NS } from "@ns"
-import { DEPRIORITIZE_HOME } from "/config"
-import getSetupHosts from "/lib/get-setup-hosts"
-import getThreadsAvailable from "/lib/get-threads-available"
+import getSetupHosts from "/lib/func/get-setup-hosts"
+import getThreadsAvailable from "/lib/func/get-threads-available"
 import { Script } from "/lib/objects"
 
 interface RunCommandRawOptions {
   script: Script
   threads: number
   fill?: boolean // If true ignore lack of space available
-  args?: Array<string | number>
+  args?: Array<string | number | boolean>
 }
 
 export default function runCommand(ns: NS, opts: RunCommandRawOptions): Array<number> {
   const usableHosts = getSetupHosts(ns)
-
-  if (DEPRIORITIZE_HOME && usableHosts.indexOf("home") > 0) {
-    usableHosts.push(...usableHosts.splice(usableHosts.indexOf("home")))
-  }
 
   const hosts: Array<{ host: string; ram: number }> = []
   const availableThreads = getThreadsAvailable(ns, opts.script)
@@ -39,6 +34,10 @@ export default function runCommand(ns: NS, opts: RunCommandRawOptions): Array<nu
 
   for (const host of usableHosts) {
     const server = ns.getServer(host)
+    if (server.maxRam === 0) {
+      continue
+    }
+
     hosts.push({ host, ram: server.maxRam - server.ramUsed })
   }
 
@@ -71,6 +70,17 @@ export default function runCommand(ns: NS, opts: RunCommandRawOptions): Array<nu
       hostThreads,
       ...opts.args.map((a) => String(a).replace("__HOST_THREADS__", hostThreads.toString())),
     )
+    if (pid === 0) {
+      ns.print(
+        ns.sprintf(
+          "Something went wrong, couldn't start %s with %d threads on %s",
+          opts.script.file,
+          hostThreads,
+          host.host,
+        ),
+      )
+    }
+
     pids.push(pid)
   }
 

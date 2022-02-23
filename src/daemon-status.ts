@@ -1,6 +1,6 @@
 import { NS } from "@ns"
 import { JobType, SerializedDaemonStatus, SerializedJob } from "/lib/objects"
-import renderTable, { RawTableData } from "/lib/render-table"
+import renderTable, { RawTableData } from "/lib/func/render-table"
 import ServerWrapper from "/lib/server-wrapper"
 import { sum } from "/lib/util"
 
