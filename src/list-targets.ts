@@ -40,6 +40,7 @@ export async function main(ns: NS): Promise<void> {
       "Grow Thr",
       "Prep Ratio",
       "$/s",
+      "XP/thr",
     ],
   ]
 
@@ -61,6 +62,7 @@ export async function main(ns: NS): Promise<void> {
       ns.nFormat(server.getGrowThreads(), "0,0"),
       ns.nFormat((server.getWeakenTime() / server.getProfitPerSecond()) * 1000, ".0000"),
       ns.nFormat(server.getProfitPerSecond(), "$0,0"),
+      ns.formulas.hacking.hackExp(server.getServer(), ns.getPlayer()),
     ]
 
     if (flags.all) {

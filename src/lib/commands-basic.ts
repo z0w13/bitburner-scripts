@@ -30,6 +30,26 @@ export function getGrowCommand(ns: NS, target: string): Command {
   return getCommand(ns, target, SCRIPT_GROW, threads, time, sec)
 }
 
+export function getHwBatch(ns: NS, target: string, hackCommand: Command): CommandBatch {
+  // Testing biggus multiplier to see if that fixes grow issue
+  const weakenCommand = getWeakenCommand(ns, target, hackCommand.security)
+  weakenCommand.threads = Math.ceil(weakenCommand.threads * BATCH_WEAKEN_MULTIPLIER)
+  weakenCommand.ram = weakenCommand.threads * weakenCommand.script.ram
+
+  const commandDelay = BATCH_INTERVAL / 3
+
+  hackCommand.script.args = ["--delay", Math.round(weakenCommand.time - hackCommand.time)]
+  weakenCommand.script.args = ["--delay", Math.round(commandDelay)]
+
+  return {
+    target: target,
+    threads: hackCommand.threads + weakenCommand.threads,
+    ram: hackCommand.ram + weakenCommand.ram,
+    time: weakenCommand.time + BATCH_INTERVAL,
+    commands: [hackCommand, weakenCommand],
+  }
+}
+
 export function getBatch(ns: NS, target: string, hackCommand: Command, growCommand: Command): CommandBatch {
   // Testing biggus multiplier to see if that fixes grow issue
   const growThreads = Math.ceil(growCommand.threads * BATCH_GROW_MULTIPLIER)
