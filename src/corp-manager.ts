@@ -26,14 +26,9 @@ const MULTIPLIER_MATERIALS = ["Robots", "Hardware", "AI Cores", "Real Estate"]
 // Config
 const MAX_MULTIPLIER = 100
 const MAIN_CITY = "Aevum"
-const MANAGE_DIVISIONS = ["Smokes", "Helf", "iRobot"]
 
 function buyMaterials(ns: NS, corp: CorporationInfo): void {
   for (const division of corp.divisions) {
-    if (MANAGE_DIVISIONS.indexOf(division.name) === -1) {
-      continue
-    }
-
     for (const city of division.cities) {
       const warehouseSize = ns.corporation.getWarehouse(division.name, city).size
       const sizePerMaterial = Math.floor((warehouseSize * 0.8) / 4)
@@ -66,10 +61,6 @@ function buyMaterials(ns: NS, corp: CorporationInfo): void {
 function developAndDiscontinue(ns: NS, ticks: number): void {
   const corp = ns.corporation.getCorporation()
   for (const division of corp.divisions) {
-    if (MANAGE_DIVISIONS.indexOf(division.name) === -1) {
-      continue
-    }
-
     const isDeveloping =
       division.products
         .map((p) => ns.corporation.getProduct(division.name, p))
@@ -114,10 +105,6 @@ function adjustPrices(ns: NS): void {
   const corp = ns.corporation.getCorporation()
 
   for (const division of corp.divisions) {
-    if (MANAGE_DIVISIONS.indexOf(division.name) === -1) {
-      continue
-    }
-
     if (ns.corporation.hasResearched(division.name, "Market-TA.II")) {
       for (const productName of division.products) {
         ns.corporation.sellProduct(division.name, MAIN_CITY, productName, "MAX", "MP", true)
@@ -293,7 +280,22 @@ function getWarehouses(ns: NS, division: string): Array<Warehouse> {
 }
 
 function manageWarehouses(ns: NS, division: Division): void {
-  const smallestWarehouse = getWarehouses(ns, division.name).sort(sortFunc((w) => w.size))[0]
+  for (const city in division.cities) {
+    if (!ns.corporation.hasWarehouse(division.name, city)) {
+      if (ns.corporation.getPurchaseWarehouseCost() > ns.corporation.getCorporation().funds) {
+        continue
+      }
+
+      ns.corporation.purchaseWarehouse(division.name, city)
+    }
+  }
+
+  const warehouses = getWarehouses(ns, division.name).sort(sortFunc((w) => w.size))
+  if (warehouses.length === 0) {
+    return
+  }
+
+  const smallestWarehouse = warehouses[0]
   const city = smallestWarehouse.loc
 
   if (smallestWarehouse.size > 15_000 && ns.corporation.getCorporation().funds < 1_000_000_000_000) {
@@ -353,9 +355,9 @@ function manageUpgrades(ns: NS): void {
 
 async function officeManager(ns: NS): Promise<void> {
   while (true) {
-    for (const division of MANAGE_DIVISIONS) {
+    for (const division of ns.corporation.getCorporation().divisions) {
       ns.print("======================= Manage Offices =========================")
-      await manageOffices(ns, ns.corporation.getDivision(division))
+      await manageOffices(ns, ns.corporation.getDivision(division.name))
       await ns.asleep(1000)
     }
   }
@@ -371,6 +373,10 @@ export async function main(ns: NS): Promise<void> {
 
   while (true) {
     const corp = ns.corporation.getCorporation()
+    if (corp.divisions.length === 0) {
+      ns.corporation.expandIndustry("Tobacco", "ZSmokes")
+    }
+
     ns.print("======================= Manage Materials =======================")
     buyMaterials(ns, corp)
 
@@ -382,9 +388,7 @@ export async function main(ns: NS): Promise<void> {
       }
 
       adjustPrices(ns)
-    }
 
-    if (ticks % 60 === 0) {
       ns.print("======================= Manage Upgrades ========================")
       manageUpgrades(ns)
 
@@ -396,12 +400,17 @@ export async function main(ns: NS): Promise<void> {
       ns.print("======================= Manage Research ========================")
       buyResearch(ns)
 
-      for (const division of MANAGE_DIVISIONS) {
+      for (const division of ns.corporation.getCorporation().divisions) {
+        if (division.cities.length < 6) {
+          for (const city of ["Volhaven", "Sector-12", "Aevum", "Ishima", "New Tokyo", "Chongqing"])
+            ns.corporation.expandCity(division.name, city)
+        }
+
         ns.print("======================= Manage Adverts =========================")
-        manageAdVert(ns, division)
+        manageAdVert(ns, division.name)
 
         ns.print("====================== Manage Warehouses =======================")
-        manageWarehouses(ns, ns.corporation.getDivision(division))
+        manageWarehouses(ns, ns.corporation.getDivision(division.name))
       }
     }
 

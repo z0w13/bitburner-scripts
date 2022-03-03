@@ -1,4 +1,4 @@
-import { BitNodeMultipliers } from "@ns"
+import { BitNodeMultipliers, CrimeStats } from "@ns"
 import ServerWrapper from "/lib/server-wrapper"
 
 export interface Script {
@@ -129,10 +129,20 @@ export enum LogLevel {
 }
 
 export interface StaticData {
+  crimes: Array<CrimeStats>
   bitnode_mult: BitNodeMultipliers
   player_mult: {
     hacking_money: number
     hacking_speed: number
     hacking_grow: number
   }
+}
+
+export enum Attribute {
+  HACKING = "hacking",
+  STRENGTH = "strength",
+  DEFENSE = "defense",
+  DEXTERITY = "dexterity",
+  AGILITY = "agility",
+  CHARISMA = "charisma",
 }

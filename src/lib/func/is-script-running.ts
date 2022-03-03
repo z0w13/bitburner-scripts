@@ -1,9 +1,6 @@
 import { NS } from "@ns"
+import getScriptPid from "/lib/func/get-script-pid"
 
 export function isScriptRunning(ns: NS, file: string, host: string, args?: Array<string>): boolean {
-  if (args) {
-    return ns.isRunning(file, host, ...args)
-  } else {
-    return ns.ps(host).filter((p) => p.filename === file).length > 0
-  }
+  return getScriptPid(ns, file, host, args) > 0
 }

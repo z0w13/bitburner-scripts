@@ -1,11 +1,10 @@
 import { NS } from "@ns"
 import { LOG_LEVEL } from "/config"
+import { CONSTANTS } from "/game-constants"
 import { getMoneyToReserve } from "/lib/func/get-money-to-reserve"
 import Logger from "/lib/logger"
-import { SerializedDaemonStatus } from "/lib/objects"
+//import { SerializedDaemonStatus } from "/lib/objects"
 import ServerWrapper from "/lib/server-wrapper"
-
-const MAX_RAM = 1048576
 
 export default class ServerBuyer {
   ns: NS
@@ -35,7 +34,7 @@ export default class ServerBuyer {
 
   getHighestTierAffordable(money: number): number {
     let buyRam = 1
-    while (buyRam < MAX_RAM && money / 2 >= this.ns.getPurchasedServerCost(buyRam)) {
+    while (buyRam < CONSTANTS.PurchasedServerMaxRam && money / 2 >= this.ns.getPurchasedServerCost(buyRam)) {
       buyRam *= 2
     }
     this.log.debug(
@@ -78,7 +77,7 @@ export default class ServerBuyer {
       return false
     }
 
-    if (lowestHosts.ram >= MAX_RAM) {
+    if (lowestHosts.ram >= CONSTANTS.PurchasedServerMaxRam) {
       this.log.info("All servers are max tier, doing nothing.")
       return false
     }
