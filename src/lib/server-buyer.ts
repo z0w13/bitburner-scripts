@@ -5,6 +5,7 @@ import { getMoneyToReserve } from "/lib/func/get-money-to-reserve"
 import Logger from "/lib/logger"
 //import { SerializedDaemonStatus } from "/lib/objects"
 import ServerWrapper from "/lib/server-wrapper"
+import { formatGiB, formatMoney } from "/lib/util"
 
 export default class ServerBuyer {
   ns: NS
