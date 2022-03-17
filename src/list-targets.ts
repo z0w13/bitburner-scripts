@@ -1,10 +1,10 @@
 import { NS } from "@ns"
 import { SCRIPT_HACK } from "/constants"
 import renderTable from "/lib/func/render-table"
-import getHosts from "/lib/func/get-hosts"
-import ServerWrapper from "/lib/server-wrapper"
 import getThreadsAvailable from "/lib/func/get-threads-available"
 import { FlagSchema } from "/lib/objects"
+import { formatMoney, formatNum, formatTime } from "/lib/util"
+import getTargets from "/lib/func/get-targets"
 
 const flagSchema: FlagSchema = [["all", false]]
 
@@ -17,19 +17,13 @@ export async function main(ns: NS): Promise<void> {
 
   const flags = ns.flags(flagSchema) as Flags
 
-  const servers = getHosts(ns)
-    .map((h) => new ServerWrapper(ns, h))
-    .filter((s) => s.isRecommendedTarget().recommended || (flags.all && s.moneyMax > 0))
-    .sort((a, b) => a.getProfitPerSecond() - b.getProfitPerSecond())
+  const servers = getTargets(ns, flags.all)
 
   const table: Array<Array<unknown>> = [
     [
       "Name",
-      "Min Sec",
-      "Base Sec",
-      "Sec",
-      "Curr $",
-      "Max $",
+      "Sec Min/Base/Curr",
+      "Money Curr/Max (%)",
       "Grow",
       "Skill",
       "I. Weak S",
@@ -46,34 +40,36 @@ export async function main(ns: NS): Promise<void> {
 
   for (const server of servers) {
     const row = [
-      server.hostname,
-      server.minDifficulty,
-      server.baseDifficulty,
-      Math.round(server.getSecurityLevel()),
-      Math.round(server.getMoneyAvailable()),
-      server.moneyMax,
-      server.serverGrowth,
-      server.requiredHackingSkill,
-      Math.round(server.getWeakenTime() / 1000),
-      ns.nFormat(server.getInitialWeakenThreads(), "0,0"),
-      Math.round(server.getHackTime() / 1000),
-      Math.round(server.getGrowTime() / 1000),
-      ns.nFormat(server.getInitialGrowThreads(), "0,0"),
-      ns.nFormat(server.getGrowThreads(), "0,0"),
-      ns.nFormat((server.getWeakenTime() / server.getProfitPerSecond()) * 1000, ".0000"),
-      ns.nFormat(server.getProfitPerSecond(), "$0,0"),
-      ns.formulas.hacking.hackExp(server.getServer(), ns.getPlayer()),
+      server.name,
+      ns.sprintf("%.2f/%.2f/%.2f", server.minDiff, server.baseDiff, server.currDiff),
+      ns.sprintf(
+        "%s/%s (%.2f%%)",
+        formatMoney(ns, server.currMoney),
+        formatMoney(ns, server.maxMoney),
+        server.pctMoney * 100,
+      ),
+      formatNum(ns, server.growth),
+      server.hackSkill,
+      formatTime(server.weakenTime),
+      formatNum(ns, server.initialWeakenThreads, "0,0"),
+      formatTime(server.hackTime),
+      formatTime(server.growTime),
+      formatNum(ns, server.initialGrowThreads, "0,0"),
+      formatNum(ns, server.growThreads, "0,0"),
+      formatNum(ns, server.score),
+      formatMoney(ns, server.profitPerSecond, "$0,0"),
+      formatNum(ns, server.expPerSecond) + "xp",
     ]
 
     if (flags.all) {
-      row.push(server.isRecommendedTarget().recommended ? "Y" : "")
+      row.push(server.recommended ? "Y" : "")
     }
 
     table.push(row)
   }
 
-  ns.print(renderTable(ns, table))
-  ns.print(
+  ns.tprint(renderTable(ns, table))
+  ns.tprint(
     `Current Threads Available: ${getThreadsAvailable(ns, { file: SCRIPT_HACK, ram: ns.getScriptRam(SCRIPT_HACK) })}`,
   )
 }
