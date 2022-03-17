@@ -1,6 +1,7 @@
 import { NS } from "@ns"
 import getSetupHosts from "/lib/func/get-setup-hosts"
 import renderTable from "/lib/func/render-table"
+import { formatGiB } from "/lib/util"
 
 function printStatus(ns: NS): void {
   const hosts = getSetupHosts(ns)
@@ -37,8 +38,8 @@ function printStatus(ns: NS): void {
       host,
       hostThreads.toString(),
       ns.vsprintf("%7s/%7s (%3d%%) [%-20s]", [
-        ns.nFormat(server.ramUsed * 1024 * 1024 * 1024, "0ib"),
-        ns.nFormat(server.maxRam * 1024 * 1024 * 1024, "0ib"),
+        formatGiB(ns, server.ramUsed),
+        formatGiB(ns, server.maxRam),
         (server.ramUsed / server.maxRam) * 100,
         "=".repeat(Math.ceil((server.ramUsed / server.maxRam) * 20)),
       ]),
@@ -49,8 +50,8 @@ function printStatus(ns: NS): void {
     "Total (" + hosts.length + ")",
     totalThreads.toString(),
     ns.vsprintf("%7s/%7s (%3d%%) [%-20s]", [
-      ns.nFormat(totalRamUsed * 1024 * 1024 * 1024, "0ib"),
-      ns.nFormat(totalRam * 1024 * 1024 * 1024, "0ib"),
+      formatGiB(ns, totalRamUsed),
+      formatGiB(ns, totalRam),
       (totalRamUsed / totalRam) * 100,
       "=".repeat(Math.ceil((totalRamUsed / totalRam) * 20)),
     ]),

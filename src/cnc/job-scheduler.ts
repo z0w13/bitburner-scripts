@@ -1,4 +1,4 @@
-import { filterUndefinedFunc, sum } from "/lib/util"
+import { filterUndefinedFunc, formatMoney, sum } from "/lib/util"
 import JobManager from "/cnc/job-manager"
 import {
   LOG_LEVEL,
@@ -428,8 +428,8 @@ export default class JobScheduler {
           this.log.info(
             "Draining, found theoretical best in %s with %s profit beating current jobs' %s",
             theoreticalBest.hostname,
-            this.ns.nFormat(theoreticalBest.getProfitPerSecond(), "$0,0.00a"),
-            this.ns.nFormat(currentProfitPerSecond, "$0,0.00a"),
+            formatMoney(this.ns, theoreticalBest.getProfitPerSecond()),
+            formatMoney(this.ns, currentProfitPerSecond),
           )
         }
       }

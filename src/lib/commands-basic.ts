@@ -4,6 +4,7 @@ import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
 import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads"
 import { Command, CommandBatch } from "/lib/objects"
 import renderTable from "/lib/func/render-table"
+import { formatGiB, formatNum, formatTime } from "/lib/util"
 
 export function getWeakenCommand(ns: NS, target: string, additionalSec = 0): Command {
   const threads = getWeakenThreads(ns, target, additionalSec)
@@ -144,10 +145,10 @@ export function printCommand(ns: NS, command: Command) {
     ...command,
 
     script: command.script.file,
-    threads: ns.nFormat(command.threads, "0,0").replace(",", " "),
-    time: ns.nFormat(Math.round(command.time / 1000), "0,0").replace(",", " ") + "s",
-    ram: ns.nFormat(command.ram, "0,0.00").replace(",", " ") + "GiB",
-    security: ns.nFormat(command.security, "0,0.00").replace(",", " "),
+    threads: formatNum(ns, command.threads, "0,00"),
+    time: formatTime(command.time),
+    ram: formatGiB(ns, command.ram),
+    security: formatNum(ns, command.security),
   }
   ns.print(renderTable(ns, Object.entries(renderCmd), false))
 }

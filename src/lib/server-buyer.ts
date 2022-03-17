@@ -40,7 +40,7 @@ export default class ServerBuyer {
     this.log.debug(
       "Highest tier affordable is %dGiB of RAM for %s",
       buyRam,
-      this.ns.nFormat(this.ns.getPurchasedServerCost(buyRam), "$0,0.00a"),
+      formatMoney(this.ns, this.ns.getPurchasedServerCost(buyRam)),
     )
     return buyRam
   }
@@ -104,11 +104,7 @@ export default class ServerBuyer {
 
         this.ns.killall(server.hostname)
         this.ns.deleteServer(server.hostname)
-        this.log.info(
-          "Deleted old server %s with %s RAM",
-          server.hostname,
-          this.ns.nFormat(server.maxRam * 1024 ** 3, "0.00ib"),
-        )
+        this.log.info("Deleted old server %s with %s RAM", server.hostname, formatGiB(this.ns, server.maxRam))
         return this.buyServer(buyRam)
       }
 
@@ -126,11 +122,7 @@ export default class ServerBuyer {
 
       this.ns.killall(server.hostname)
       this.ns.deleteServer(server.hostname)
-      this.log.info(
-        "Deleted old server %s with %s RAM",
-        server.hostname,
-        this.ns.nFormat(server.maxRam * 1024 ** 3, "0.00ib"),
-      )
+      this.log.info("Deleted old server %s with %s RAM", server.hostname, formatGiB(this.ns, server.maxRam))
     }
 
     return this.buyServer(buyRam)
@@ -142,8 +134,8 @@ export default class ServerBuyer {
       this.log.info(
         "Bought server %s with %s RAM for %s",
         hostname,
-        this.ns.nFormat(ram * 1024 ** 3, "0.00ib"),
-        this.ns.nFormat(this.ns.getPurchasedServerCost(ram), "$0,0.00a"),
+        formatGiB(this.ns, ram),
+        formatMoney(this.ns, this.ns.getPurchasedServerCost(ram)),
       )
     }
 

@@ -2,7 +2,7 @@ import { NS } from "@ns"
 import { JobType, SerializedDaemonStatus, SerializedJob } from "/lib/objects"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import ServerWrapper from "/lib/server-wrapper"
-import { sum } from "/lib/util"
+import { formatMoney, formatNum, sum } from "/lib/util"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
@@ -56,7 +56,7 @@ function renderStatusTable(ns: NS, data: SerializedDaemonStatus) {
   ]
 
   preppedByProfit.slice(0, 3).forEach((val, idx) => {
-    table.push([idx + ". " + val.hostname, ns.nFormat(val.profitPerSecond, "$0,0.00a")])
+    table.push([idx + ". " + val.hostname, formatMoney(ns, val.profitPerSecond)])
   })
 
   return renderTable(ns, table, false)
@@ -90,7 +90,7 @@ function renderJobTable(ns: NS, jobs: Array<SerializedJob>) {
       Math.round(entry.current?.ram ?? 0),
       Math.round(totalTime / 1000) + "s",
       Math.round(timeRemaining / 1000) + "s",
-      ns.nFormat(new ServerWrapper(ns, entry.target).getProfitPerSecond(), "$0,0a") + "/s",
+      formatMoney(ns, new ServerWrapper(ns, entry.target).getProfitPerSecond()) + "/s",
     ])
   }
 
