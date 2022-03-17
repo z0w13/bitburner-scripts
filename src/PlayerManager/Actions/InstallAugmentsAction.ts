@@ -1,27 +1,26 @@
 import { NS } from "@ns"
-import { ActionType } from "/PlayerManager/Actions/ActionType"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class InstallAugmentsAction extends BaseAction {
+  hackFocus: boolean
+
+  constructor(hackFocus = false) {
+    super()
+
+    this.hackFocus = hackFocus
+  }
+
   shouldPerform(ns: NS): boolean {
-    // If we have more than 10 augments to install do perform
-    return ns.getOwnedAugmentations(true).length - ns.getOwnedAugmentations().length > 10
+    const newAugs = ns.getOwnedAugmentations(true).length - ns.getOwnedAugmentations().length
+    return newAugs >= 10 || (ns.getPlayer().bitNodeN === 4 && newAugs >= 3)
   }
 
   isPerforming(_ns: NS): boolean {
     return false
   }
 
-  perform(ns: NS): boolean {
-    ns.installAugmentations("start.js")
-    return true
-  }
-
-  getType(): ActionType {
-    return ActionType.INSTALL_AUGMENT
-  }
-
-  isBackground(): boolean {
+  async perform(ns: NS): Promise<boolean> {
+    ns.installAugmentations(this.hackFocus ? "start-hack.js" : "start.js")
     return true
   }
 }

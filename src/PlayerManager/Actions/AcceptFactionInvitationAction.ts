@@ -1,5 +1,4 @@
 import { NS } from "@ns"
-import { ActionType } from "/PlayerManager/Actions/ActionType"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class AcceptFactionInvitationsAction extends BaseAction {
@@ -11,12 +10,8 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
     return false
   }
 
-  perform(ns: NS): boolean {
+  async perform(ns: NS): Promise<boolean> {
     return ns.checkFactionInvitations().every((f) => ns.joinFaction(f))
-  }
-
-  getType(): ActionType {
-    return ActionType.FACTION_ACCEPT_INVITATIONS
   }
 
   isBackground(): boolean {

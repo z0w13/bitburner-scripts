@@ -1,7 +1,6 @@
 import { NS } from "@ns"
 import { getBestCrime } from "/data/Crimes"
 import { getBestJob } from "/data/Jobs"
-import { ActionType } from "/PlayerManager/Actions/ActionType"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 import CrimeAction from "/PlayerManager/Actions/CrimeAction"
 import WorkAction from "/PlayerManager/Actions/WorkAction"
@@ -36,11 +35,7 @@ export default class MakeMoneyAction extends BaseAction {
     return this.getBestAction(ns)?.isPerforming(ns) ?? false
   }
 
-  perform(ns: NS): boolean {
+  async perform(ns: NS): Promise<boolean> {
     return this.getBestAction(ns)?.perform(ns) ?? false
-  }
-
-  getType(): ActionType {
-    return ActionType.WORK
   }
 }

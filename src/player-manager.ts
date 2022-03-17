@@ -1,6 +1,14 @@
 import { NS } from "@ns"
+import getPlayerAction from "/lib/func/get-player-action"
 import setupPolyfill from "/lib/ns-polyfill"
+import { FlagSchema } from "/lib/objects"
 import { ActionResolver } from "/PlayerManager/Actions"
+
+const flagSchema: FlagSchema = [["hack", false]]
+
+interface Flags {
+  hack: boolean
+}
 
 export async function main(ns: NS): Promise<void> {
   setupPolyfill(ns)
@@ -21,9 +29,9 @@ export async function main(ns: NS): Promise<void> {
   ns.enableLog("workForCompany")
   ns.enableLog("applyToCompany")
 
-  const actionResolver = new ActionResolver()
+  const flags = ns.flags(flagSchema) as Flags
 
-  ns.tail(ns.getRunningScript().pid)
+  const actionResolver = new ActionResolver(flags.hack)
 
   while (true) {
     await ns.asleep(2000)
@@ -34,13 +42,14 @@ export async function main(ns: NS): Promise<void> {
       if (!desiredAction.isBackground()) {
         ns.stopAction()
       }
-      desiredAction.perform(ns)
+      await desiredAction.perform(ns)
     }
 
+    //ns.print(getPlayerAction(ns))
     //ns.print(
-    //  `${ns.getPlayer().workType} ${ns.getPlayer().crimeType} ${ns.getPlayer().location} ${ns.getPlayer().className} ${
-    //    ns.getPlayer().isWorking
-    //  } ${ns.getPlayer().companyName}`,
+    //  `${ns.getPlayer().workType} | ${ns.getPlayer().crimeType} | ${ns.getPlayer().location} | ${
+    //    ns.getPlayer().className
+    //  } | ${ns.getPlayer().isWorking} | ${ns.getPlayer().companyName} | ${ns.getPlayer().currentWorkFactionName}`,
     //)
   }
 }

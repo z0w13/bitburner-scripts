@@ -1,18 +1,15 @@
 import { NS } from "@ns"
-import { ActionType } from "/PlayerManager/Actions/ActionType"
+import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class IdleAction extends BaseAction {
-  perform(_ns: NS): boolean {
+  async perform(_ns: NS): Promise<boolean> {
     return true
   }
   shouldPerform(_ns: NS): boolean {
     return false
   }
   isPerforming(ns: NS): boolean {
-    return ns.getPlayer().workType === ""
-  }
-  getType(): ActionType {
-    return ActionType.IDLE
+    return getPlayerAction(ns).type === PlayerActionType.Idle
   }
 }

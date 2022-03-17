@@ -1,52 +1,35 @@
 import { NS } from "@ns"
-import { getLowestRepAug } from "/data/Augments"
-import { ActionType } from "/PlayerManager/Actions/ActionType"
+import { getLowestMetRepAug } from "/data/Augments"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
+/**
+ * TODO(zowie): Rework how we pick the augmentation to for for next
+ *  1.  Check for any aug we have the rep for
+ *  2.  If we can't afford it find the lowest rep aug (can be different due to donations)
+ *  3A. If none found return
+ *  3B. Work for rep
+ */
 export default class UpgradeAugmentAction extends BaseAction {
+  hackFocus: boolean
+
+  constructor(hackFocus = false) {
+    super()
+
+    this.hackFocus = hackFocus
+  }
+
   shouldPerform(ns: NS): boolean {
-    const player = ns.getPlayer()
-    const aug = getLowestRepAug(ns)
-    if (!aug) {
-      return false
-    }
-
-    const faction = aug.factions.find((f) => ns.getFactionRep(f) > aug.rep)
-    if (!faction) {
-      return false
-    }
-
-    if (aug.rep > ns.getFactionRep(faction)) {
-      return false
-    }
-
-    if (aug.price > player.money) {
-      return false
-    }
-
-    return true
+    const aug = getLowestMetRepAug(ns, this.hackFocus)
+    return aug !== undefined && aug.meetMoney && aug.meetRep
   }
 
   isPerforming(_ns: NS): boolean {
     return false
   }
 
-  perform(ns: NS): boolean {
-    const aug = getLowestRepAug(ns)
-    if (!aug) {
-      return false
-    }
-
-    const faction = aug.factions.find((f) => ns.getFactionRep(f) > aug.rep)
-    if (!faction) {
-      return false
-    }
-
-    return ns.purchaseAugmentation(faction, aug.name)
-  }
-
-  getType(): ActionType {
-    return ActionType.BUY_AUGMENT
+  async perform(ns: NS): Promise<boolean> {
+    const aug = getLowestMetRepAug(ns, this.hackFocus)
+    return aug?.meetRepFaction !== undefined && ns.purchaseAugmentation(aug.meetRepFaction, aug.name)
   }
 
   isBackground(): boolean {

@@ -1,5 +1,4 @@
 import { NS } from "@ns"
-import { ActionType } from "/PlayerManager/Actions/ActionType"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class CreateCorpAction extends BaseAction {
@@ -17,7 +16,7 @@ export default class CreateCorpAction extends BaseAction {
   isPerforming(_ns: NS): boolean {
     return false
   }
-  perform(ns: NS): boolean {
+  async perform(ns: NS): Promise<boolean> {
     if (!ns.corporation.createCorporation(this.name, true)) {
       return false
     }
@@ -28,8 +27,5 @@ export default class CreateCorpAction extends BaseAction {
     }
 
     return true
-  }
-  getType(): ActionType {
-    return ActionType.IDLE
   }
 }

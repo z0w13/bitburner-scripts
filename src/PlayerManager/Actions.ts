@@ -11,39 +11,64 @@ import BuyUpgradesAction from "/PlayerManager/Actions/BuyUpgradesAction"
 import InstallAugmentsAction from "/PlayerManager/Actions/InstallAugmentsAction"
 import ReduceKarmaAction from "/PlayerManager/Actions/ReduceKarmaAction"
 import CreateGangAction from "/PlayerManager/Actions/CreateGangAction"
+import TravelForFactionAction from "/PlayerManager/Actions/TravelForFactionAction"
+import BackdoorServersAction from "/PlayerManager/Actions/BackdoorServersAction"
+import DonateToFactionAction from "/PlayerManager/Actions/DonateToFactionAction"
 //import CreateCorpAction from "/PlayerManager/Actions/CreateCorpAction"
 
 export class ActionResolver {
   protected minLevel: number
+  protected actions: Array<BaseAction>
 
-  actions = [
-    new InstallAugmentsAction(),
-
-    new CreateGangAction("ZCrime"),
-    //new CreateCorpAction("ZCorp"), // Disabled because it requires 1TB of RAM
-    new AcceptFactionInvitationsAction(),
-    new BuyUpgradesAction(),
-    new UpgradeAugmentAction(),
-
-    // NOTE(zowie): Disabled for now as we don't have the hash stuff yet plus it's sucky for making money
-    //new UpgradeHacknetAction(),
-
-    new WorkForFactionAction(),
-
-    new TrainAction(Attribute.HACKING, 10),
-    new TrainAction(Attribute.STRENGTH, 10),
-    new TrainAction(Attribute.DEFENSE, 10),
-    new TrainAction(Attribute.DEXTERITY, 10),
-    new TrainAction(Attribute.AGILITY, 10),
-    new TrainAction(Attribute.CHARISMA, 10),
-
-    new ReduceKarmaAction(),
-    new MakeMoneyAction(),
-    new IdleAction(),
-  ]
-
-  constructor() {
+  constructor(hackFocus = false) {
     this.minLevel = 10
+    if (hackFocus) {
+      this.actions = [
+        //new InstallAugmentsAction(hackFocus),
+        new BackdoorServersAction(),
+
+        new AcceptFactionInvitationsAction(),
+        new BuyUpgradesAction(),
+        new TravelForFactionAction(),
+        new UpgradeAugmentAction(hackFocus),
+
+        new DonateToFactionAction(hackFocus),
+        new WorkForFactionAction(hackFocus),
+
+        new TrainAction(Attribute.HACKING, 10),
+        //new MakeMoneyAction(),
+      ]
+    } else {
+      this.actions = [
+        //new InstallAugmentsAction(hackFocus),
+        new BackdoorServersAction(),
+
+        //new CreateGangAction("ZCrime"),
+        //new CreateCorpAction("ZCorp"), // Disabled because it requires 1TB of RAM
+        new AcceptFactionInvitationsAction(),
+        new BuyUpgradesAction(),
+        new TravelForFactionAction(),
+        new UpgradeAugmentAction(hackFocus),
+
+        // NOTE(zowie): Disabled for now as we don't have the hash stuff yet plus it's sucky for making money
+        //new UpgradeHacknetAction(),
+
+        new DonateToFactionAction(hackFocus),
+        new WorkForFactionAction(hackFocus),
+
+        new TrainAction(Attribute.HACKING, 10),
+        new TrainAction(Attribute.STRENGTH, 10),
+        new TrainAction(Attribute.DEFENSE, 10),
+        new TrainAction(Attribute.DEXTERITY, 10),
+        new TrainAction(Attribute.AGILITY, 10),
+        new TrainAction(Attribute.CHARISMA, 10),
+
+        //new ReduceKarmaAction(),
+        //new MakeMoneyAction(),
+      ]
+    }
+
+    this.actions.push(new IdleAction())
   }
 
   isPerforming(ns: NS): BaseAction | null {
@@ -57,22 +82,6 @@ export class ActionResolver {
   }
 
   resolve(ns: NS): BaseAction {
-    const player = ns.getPlayer()
-
-    while (true) {
-      for (const action of this.actions) {
-        if (action.shouldPerform(ns)) {
-          return action
-        }
-      }
-
-      this.minLevel += 2
-
-      for (const action of this.actions) {
-        if (action instanceof TrainAction) {
-          action.setMinLevel(this.minLevel * player[`${action.getAttribute()}_mult`])
-        }
-      }
-    }
+    return this.actions.find((a) => a.shouldPerform(ns)) ?? new IdleAction()
   }
 }

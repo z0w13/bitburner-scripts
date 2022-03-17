@@ -1,5 +1,4 @@
 import { NS } from "@ns"
-import { ActionType } from "/PlayerManager/Actions/ActionType"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 enum UpgradeType {
@@ -72,7 +71,7 @@ export default class BuyUpgradesAction extends BaseAction {
     return false
   }
 
-  perform(ns: NS): boolean {
+  async perform(ns: NS): Promise<boolean> {
     const upgrade = this.getAffordableUpgrade(ns)
     if (!upgrade) {
       return false
@@ -86,10 +85,6 @@ export default class BuyUpgradesAction extends BaseAction {
       case UpgradeType.HOME_RAM:
         return ns.upgradeHomeRam()
     }
-  }
-
-  getType(): ActionType {
-    return ActionType.BUY_UPGRADE
   }
 
   isBackground(): boolean {

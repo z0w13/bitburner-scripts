@@ -1,7 +1,6 @@
 import { NS } from "@ns"
 import { getBestJob } from "/data/Jobs"
-import { CONSTANTS } from "/game-constants"
-import { ActionType } from "/PlayerManager/Actions/ActionType"
+import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class WorkAction extends BaseAction {
@@ -20,17 +19,13 @@ export default class WorkAction extends BaseAction {
   }
 
   isPerforming(ns: NS): boolean {
-    const player = ns.getPlayer()
+    const action = getPlayerAction(ns)
     const bestJob = getBestJob(ns)
 
-    return (
-      bestJob !== null &&
-      (player.workType === CONSTANTS.WorkTypeCompany || player.workType === CONSTANTS.WorkTypeCompanyPartTime) &&
-      player.location === bestJob.company
-    )
+    return bestJob !== null && action.type === PlayerActionType.WorkForCompany && action.company === bestJob.company
   }
 
-  perform(ns: NS): boolean {
+  async perform(ns: NS): Promise<boolean> {
     const bestJob = getBestJob(ns)
     if (!bestJob) {
       return false
@@ -42,10 +37,7 @@ export default class WorkAction extends BaseAction {
       }
     }
 
-    return ns.workForCompany(bestJob.company)
-  }
-
-  getType(): ActionType {
-    return ActionType.WORK
+    const shouldFocus = !ns.getOwnedAugmentations().includes("Neuroreceptor Management Implant")
+    return ns.workForCompany(bestJob.company, shouldFocus)
   }
 }

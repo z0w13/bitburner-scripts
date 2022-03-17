@@ -1,5 +1,4 @@
 import { NS } from "@ns"
-import { ActionType } from "/PlayerManager/Actions/ActionType"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class UpgradeHacknetAction extends BaseAction {
@@ -76,7 +75,7 @@ export default class UpgradeHacknetAction extends BaseAction {
     return false
   }
 
-  perform(ns: NS): boolean {
+  async perform(ns: NS): Promise<boolean> {
     while (this.shouldPerform(ns) && this._perform(ns)) {
       continue
     }
@@ -117,10 +116,6 @@ export default class UpgradeHacknetAction extends BaseAction {
     }
 
     return false
-  }
-
-  getType(): ActionType {
-    return ActionType.UPGRADE_HACKNET
   }
 
   isBackground(): boolean {

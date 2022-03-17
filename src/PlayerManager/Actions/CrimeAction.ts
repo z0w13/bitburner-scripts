@@ -1,7 +1,6 @@
 import { NS } from "@ns"
 import { getBestCrime } from "/data/Crimes"
-import { CONSTANTS } from "/game-constants"
-import { ActionType } from "/PlayerManager/Actions/ActionType"
+import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class CrimeAction extends BaseAction {
@@ -10,18 +9,18 @@ export default class CrimeAction extends BaseAction {
   }
 
   isPerforming(ns: NS): boolean {
-    const player = ns.getPlayer()
-    const bestCrime = getBestCrime(ns)
-    const currentCrime = player.crimeType.toLowerCase()
+    const action = getPlayerAction(ns)
+    if (action.type !== PlayerActionType.Crime) {
+      return false
+    }
 
-    return (
-      bestCrime !== null &&
-      player.workType === CONSTANTS.WorkTypeCrime &&
-      currentCrime.includes(bestCrime.name.toLowerCase())
-    )
+    const bestCrime = getBestCrime(ns)
+    const currentCrime = action.crime.toLowerCase()
+
+    return bestCrime !== null && currentCrime.includes(bestCrime.name.toLowerCase())
   }
 
-  perform(ns: NS): boolean {
+  async perform(ns: NS): Promise<boolean> {
     const crime = getBestCrime(ns)
     if (!crime) {
       return false
@@ -29,9 +28,5 @@ export default class CrimeAction extends BaseAction {
 
     ns.commitCrime(crime.name)
     return true
-  }
-
-  getType(): ActionType {
-    return ActionType.CRIME
   }
 }

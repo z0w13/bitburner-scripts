@@ -1,5 +1,4 @@
 import { NS } from "@ns"
-import { ActionType } from "/PlayerManager/Actions/ActionType"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class CreateGangAction extends BaseAction {
@@ -16,7 +15,7 @@ export default class CreateGangAction extends BaseAction {
   isPerforming(_ns: NS): boolean {
     return false
   }
-  perform(ns: NS): boolean {
+  async perform(ns: NS): Promise<boolean> {
     if (!ns.gang.createGang(this.name)) {
       return false
     }
@@ -27,8 +26,5 @@ export default class CreateGangAction extends BaseAction {
     }
 
     return true
-  }
-  getType(): ActionType {
-    return ActionType.IDLE
   }
 }

@@ -81,3 +81,12 @@ export enum LocationName {
   // Default name for Location objects
   Void = "The Void",
 }
+
+export enum City {
+  Aevum = "Aevum",
+  Chongqing = "Chongqing",
+  Ishima = "Ishima",
+  NewTokyo = "New Tokyo",
+  Sector12 = "Sector-12",
+  Volhaven = "Volhaven",
+}

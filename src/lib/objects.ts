@@ -1,4 +1,5 @@
 import { BitNodeMultipliers, CrimeStats } from "@ns"
+import { City, LocationName } from "/data/LocationNames"
 import ServerWrapper from "/lib/server-wrapper"
 
 export interface Script {
@@ -146,3 +147,5 @@ export enum Attribute {
   AGILITY = "agility",
   CHARISMA = "charisma",
 }
+
+export type CityLocationMap = Partial<Record<City, LocationName>>
