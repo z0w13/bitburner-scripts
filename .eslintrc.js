@@ -19,12 +19,13 @@ module.exports = {
     project: ["./tsconfig.json"],
     tsconfigRootDir: __dirname,
   },
-  plugins: ["@typescript-eslint", "prettier"],
+  plugins: ["@typescript-eslint", "prettier", "no-relative-import-paths"],
   ignorePatterns: ["*.d.ts", "*.js"],
   rules: {
     "no-constant-condition": "off",
     "@typescript-eslint/no-unused-vars": ["error", { varsIgnorePattern: "^_", argsIgnorePattern: "^_" }],
     "@typescript-eslint/await-thenable": "error",
     "@typescript-eslint/no-floating-promises": "error",
+    "no-relative-import-paths/no-relative-import-paths": "error",
   }
 }
