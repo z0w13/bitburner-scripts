@@ -1,6 +1,22 @@
 import { NS } from "@ns"
 import { sortFunc } from "/lib/util"
 
-export function getHighestFavorFaction(ns: NS, factions: Array<string>): string {
-  return factions.map((f) => ({ name: f, favor: ns.getFactionFavor(f) })).sort(sortFunc((f) => f.favor, true))[0].name
+function getFactionsSortedByFavour(ns: NS, factions: Array<string>): Array<{ name: string; favor: number }> {
+  const inGang = ns.gang.inGang()
+
+  const factionsByFavour = factions
+    .map((f) => ({ name: f, favor: ns.getFactionFavor(f) }))
+    .sort(sortFunc((f) => f.favor, true))
+
+  if (inGang) {
+    const gangFaction = ns.gang.getGangInformation().faction
+    return factionsByFavour.filter((v) => (inGang ? v.name !== gangFaction : true))
+  }
+
+  return factionsByFavour
+}
+
+export function getHighestFavorFaction(ns: NS, factions: Array<string>): string | null {
+  const factionsByFavour = getFactionsSortedByFavour(ns, factions)
+  return factionsByFavour.length > 0 ? factionsByFavour[0].name : null
 }
