@@ -19,6 +19,7 @@ export default class ServerWrapper {
   readonly baseDifficulty: number
   readonly requiredHackingSkill: number
 
+  readonly numOpenPortsRequired: number
   private backdoor: boolean
   private root: boolean
   private readonly purchasedByPlayer: boolean
@@ -38,9 +39,15 @@ export default class ServerWrapper {
     this.baseDifficulty = server.baseDifficulty
     this.requiredHackingSkill = server.requiredHackingSkill
 
+    this.numOpenPortsRequired = server.numOpenPortsRequired
+
     this.root = server.hasAdminRights
     this.backdoor = server.backdoorInstalled
     this.purchasedByPlayer = server.purchasedByPlayer
+  }
+
+  getOpenPortCount(): number {
+    return this.getServer().openPortCount
   }
 
   getServer(): Server {
