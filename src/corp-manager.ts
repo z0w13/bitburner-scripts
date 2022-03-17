@@ -1,7 +1,7 @@
 import { NS, Division, CorporationInfo, EmployeeJobs, Warehouse, Product } from "@ns"
 import renderTable from "/lib/func/render-table"
 import setupPolyfill from "/lib/ns-polyfill"
-import { sortFunc, sum } from "/lib/util"
+import { formatMoney, formatNum, sortFunc, sum } from "/lib/util"
 
 // From https://github.com/danielyxie/bitburner/blob/cb6dfd1656a7483b7098d160f1401ee2ae925425/src/Corporation/MaterialSizes.ts
 export const MaterialSizes: Record<string, number> = {
@@ -154,11 +154,11 @@ function adjustPrices(ns: NS): void {
 
       if (newMulti !== currMulti) {
         const symbol = newMulti > currMulti ? "+" : "-"
-        const newMultiStr = "MP*" + ns.nFormat(newMulti, "0.00")
+        const newMultiStr = "MP*" + formatNum(ns, newMulti)
         ns.print(
-          `Adjusting ${division.name}/${productName} to sell at ${newMultiStr} (${symbol}${ns.nFormat(
+          `Adjusting ${division.name}/${productName} to sell at ${newMultiStr} (${symbol}${formatNum(
+            ns,
             Math.abs(newMulti - currMulti),
-            "0.00",
           )})`,
         )
         ns.corporation.sellProduct(division.name, MAIN_CITY, productName, "MAX", newMultiStr, true)
@@ -190,14 +190,12 @@ function upgradeOffice(ns: NS, division: string, city: string, limit: number): v
     //ns.print(
     //  `${division}/${city} Size: ${office.size} upgrade to ${
     //    office.size + upgradeSize
-    //  } (+${upgradeSize}) cost ${ns.nFormat(cost, "$0,0.00a")}`,
+    //  } (+${upgradeSize}) cost ${formatMoney(ns, cost)}`,
     //)
 
     if (cost < ns.corporation.getCorporation().funds / 2) {
       ns.corporation.upgradeOfficeSize(division, city, upgradeSize)
-      ns.print(
-        `${division}/${city} expanded office to ${office.size + upgradeSize} for ${ns.nFormat(cost, "$0,0.00a")}`,
-      )
+      ns.print(`${division}/${city} expanded office to ${office.size + upgradeSize} for ${formatMoney(ns, cost)}`)
     }
   }
 
@@ -307,10 +305,11 @@ function manageWarehouses(ns: NS, division: Division): void {
     if (cost < ns.corporation.getCorporation().funds / 2) {
       ns.corporation.upgradeWarehouse(division.name, city)
       ns.print(
-        `${division.name}/${city} expanded warehouse to ${ns.nFormat(
+        `${division.name}/${city} expanded warehouse to ${formatNum(
+          ns,
           ns.corporation.getWarehouse(division.name, city).size,
           "0,0",
-        )} for ${ns.nFormat(cost, "$0.00a")}`,
+        )} for ${formatMoney(ns, cost)}`,
       )
     } else {
       break
@@ -323,7 +322,7 @@ function manageAdVert(ns: NS, division: string): void {
   if (ns.corporation.getHireAdVertCost(division) < corp.funds / 2) {
     const adCost = ns.corporation.getHireAdVertCost(division)
     ns.corporation.hireAdVert(division)
-    ns.print(`${division} hired AdVert for ${ns.nFormat(adCost, "$0.00a")}`)
+    ns.print(`${division} hired AdVert for ${formatMoney(ns, adCost)}`)
   }
 }
 
@@ -334,7 +333,7 @@ function buyUpgradesToLevel(ns: NS, max: number, upgrades: Array<string>): void 
     const level = ns.corporation.getUpgradeLevel(upgrade)
     if (cost < funds / 2 && level < max) {
       ns.corporation.levelUpgrade(upgrade)
-      ns.print(`Upgraded ${upgrade} to lvl ${level + 1} for ${ns.nFormat(cost, "$0,0.00a")}`)
+      ns.print(`Upgraded ${upgrade} to lvl ${level + 1} for ${formatMoney(ns, cost)}`)
     }
   }
 }
