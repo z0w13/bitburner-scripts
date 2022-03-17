@@ -12,6 +12,7 @@ export default class ServerWrapper {
   readonly hostname: string
 
   readonly moneyMax: number
+  readonly moneyAfterHack: number
   readonly serverGrowth: number
   readonly maxRam: number
 
@@ -20,6 +21,7 @@ export default class ServerWrapper {
   readonly requiredHackingSkill: number
 
   readonly numOpenPortsRequired: number
+
   private backdoor: boolean
   private root: boolean
   private readonly purchasedByPlayer: boolean
@@ -32,6 +34,7 @@ export default class ServerWrapper {
 
     // Static values
     this.moneyMax = server.moneyMax
+    this.moneyAfterHack = this.moneyMax * (1 - PERCENTAGE_TO_HACK)
     this.serverGrowth = server.serverGrowth
     this.maxRam = server.maxRam
 
@@ -186,7 +189,7 @@ export default class ServerWrapper {
   }
 
   getGrowTime(prepped = true): number {
-    const server = prepped ? this.getPreppedServer() : this.getServer()
+    const server = prepped ? this.getPreppedServer({ moneyAvailable: this.moneyAfterHack }) : this.getServer()
     const player = this.ns.getPlayer()
 
     return this.ns.formulas.hacking.growTime(server, player)
@@ -230,7 +233,7 @@ export default class ServerWrapper {
   }
 
   getGrowThreads(prepped = true): number {
-    const server = prepped ? this.getPreppedServer() : this.getServer()
+    const server = prepped ? this.getPreppedServer({ moneyAvailable: this.moneyAfterHack }) : this.getServer()
     const player = this.ns.getPlayer()
 
     return getGrowThreads(this.ns, server, player)
