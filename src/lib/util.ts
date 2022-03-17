@@ -72,3 +72,10 @@ export function formatTime(ms: number, showMs = false): string {
   return msTruncSeconds + "ms"
 }
 
+export function notNullMoreThanZero(val: number | undefined | null): boolean {
+  if (typeof val !== "number") {
+    return false
+  }
+
+  return val > 0
+}
