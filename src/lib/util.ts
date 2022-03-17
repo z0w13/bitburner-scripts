@@ -1,3 +1,5 @@
+import { CONSTANTS } from "/game-constants"
+
 export function sum(values: Array<number>): number {
   return values.reduce((acc, val) => acc + val, 0)
 }
