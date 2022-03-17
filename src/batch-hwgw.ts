@@ -1,7 +1,8 @@
 import { NS } from "@ns"
-import { getHackCommand, getGrowCommand, getWeakenCommand, getBatch } from "/lib/commands-basic"
+import * as basic from "/lib/commands-basic"
+import * as formulas from "/lib/commands-formulas"
 import { CommandBatch, FlagSchema } from "/lib/objects"
-import { BATCH_INTERVAL, MONEY_WIGGLE, SECURITY_WIGGLE } from "/config"
+import { BATCH_INTERVAL, MONEY_WIGGLE, PERCENTAGE_TO_HACK, SECURITY_WIGGLE } from "/config"
 import waitForPids from "/lib/func/wait-for-pids"
 import runCommand from "/lib/func/run-command"
 import getThreadsAvailable from "/lib/func/get-threads-available"
@@ -24,34 +25,33 @@ function isMinSecurity(ns: NS, target: string): boolean {
 async function maxMoney(ns: NS, target: string): Promise<void> {
   while (!isMaxMoney(ns, target)) {
     await minSecurity(ns, target)
-    await waitForPids(ns, runCommand(ns, getGrowCommand(ns, target), { fill: true }))
+    await waitForPids(ns, runCommand(ns, basic.getGrowCommand(ns, target), { fill: true }))
   }
 }
 
 async function minSecurity(ns: NS, target: string): Promise<void> {
   while (!isMinSecurity(ns, target)) {
-    const command = getWeakenCommand(ns, target)
+    const command = basic.getWeakenCommand(ns, target)
     await waitForPids(ns, runCommand(ns, command, { fill: true }))
   }
 }
 
 async function calcBatch(ns: NS, target: string): Promise<CommandBatch> {
+  const player = ns.getPlayer()
+
   // Prep
   await maxMoney(ns, target)
   await minSecurity(ns, target)
 
-  const hackCommand = getHackCommand(ns, target)
-  await waitForPids(ns, runCommand(ns, hackCommand))
-  await minSecurity(ns, target)
-
-  const growCommand = getGrowCommand(ns, target)
-  await waitForPids(ns, runCommand(ns, growCommand))
-  await minSecurity(ns, target)
-  await maxMoney(ns, target)
-  await minSecurity(ns, target)
+  const hackCommand = formulas.getHackCommand(ns, ns.getServer(target), player)
+  const growCommand = formulas.getGrowCommand(
+    ns,
+    { ...ns.getServer(target), moneyAvailable: ns.getServerMoneyAvailable(target) * (1 - PERCENTAGE_TO_HACK) },
+    player,
+  )
 
   // Batchboys
-  return getBatch(ns, target, hackCommand, growCommand)
+  return basic.getBatch(ns, target, hackCommand, growCommand)
 }
 
 // TODO(zowie): Find a way to optimise, probably make command calculation not use ServerWrapper
