@@ -1,13 +1,14 @@
 import { NS } from "@ns"
 import { LOG_LEVEL, MAX_LOAD, MAX_PREP_LOAD } from "/config"
 import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
-import { getGrowCommand, getHackCommand, getWeakenCommand } from "/lib/commands-formulas"
-import HostManager from "/lib/host-manager"
-import Logger from "/lib/logger"
-import { Command, Job, JobType } from "/lib/objects"
-import ServerWrapper from "/lib/server-wrapper"
+import { getGrowCommand, getHackCommand, getWeakenCommand } from "/Command/Formulas"
+import HostManager from "/lib/HostManager"
+import Logger from "/lib/Logger"
+import ServerWrapper from "/lib/ServerWrapper"
 import { sum } from "/lib/util"
 import waitForPids from "/lib/func/wait-for-pids"
+import { Job, JobType } from "/JobScheduler/JobObjects"
+import { Command } from "/Command/Objects"
 
 export default class JobManager {
   private readonly ns: NS
@@ -76,9 +77,7 @@ export default class JobManager {
       )
 
       cmd.time = newCmd.time
-      cmd.ram = newCmd.ram
-      cmd.security = newCmd.security
-      cmd.threads = newCmd.threads
+      cmd.setThreads(this.ns, newCmd.threads)
     } else if (newCmd.time - cmd.time > 1000 || newCmd.threads > cmd.threads) {
       this.log.warning(
         `'${cmd.script.file}' for '${job.target.hostname} time ${Math.round(newCmd.time / 1000)}s from ${Math.round(
@@ -107,9 +106,7 @@ export default class JobManager {
       const newCmd = this.recalculateCommand(job, cmd)
 
       cmd.time = newCmd.time
-      cmd.ram = newCmd.ram
-      cmd.security = newCmd.security
-      cmd.threads = newCmd.threads
+      cmd.setThreads(this.ns, newCmd.threads)
 
       job.current = cmd
       await waitForPids(this.ns, this.hostMgr.runCommand(newCmd))

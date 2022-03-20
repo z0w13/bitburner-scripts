@@ -1,5 +1,7 @@
 import { LogLevel } from "/lib/objects"
 
+export const DAEMON_SERVER = "home" // Server to run daemon, etc. on
+
 export const SERVER_PREFIX = "zserv-" // Prefix for when we buy servers
 export const DEPRIORITIZE_HOME = true // Schedule jobs on home last
 

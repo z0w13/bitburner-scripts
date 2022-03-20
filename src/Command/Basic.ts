@@ -2,72 +2,57 @@ import { NS } from "@ns"
 import { BATCH_GROW_MULTIPLIER, BATCH_INTERVAL, BATCH_WEAKEN_MULTIPLIER, PERCENTAGE_TO_HACK } from "/config"
 import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
 import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads"
-import { Command, CommandBatch } from "/lib/objects"
+import { Command, CommandBatch, GrowCommand, HackCommand, WeakenCommand } from "/Command/Objects"
 import renderTable from "/lib/func/render-table"
 import { formatGiB, formatNum, formatTime } from "/lib/util"
 
-export function getWeakenCommand(ns: NS, target: string, additionalSec = 0): Command {
+export function getWeakenCommand(ns: NS, target: string, additionalSec = 0): WeakenCommand {
   const threads = getWeakenThreads(ns, target, additionalSec)
   const time = ns.getWeakenTime(target)
 
-  return getCommand(ns, target, SCRIPT_WEAKEN, threads, time, 0)
+  return new WeakenCommand(target, threads, time, 0, { file: SCRIPT_WEAKEN, ram: ns.getScriptRam(SCRIPT_WEAKEN) })
 }
 
 // WARNING: Requires server to be expected money (after grow) and expected security for accurate calculation
-export function getHackCommand(ns: NS, target: string): Command {
+export function getHackCommand(ns: NS, target: string): HackCommand {
   const threads = getHackThreads(ns, target, PERCENTAGE_TO_HACK)
   const time = ns.getHackTime(target)
   const sec = ns.hackAnalyzeSecurity(threads)
 
-  return getCommand(ns, target, SCRIPT_HACK, threads, time, sec)
+  return new HackCommand(target, threads, time, sec, { file: SCRIPT_HACK, ram: ns.getScriptRam(SCRIPT_HACK) })
 }
 
 // WARNING: Requires server to be expected money (after hack) and expected security for accurate calculation
-export function getGrowCommand(ns: NS, target: string): Command {
+export function getGrowCommand(ns: NS, target: string): GrowCommand {
   const threads = getGrowThreads(ns, target)
   const time = ns.getGrowTime(target)
   const sec = ns.growthAnalyzeSecurity(threads)
 
-  return getCommand(ns, target, SCRIPT_GROW, threads, time, sec)
+  return new GrowCommand(target, threads, time, sec, { file: SCRIPT_GROW, ram: ns.getScriptRam(SCRIPT_GROW) })
 }
 
 export function getHwBatch(ns: NS, target: string, hackCommand: Command): CommandBatch {
   // Testing biggus multiplier to see if that fixes grow issue
   const weakenCommand = getWeakenCommand(ns, target, hackCommand.security)
-  weakenCommand.threads = Math.ceil(weakenCommand.threads * BATCH_WEAKEN_MULTIPLIER)
-  weakenCommand.ram = weakenCommand.threads * weakenCommand.script.ram
+  weakenCommand.setThreads(ns, Math.ceil(weakenCommand.threads * BATCH_WEAKEN_MULTIPLIER))
 
   const commandDelay = BATCH_INTERVAL / 3
 
   hackCommand.script.args = ["--delay", Math.round(weakenCommand.time - hackCommand.time)]
   weakenCommand.script.args = ["--delay", Math.round(commandDelay)]
 
-  return {
-    target: target,
-    threads: hackCommand.threads + weakenCommand.threads,
-    ram: hackCommand.ram + weakenCommand.ram,
-    time: weakenCommand.time + BATCH_INTERVAL,
-    commands: [hackCommand, weakenCommand],
-  }
+  return new CommandBatch([hackCommand, weakenCommand])
 }
 
 export function getBatch(ns: NS, target: string, hackCommand: Command, growCommand: Command): CommandBatch {
-  // Testing biggus multiplier to see if that fixes grow issue
-  const growThreads = Math.ceil(growCommand.threads * BATCH_GROW_MULTIPLIER)
-  growCommand = {
-    ...growCommand,
-    threads: growThreads,
-    ram: growThreads * growCommand.script.ram,
-    security: ns.growthAnalyzeSecurity(growThreads),
-  }
+  growCommand.setThreads(ns, Math.ceil(growCommand.threads * BATCH_GROW_MULTIPLIER))
+  growCommand.security = ns.growthAnalyzeSecurity(growCommand.threads)
 
   const weaken1Command = getWeakenCommand(ns, target, hackCommand.security)
-  weaken1Command.threads = Math.ceil(weaken1Command.threads * BATCH_WEAKEN_MULTIPLIER)
-  weaken1Command.ram = weaken1Command.threads * weaken1Command.script.ram
+  weaken1Command.setThreads(ns, Math.ceil(weaken1Command.threads * BATCH_WEAKEN_MULTIPLIER))
 
   const weaken2Command = getWeakenCommand(ns, target, growCommand.security)
-  weaken2Command.threads = Math.ceil(weaken2Command.threads * BATCH_WEAKEN_MULTIPLIER)
-  weaken2Command.ram = weaken2Command.threads * weaken2Command.script.ram
+  weaken2Command.setThreads(ns, Math.ceil(weaken2Command.threads * BATCH_WEAKEN_MULTIPLIER))
 
   const commandDelay = BATCH_INTERVAL / 4
 
@@ -77,13 +62,7 @@ export function getBatch(ns: NS, target: string, hackCommand: Command, growComma
   growCommand.script.args = ["--delay", Math.round(longestWeakenTime - growCommand.time + commandDelay * 2)]
   weaken2Command.script.args = ["--delay", Math.round(longestWeakenTime - weaken2Command.time + commandDelay * 3)]
 
-  return {
-    target: target,
-    threads: hackCommand.threads + weaken1Command.threads + growCommand.threads + weaken2Command.threads,
-    ram: hackCommand.ram + weaken1Command.ram + growCommand.ram + weaken2Command.ram,
-    time: longestWeakenTime + BATCH_INTERVAL,
-    commands: [hackCommand, weaken1Command, growCommand, weaken2Command],
-  }
+  return new CommandBatch([hackCommand, weaken1Command, growCommand, weaken2Command])
 }
 
 export function printBatch(ns: NS, batch: CommandBatch) {
@@ -115,29 +94,6 @@ export function printBatch(ns: NS, batch: CommandBatch) {
       ),
     )
   })
-}
-
-export function getCommand(
-  ns: NS,
-  target: string,
-  script: string,
-  threads: number,
-  time: number,
-  security: number,
-): Command {
-  const ram = ns.getScriptRam(script)
-
-  return {
-    target,
-    script: {
-      file: script,
-      ram: ram,
-    },
-    threads,
-    ram: threads * ns.getScriptRam(script),
-    time: time,
-    security: security,
-  }
 }
 
 export function printCommand(ns: NS, command: Command) {

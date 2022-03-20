@@ -1,6 +1,6 @@
 import { NS } from "@ns"
 import getHosts from "/lib/func/get-hosts"
-import ServerWrapper from "/lib/server-wrapper"
+import ServerWrapper from "/lib/ServerWrapper"
 import { sortFunc } from "/lib/util"
 
 export interface Target {

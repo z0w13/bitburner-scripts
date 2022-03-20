@@ -1,6 +1,7 @@
 import { filterUndefinedFunc, formatMoney, sum } from "/lib/util"
-import JobManager from "/cnc/job-manager"
+import JobManager from "/JobScheduler/JobManager"
 import {
+  DAEMON_SERVER,
   LOG_LEVEL,
   MAX_LOAD,
   MAX_PREP_LOAD,
@@ -9,14 +10,17 @@ import {
   TARGET_MAX_PREP_WEAKEN_TIME,
   TARGET_MAX_WEAKEN_TIME,
 } from "/config"
-import { getGrowCommand, getHackCommand, getWeakenCommand } from "/lib/commands-formulas"
-import HostManager from "/lib/host-manager"
-import Logger from "/lib/logger"
-import { CantScheduleReason, Command, Job, JobType, PreppedTargetInfo, SerializedDaemonStatus } from "/lib/objects"
-import ServerWrapper from "/lib/server-wrapper"
+import { getGrowCommand, getHackCommand, getWeakenCommand } from "/Command/Formulas"
+import HostManager from "/lib/HostManager"
+import Logger from "/lib/Logger"
+import { CantScheduleReason, Job, JobType } from "/JobScheduler/JobObjects"
+import { Command } from "/Command/Objects"
+import { SerializedDaemonStatus } from "/lib/serialized"
+import ServerWrapper from "/lib/ServerWrapper"
 import { sortFunc } from "/lib/util"
-import VirtualNetworkState from "/lib/virtual-network-state"
-import ServerBuyer from "/lib/server-buyer"
+import VirtualNetworkState from "/lib/VirtualNetworkState"
+import ServerBuyer from "/lib/ServerBuyer"
+import { PreppedTargetInfo } from "/lib/objects"
 
 // TODO(zowie): Move draining stuff to JobManager
 export default class JobScheduler {
@@ -116,8 +120,7 @@ export default class JobScheduler {
           command.ram,
         )
 
-        command.threads = newThreads
-        command.ram = newRam
+        command.setThreads(this.ns, newThreads)
 
         newCommands.push(command)
       }
@@ -447,9 +450,9 @@ export default class JobScheduler {
       lastUpdate: Date.now(),
       preppedTargets: this.getPreppedTargets(),
       prepLoad: this.jobMgr.currentPrepLoad(),
-      stopping: this.ns.fileExists("finish-daemon.txt", "home"),
-      profitPerSecond: this.ns.getScriptIncome("daemon.js", "home"),
-      expPerSecond: this.ns.getScriptExpGain("daemon.js", "home"),
+      stopping: this.ns.fileExists("finish-daemon.txt", DAEMON_SERVER),
+      profitPerSecond: this.ns.getScriptIncome("daemon.js", DAEMON_SERVER),
+      expPerSecond: this.ns.getScriptExpGain("daemon.js", DAEMON_SERVER),
       prepOrder: this.getPrepOrder().map((h) => h.hostname),
       load: this.jobMgr.currentMaxLoad(),
       jobs: this.jobMgr.getJobs().map((j) => ({
@@ -458,6 +461,8 @@ export default class JobScheduler {
         commands: j.commands.map((c) => ({
           ...c,
 
+          threads: c.threads,
+          ram: c.ram,
           target: c.target,
         })),
       })),

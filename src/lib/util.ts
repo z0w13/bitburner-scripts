@@ -38,6 +38,22 @@ export function formatGiB(ns: NS, value: number, fmt = "0,0.00ib"): string {
   return formatBytes(ns, value * 1024 ** 3, fmt)
 }
 
+export function formatDate(ns: NS, date: Date, includeDate = true): string {
+  if (includeDate) {
+    return ns.sprintf(
+      "%04d-%02d-%02d %02d:%02d:%02d",
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds(),
+    )
+  } else {
+    return ns.sprintf("%02d:%02d:%02d", date.getHours(), date.getMinutes(), date.getSeconds())
+  }
+}
+
 const MillisecondsPerDay = 24 * CONSTANTS.MillisecondsPerHour
 const MillisecondsPerMinute = 60 * 1_000
 export function formatTime(ms: number, showMs = false): string {
@@ -78,4 +94,16 @@ export function notNullMoreThanZero(val: number | undefined | null): boolean {
   }
 
   return val > 0
+}
+
+export function toBool(val: number | boolean | string): boolean {
+  if (typeof val === "boolean") {
+    return val
+  }
+
+  if (typeof val === "number") {
+    return val > 0
+  }
+
+  return ["yes", "true", "y"].includes(val.toLowerCase())
 }

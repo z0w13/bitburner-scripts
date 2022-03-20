@@ -1,4 +1,5 @@
 import { NS } from "@ns"
+import { DAEMON_SERVER } from "/config"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class CreateGangAction extends BaseAction {
@@ -20,7 +21,7 @@ export default class CreateGangAction extends BaseAction {
       return false
     }
 
-    const pid = ns.exec("/gang-train.js", "home", 1)
+    const pid = ns.exec("/gang-train.js", DAEMON_SERVER, 1)
     if (pid > 0) {
       ns.tail(pid)
     }

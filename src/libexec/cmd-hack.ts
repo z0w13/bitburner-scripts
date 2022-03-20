@@ -19,5 +19,9 @@ export async function main(ns: NS): Promise<void> {
   }
 
   await ns.asleep(flags.delay)
-  await ns.hack(flags.target, { threads: flags.threads })
+
+  globalThis.__globalState.hackResults.push({
+    target: flags.target,
+    money: await ns.hack(flags.target, { threads: flags.threads }),
+  })
 }

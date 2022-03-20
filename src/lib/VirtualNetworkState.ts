@@ -1,11 +1,13 @@
 import { NS } from "@ns"
 import { LOG_LEVEL, MAX_LOAD, MAX_PREP_LOAD } from "/config"
-import Logger from "/lib/logger"
-import { Command, Job, Script } from "/lib/objects"
-import ServerWrapper from "/lib/server-wrapper"
+import { Command } from "/Command/Objects"
+import { Job } from "/JobScheduler/JobObjects"
+import Logger from "/lib/Logger"
+import { Script } from "/lib/objects"
+import ServerWrapper from "/lib/ServerWrapper"
 import { sum } from "/lib/util"
 
-interface ServerSnapshot {
+interface BasicServerSnapshot {
   hostname: string
   availableRam: number
   maxRam: number
@@ -14,10 +16,10 @@ interface ServerSnapshot {
 export default class VirtualNetworkState {
   private name: string
   private ns: NS
-  private snapshot: Array<ServerSnapshot>
+  private snapshot: Array<BasicServerSnapshot>
   private log: Logger
 
-  constructor(ns: NS, snapshot: Array<ServerSnapshot>, name = "") {
+  constructor(ns: NS, snapshot: Array<BasicServerSnapshot>, name = "") {
     this.name = name
     this.ns = ns
     this.snapshot = [...snapshot.map((s) => ({ ...s }))]

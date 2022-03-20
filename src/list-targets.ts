@@ -68,7 +68,7 @@ export async function main(ns: NS): Promise<void> {
     table.push(row)
   }
 
-  ns.tprint(renderTable(ns, table))
+  ns.tprint("\n" + renderTable(ns, table))
   ns.tprint(
     `Current Threads Available: ${getThreadsAvailable(ns, { file: SCRIPT_HACK, ram: ns.getScriptRam(SCRIPT_HACK) })}`,
   )

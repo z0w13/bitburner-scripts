@@ -1,10 +1,10 @@
-import { NS } from "@ns"
+import { NS, Server } from "@ns"
 import { LOG_LEVEL } from "/config"
 import { CONSTANTS } from "/game-constants"
 import { getMoneyToReserve } from "/lib/func/get-money-to-reserve"
-import Logger from "/lib/logger"
+import Logger from "/lib/Logger"
+import { LogLevel } from "/lib/objects"
 //import { SerializedDaemonStatus } from "/lib/objects"
-import ServerWrapper from "/lib/server-wrapper"
 import { formatGiB, formatMoney } from "/lib/util"
 
 export default class ServerBuyer {
@@ -18,11 +18,11 @@ export default class ServerBuyer {
     this.log = new Logger(ns, LOG_LEVEL, "ServerBuyer")
   }
 
-  getPurchasedServers(): Array<ServerWrapper> {
-    return this.ns.getPurchasedServers().map((h) => new ServerWrapper(this.ns, h))
+  getPurchasedServers(): Array<Server> {
+    return this.ns.getPurchasedServers().map((h) => this.ns.getServer(h))
   }
 
-  getLowestRamHosts(): { servers: Array<ServerWrapper>; ram: number } {
+  getLowestRamHosts(): { servers: Array<Server>; ram: number } {
     const servers = this.getPurchasedServers()
     if (servers.length === 0) {
       return { servers: [], ram: 0 }
@@ -95,44 +95,45 @@ export default class ServerBuyer {
     }
 
     if (ownedServers.length >= limit) {
-      //const data = JSON.parse(this.ns.read("jobs.json.txt")) as SerializedDaemonStatus
       // First look for any owned servers of the lowest tier that are idle, if found delete it
-      for (const server of lowestHosts.servers) {
-        //if (server.getProcesses().length > 0 || data.jobs.findIndex((j) => j.target === server.hostname) > -1) {
-        if (server.getProcesses().length > 0) {
-          continue
-        }
-
-        this.ns.killall(server.hostname)
-        this.ns.deleteServer(server.hostname)
-        this.log.info("Deleted old server %s with %s RAM", server.hostname, formatGiB(this.ns, server.maxRam))
+      const emptyServer = lowestHosts.servers.find((s) => this.ns.ps(s.hostname).length === 0)
+      if (emptyServer) {
+        this.deleteServer(emptyServer)
         return this.buyServer(buyRam)
       }
 
       // If not pick a random one from the lowest tier, drain and delete it
       const server = lowestHosts.servers[Math.floor(Math.random() * lowestHosts.servers.length)]
-      if (!server.isDraining()) {
-        await server.drain()
-      }
-
-      //while (data.jobs.findIndex((j) => j.target === server.hostname) > -1 && !server.isDrained()) {
-      while (!server.isDrained()) {
-        await server.waitTillDrained()
-        await this.ns.asleep(1000)
-      }
-
-      this.ns.killall(server.hostname)
-      this.ns.deleteServer(server.hostname)
-      this.log.info("Deleted old server %s with %s RAM", server.hostname, formatGiB(this.ns, server.maxRam))
+      await this.drainAndWait(server.hostname)
+      this.deleteServer(server)
     }
 
     return this.buyServer(buyRam)
   }
 
+  async drainAndWait(hostname: string): Promise<void> {
+    globalThis.__globalState.drainingServers.add(hostname)
+
+    while (this.ns.ps(hostname).length !== 0) {
+      this.log.debug(`Waiting for ${hostname} to drain...`)
+      await this.ns.asleep(1000)
+    }
+
+    globalThis.__globalState.drainingServers.delete(hostname)
+  }
+
+  deleteServer(server: Server) {
+    this.ns.killall(server.hostname)
+    this.ns.deleteServer(server.hostname)
+    this.log.info("Deleted old server %s with %s RAM", server.hostname, formatGiB(this.ns, server.maxRam))
+  }
+
   buyServer(ram: number): boolean {
     const hostname = this.ns.purchaseServer("zserv", ram)
+
     if (hostname !== "") {
-      this.log.info(
+      this.log.logAndToast(
+        LogLevel.Info,
         "Bought server %s with %s RAM for %s",
         hostname,
         formatGiB(this.ns, ram),

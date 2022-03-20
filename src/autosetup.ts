@@ -4,6 +4,7 @@ import hackHost from "/lib/func/hack-host"
 import isHostSetup from "/lib/func/is-host-setup"
 import { COPY_SCRIPTS } from "/constants"
 import setupPolyfill from "/lib/ns-polyfill"
+import { DAEMON_SERVER } from "/config"
 
 export async function main(ns: NS): Promise<void> {
   setupPolyfill(ns)
@@ -12,7 +13,7 @@ export async function main(ns: NS): Promise<void> {
 
   const flags = ns.flags([
     ["interval", 1000],
-    ["host", "home"],
+    ["host", DAEMON_SERVER],
     ["scripts", COPY_SCRIPTS], // Scripts to install
   ])
 

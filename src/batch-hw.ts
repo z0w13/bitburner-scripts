@@ -1,11 +1,12 @@
 import { NS } from "@ns"
-import { getHackCommand, getWeakenCommand, getHwBatch } from "/lib/commands-basic"
-import { CommandBatch, FlagSchema } from "/lib/objects"
+import { getHackCommand, getWeakenCommand, getHwBatch } from "/Command/Basic"
+import { FlagSchema } from "/lib/objects"
 import { BATCH_INTERVAL, SECURITY_WIGGLE } from "/config"
 import waitForPids from "/lib/func/wait-for-pids"
 import runCommand from "/lib/func/run-command"
 import getThreadsAvailable from "/lib/func/get-threads-available"
-import ServerBuyer from "/lib/server-buyer"
+import ServerBuyer from "/lib/ServerBuyer"
+import { CommandBatch } from "/Command/Objects"
 
 const flagSchema: FlagSchema = [["target", "n00dles"]]
 
@@ -29,9 +30,7 @@ async function calcBatch(ns: NS, target: string): Promise<CommandBatch> {
   await minSecurity(ns, target)
 
   const hackCommand = getHackCommand(ns, target)
-  hackCommand.threads = Math.floor(getThreadsAvailable(ns, hackCommand.script) / 10)
-  hackCommand.ram = hackCommand.threads * hackCommand.script.ram
-  hackCommand.security = ns.hackAnalyzeSecurity(hackCommand.threads)
+  hackCommand.setThreads(ns, Math.floor(getThreadsAvailable(ns, hackCommand.script) / 10))
 
   // Batchboys
   return getHwBatch(ns, target, hackCommand)

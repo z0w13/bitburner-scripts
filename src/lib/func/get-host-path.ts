@@ -1,4 +1,5 @@
 import { NS } from "@ns"
+import { DAEMON_SERVER } from "/config"
 import getHostTree, { TreeNode } from "/lib/func/get-host-tree"
 
 function recursor(target: string, current: TreeNode, path: Array<string> = []): Array<string> | false {
@@ -17,6 +18,6 @@ function recursor(target: string, current: TreeNode, path: Array<string> = []): 
 }
 
 export default function getHostPath(ns: NS, targetHost: string): Array<string> | false {
-  const tree = getHostTree(ns, "home")
+  const tree = getHostTree(ns, DAEMON_SERVER)
   return recursor(targetHost, tree)
 }

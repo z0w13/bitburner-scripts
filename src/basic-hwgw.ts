@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { getHackCommand, getGrowCommand, getWeakenCommand, printCommand } from "/lib/commands-basic"
+import { getHackCommand, getGrowCommand, getWeakenCommand, printCommand } from "/Command/Basic"
 import { FlagSchema } from "/lib/objects"
 import { MONEY_WIGGLE, SECURITY_WIGGLE } from "/config"
 import waitForPids from "/lib/func/wait-for-pids"

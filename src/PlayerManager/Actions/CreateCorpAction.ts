@@ -1,4 +1,5 @@
 import { NS } from "@ns"
+import { DAEMON_SERVER } from "/config"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class CreateCorpAction extends BaseAction {
@@ -21,7 +22,7 @@ export default class CreateCorpAction extends BaseAction {
       return false
     }
 
-    const pid = ns.exec("/corp-manager.js", "home", 1)
+    const pid = ns.exec("/corp-manager.js", DAEMON_SERVER, 1)
     if (pid > 0) {
       ns.tail(pid)
     }

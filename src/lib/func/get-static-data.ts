@@ -1,9 +1,10 @@
 import { NS } from "@ns"
+import { DAEMON_SERVER } from "/config"
 import { STATIC_DATA } from "/constants"
 import { StaticData } from "/lib/objects"
 
 export default function getStaticData(ns: NS): StaticData | null {
-  if (!ns.fileExists(STATIC_DATA, "home")) {
+  if (!ns.fileExists(STATIC_DATA, DAEMON_SERVER)) {
     return null
   }
 

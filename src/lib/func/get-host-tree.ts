@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { SERVER_PREFIX } from "/config"
+import { DAEMON_SERVER, SERVER_PREFIX } from "/config"
 import { sum } from "/lib/util"
 
 export interface TreeNode {
@@ -9,7 +9,13 @@ export interface TreeNode {
   children: Array<TreeNode>
 }
 
-export default function getHostTree(ns: NS, targetHost = "home", all = false, parent?: string, depth = 0): TreeNode {
+export default function getHostTree(
+  ns: NS,
+  targetHost = DAEMON_SERVER,
+  all = false,
+  parent?: string,
+  depth = 0,
+): TreeNode {
   const foundHosts = ns.scan(targetHost).filter((h) => h !== parent)
   const children = foundHosts
     .map((h) => getHostTree(ns, h, all, targetHost, depth + 1))

@@ -14,61 +14,69 @@ import CreateGangAction from "/PlayerManager/Actions/CreateGangAction"
 import TravelForFactionAction from "/PlayerManager/Actions/TravelForFactionAction"
 import BackdoorServersAction from "/PlayerManager/Actions/BackdoorServersAction"
 import DonateToFactionAction from "/PlayerManager/Actions/DonateToFactionAction"
-//import CreateCorpAction from "/PlayerManager/Actions/CreateCorpAction"
+import UpgradeHacknetAction from "/PlayerManager/Actions/UpgradeHacknetAction"
+import { PlayerSettings } from "/lib/StateManager"
+import CreateCorpAction from "/PlayerManager/Actions/CreateCorpAction"
 
 export class ActionResolver {
   protected minLevel: number
   protected actions: Array<BaseAction>
 
-  constructor(hackFocus = false) {
+  constructor(settings: PlayerSettings) {
     this.minLevel = 10
-    if (hackFocus) {
-      this.actions = [
-        //new InstallAugmentsAction(hackFocus),
-        new BackdoorServersAction(),
+    this.actions = [
+      new BackdoorServersAction(),
 
-        new AcceptFactionInvitationsAction(),
-        new BuyUpgradesAction(),
-        new TravelForFactionAction(),
-        new UpgradeAugmentAction(hackFocus),
+      new AcceptFactionInvitationsAction(),
+      new BuyUpgradesAction(),
+      new TravelForFactionAction(),
+      new UpgradeAugmentAction(settings.focusHacking),
 
-        new DonateToFactionAction(hackFocus),
-        new WorkForFactionAction(hackFocus),
+      new DonateToFactionAction(settings.focusHacking),
+      new WorkForFactionAction(settings.focusHacking),
 
-        new TrainAction(Attribute.HACKING, 10),
-        //new MakeMoneyAction(),
-      ]
-    } else {
-      this.actions = [
-        //new InstallAugmentsAction(hackFocus),
-        new BackdoorServersAction(),
+      new TrainAction(Attribute.HACKING, this.minLevel),
+    ]
 
-        //new CreateGangAction("ZCrime"),
-        //new CreateCorpAction("ZCorp"), // Disabled because it requires 1TB of RAM
-        new AcceptFactionInvitationsAction(),
-        new BuyUpgradesAction(),
-        new TravelForFactionAction(),
-        new UpgradeAugmentAction(hackFocus),
-
-        // NOTE(zowie): Disabled for now as we don't have the hash stuff yet plus it's sucky for making money
-        //new UpgradeHacknetAction(),
-
-        new DonateToFactionAction(hackFocus),
-        new WorkForFactionAction(hackFocus),
-
-        new TrainAction(Attribute.HACKING, 10),
-        new TrainAction(Attribute.STRENGTH, 10),
-        new TrainAction(Attribute.DEFENSE, 10),
-        new TrainAction(Attribute.DEXTERITY, 10),
-        new TrainAction(Attribute.AGILITY, 10),
-        new TrainAction(Attribute.CHARISMA, 10),
-
-        //new ReduceKarmaAction(),
-        //new MakeMoneyAction(),
-      ]
+    if (settings.autoReset) {
+      this.addAction(new InstallAugmentsAction(settings.focusHacking), "BackdoorServersAction")
     }
 
-    this.actions.push(new IdleAction())
+    if (settings.enableHacknet) {
+      this.addAction(new UpgradeHacknetAction(), "DonateToFactionAction")
+    }
+
+    if (!settings.focusHacking) {
+      this.addAction(new TrainAction(Attribute.STRENGTH, 10))
+      this.addAction(new TrainAction(Attribute.DEFENSE, 10))
+      this.addAction(new TrainAction(Attribute.DEXTERITY, 10))
+      this.addAction(new TrainAction(Attribute.AGILITY, 10))
+      this.addAction(new TrainAction(Attribute.CHARISMA, 10))
+    }
+
+    if (settings.createGang) {
+      this.addAction(new CreateGangAction("ZGang"), "AcceptFactionInvitationsAction")
+      this.addAction(new ReduceKarmaAction())
+    }
+
+    if (settings.createCorp) {
+      this.addAction(new CreateCorpAction("ZCorp"), "AcceptFactionInvitationsAction")
+    }
+
+    this.addAction(new MakeMoneyAction())
+    this.addAction(new IdleAction())
+  }
+
+  addAction(action: BaseAction, before?: string) {
+    if (before) {
+      const beforeIdx = this.actions.findIndex((a) => a.constructor.name === before)
+      if (!beforeIdx) {
+        throw new Error(`Action ${before} not found`)
+      }
+      this.actions.splice(beforeIdx - 1, 0, action)
+    } else {
+      this.actions.push(action)
+    }
   }
 
   isPerforming(ns: NS): BaseAction | null {

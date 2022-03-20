@@ -1,4 +1,5 @@
 import { NS } from "@ns"
+import { DAEMON_SERVER } from "/config"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 enum UpgradeType {
@@ -48,7 +49,7 @@ export default class BuyUpgradesAction extends BaseAction {
 
           return upgrade
         case UpgradeType.PROGRAM:
-          if (ns.fileExists(upgrade.name, "home")) {
+          if (ns.fileExists(upgrade.name, DAEMON_SERVER)) {
             continue
           }
           return upgrade

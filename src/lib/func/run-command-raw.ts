@@ -10,7 +10,7 @@ interface RunCommandRawOptions {
   args?: Array<string | number | boolean>
 }
 
-export default function runCommand(ns: NS, opts: RunCommandRawOptions): Array<number> {
+export default function runCommandRaw(ns: NS, opts: RunCommandRawOptions): Array<number> {
   const usableHosts = getSetupHosts(ns)
 
   const hosts: Array<{ host: string; ram: number }> = []

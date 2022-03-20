@@ -1,8 +1,9 @@
 import { NS } from "@ns"
-import { JobType, SerializedDaemonStatus, SerializedJob } from "/lib/objects"
+import { JobType, SerializedJob } from "/JobScheduler/JobObjects"
 import renderTable, { RawTableData } from "/lib/func/render-table"
-import ServerWrapper from "/lib/server-wrapper"
-import { formatMoney, formatNum, sum } from "/lib/util"
+import ServerWrapper from "/lib/ServerWrapper"
+import { formatMoney, sum } from "/lib/util"
+import { SerializedDaemonStatus } from "/lib/serialized"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")

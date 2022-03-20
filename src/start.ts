@@ -6,6 +6,8 @@ import getScriptPid from "/lib/func/get-script-pid"
 import getTargets, { getTarget, Target } from "/lib/func/get-targets"
 import { FlagSchema } from "/lib/objects"
 import { formatTime } from "/lib/util"
+import GlobalStateManager from "/lib/StateManager"
+import { DAEMON_SERVER } from "/config"
 
 interface ScriptToRun {
   name: string
@@ -29,36 +31,39 @@ interface Flags {
 }
 
 function getAvailRam(ns: NS): number {
-  return ns.getServerMaxRam("home") - ns.getServerUsedRam("home")
+  return ns.getServerMaxRam(DAEMON_SERVER) - ns.getServerUsedRam(DAEMON_SERVER)
 }
 
 export async function main(ns: NS): Promise<void> {
   setupPolyfill(ns)
 
+  // Make sure to initialise globals
+  new GlobalStateManager(globalThis)
+
   ns.disableLog("ALL")
   const flags = ns.flags(flagSchema) as Flags
 
-  await waitForPids(ns, [ns.exec("/libexec/static-data.js", "home", 1)])
+  await waitForPids(ns, [ns.exec("/libexec/static-data.js", DAEMON_SERVER, 1)])
 
   for (const script of scriptsToRun) {
-    if (getAvailRam(ns) > ns.getScriptRam(script.name, "home")) {
-      if (!isScriptRunning(ns, script.name, "home")) {
+    if (getAvailRam(ns) > ns.getScriptRam(script.name, DAEMON_SERVER)) {
+      if (!isScriptRunning(ns, script.name, DAEMON_SERVER)) {
         const args = script.argsCallback ? script.argsCallback(flags) : script.args ?? []
-        const pid = ns.exec(script.name, "home", 1, ...args)
+        const pid = ns.exec(script.name, DAEMON_SERVER, 1, ...args)
         if (script.tail) {
           ns.tail(pid)
         }
       } else {
         if (script.tail) {
-          ns.tail(getScriptPid(ns, script.name, "home"))
+          ns.tail(getScriptPid(ns, script.name, DAEMON_SERVER))
         }
       }
     }
   }
 
-  let currentPid = getScriptPid(ns, "batch-hwgw.js", "home")
+  let currentPid = getScriptPid(ns, "batch-hwgw.js", DAEMON_SERVER)
   let currentTarget: Target | undefined
-  let autobuyPid = getScriptPid(ns, "autobuy.js", "home")
+  let autobuyPid = getScriptPid(ns, "autobuy.js", DAEMON_SERVER)
   let lastSwitch: number | undefined
 
   while (true) {
@@ -100,7 +105,7 @@ export async function main(ns: NS): Promise<void> {
       autobuyPid = 0
     }
 
-    currentPid = ns.exec("batch-hwgw.js", "home", 1, "--target", bestTarget.name)
+    currentPid = ns.exec("batch-hwgw.js", DAEMON_SERVER, 1, "--target", bestTarget.name)
     currentTarget = bestTarget
     lastSwitch = Date.now()
   }

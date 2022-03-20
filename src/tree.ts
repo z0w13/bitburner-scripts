@@ -1,4 +1,5 @@
 import { NS } from "@ns"
+import { DAEMON_SERVER } from "/config"
 import getHostTree, { TreeNode } from "/lib/func/get-host-tree"
 import { FlagSchema } from "/lib/objects"
 
@@ -6,7 +7,7 @@ const IMPORTANT_HOSTS = new Set(["The-Cave", "I.I.I.I", "run4theh111z", "CSEC", 
 
 const flagSchema: FlagSchema = [
   ["all", false],
-  ["host", "home"],
+  ["host", DAEMON_SERVER],
 ]
 
 interface Flags {

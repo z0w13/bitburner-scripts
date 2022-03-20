@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { Command } from "/lib/objects"
+import { Command } from "/Command/Objects"
 import runCommandRaw from "/lib/func/run-command-raw"
 
 interface RunCommandOptions {

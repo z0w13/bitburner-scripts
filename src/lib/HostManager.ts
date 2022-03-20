@@ -1,8 +1,9 @@
 import { NS } from "@ns"
-import ServerWrapper from "/lib/server-wrapper"
+import ServerWrapper from "/lib/ServerWrapper"
 import getHosts from "/lib/func/get-hosts"
-import { Command, Script } from "/lib/objects"
-import { DEPRIORITIZE_HOME } from "/config"
+import { Script } from "/lib/objects"
+import { Command } from "/Command/Objects"
+import { DAEMON_SERVER, DEPRIORITIZE_HOME } from "/config"
 
 export default class HostManager {
   private ns: NS
@@ -91,8 +92,8 @@ export default class HostManager {
 
   runCommandRaw(opts: RunCommandRawOptions): Array<number> {
     const usableServers = this.getUsableServers()
-    if (DEPRIORITIZE_HOME && usableServers.findIndex((s) => s.hostname === "home") > 0) {
-      usableServers.push(...usableServers.splice(usableServers.findIndex((s) => s.hostname === "home")))
+    if (DEPRIORITIZE_HOME && usableServers.findIndex((s) => s.hostname === DAEMON_SERVER) > 0) {
+      usableServers.push(...usableServers.splice(usableServers.findIndex((s) => s.hostname === DAEMON_SERVER)))
     }
 
     const hosts: Array<{ host: string; ram: number }> = []

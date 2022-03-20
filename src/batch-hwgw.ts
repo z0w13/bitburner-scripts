@@ -1,12 +1,13 @@
 import { NS } from "@ns"
-import * as basic from "/lib/commands-basic"
-import * as formulas from "/lib/commands-formulas"
-import { CommandBatch, FlagSchema } from "/lib/objects"
+import * as basic from "/Command/Basic"
+import * as formulas from "/Command/Formulas"
+import { FlagSchema } from "/lib/objects"
 import { BATCH_INTERVAL, MONEY_WIGGLE, PERCENTAGE_TO_HACK, SECURITY_WIGGLE } from "/config"
 import waitForPids from "/lib/func/wait-for-pids"
 import runCommand from "/lib/func/run-command"
 import getThreadsAvailable from "/lib/func/get-threads-available"
-import ServerBuyer from "/lib/server-buyer"
+import ServerBuyer from "/lib/ServerBuyer"
+import { CommandBatch } from "/Command/Objects"
 
 const flagSchema: FlagSchema = [["target", "n00dles"]]
 

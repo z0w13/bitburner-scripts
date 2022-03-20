@@ -1,4 +1,5 @@
 import { NS } from "@ns"
+import { DAEMON_SERVER } from "/config"
 import getHostPath from "/lib/func/get-host-path"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
@@ -47,7 +48,7 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
 
       await ns.installBackdoor()
 
-      ns.connect("home")
+      ns.connect(DAEMON_SERVER)
     }
 
     return true
