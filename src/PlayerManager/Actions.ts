@@ -39,7 +39,7 @@ export class ActionResolver {
     ]
 
     if (settings.autoReset) {
-      this.addAction(new InstallAugmentsAction(settings.focusHacking), "BackdoorServersAction")
+      this.addAction(new InstallAugmentsAction(), "BackdoorServersAction")
     }
 
     if (settings.enableHacknet) {
