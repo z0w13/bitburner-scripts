@@ -2,7 +2,7 @@ import { NS } from "@ns"
 import { SCRIPT_HACK } from "/constants"
 import renderTable from "/lib/func/render-table"
 import getThreadsAvailable from "/lib/func/get-threads-available"
-import { FlagSchema } from "/lib/objects"
+import { FlagSchema, Script } from "/lib/objects"
 import { formatMoney, formatNum, formatTime } from "/lib/util"
 import getTargets from "/lib/func/get-targets"
 
@@ -35,6 +35,7 @@ export async function main(ns: NS): Promise<void> {
       "Prep Ratio",
       "$/s",
       "XP/thr",
+      "Score",
     ],
   ]
 
@@ -69,7 +70,5 @@ export async function main(ns: NS): Promise<void> {
   }
 
   ns.tprint("\n" + renderTable(ns, table))
-  ns.tprint(
-    `Current Threads Available: ${getThreadsAvailable(ns, { file: SCRIPT_HACK, ram: ns.getScriptRam(SCRIPT_HACK) })}`,
-  )
+  ns.tprint(`Current Threads Available: ${getThreadsAvailable(ns, Script.fromFile(ns, SCRIPT_HACK))}`)
 }

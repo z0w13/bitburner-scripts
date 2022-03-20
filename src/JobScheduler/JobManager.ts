@@ -30,6 +30,7 @@ export default class JobManager {
     this.jobsByType = {
       [JobType.Prep]: new Set<Job>(),
       [JobType.HackWeakenGrowWeaken]: new Set<Job>(),
+      [JobType.Batch]: new Set<Job>(),
     }
     this.serversWithJobs = new Set()
   }

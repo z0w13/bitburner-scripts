@@ -3,11 +3,10 @@ import { isScriptRunning } from "/lib/func/is-script-running"
 import waitForPids from "/lib/func/wait-for-pids"
 import setupPolyfill from "/lib/ns-polyfill"
 import getScriptPid from "/lib/func/get-script-pid"
-import getTargets, { getTarget, Target } from "/lib/func/get-targets"
 import { FlagSchema } from "/lib/objects"
-import { formatTime } from "/lib/util"
-import GlobalStateManager from "/lib/StateManager"
+import GlobalStateManager from "/lib/GlobalStateManager"
 import { DAEMON_SERVER } from "/config"
+import { GLOBAL_STATE_FILE } from "/constants"
 
 interface ScriptToRun {
   name: string
@@ -20,9 +19,9 @@ interface ScriptToRun {
 const scriptsToRun: Array<ScriptToRun> = [
   { name: "autosetup.js" },
   { name: "autobuy.js" },
-  { name: "player-manager.js", tail: true, argsCallback: (flags: Flags) => (flags.hack ? ["--hack"] : []) },
+  { name: "player-manager.js", tail: true },
+  { name: "autobest-hwgw.js", tail: true },
   { name: "server-status.js", tail: true },
-  { name: "batch-hwgw-status.js", tail: true },
 ]
 
 const flagSchema: FlagSchema = [["hack", false]]
@@ -34,16 +33,38 @@ function getAvailRam(ns: NS): number {
   return ns.getServerMaxRam(DAEMON_SERVER) - ns.getServerUsedRam(DAEMON_SERVER)
 }
 
+async function cron(ns: NS, stateMgr: GlobalStateManager): Promise<void> {
+  let ticks = 0
+
+  while (true) {
+    stateMgr.processResults()
+
+    if (ticks % 10) {
+      await ns.write(GLOBAL_STATE_FILE, JSON.stringify(stateMgr.getState()))
+    }
+
+    await ns.asleep(1_000)
+    ticks++
+  }
+}
+
 export async function main(ns: NS): Promise<void> {
   setupPolyfill(ns)
-
-  // Make sure to initialise globals
-  new GlobalStateManager(globalThis)
 
   ns.disableLog("ALL")
   const flags = ns.flags(flagSchema) as Flags
 
   await waitForPids(ns, [ns.exec("/libexec/static-data.js", DAEMON_SERVER, 1)])
+
+  // Make sure to initialise globals
+  const stateMgr = new GlobalStateManager(globalThis)
+  if (ns.fileExists(GLOBAL_STATE_FILE)) {
+    try {
+      stateMgr.restore(JSON.parse(await ns.read(GLOBAL_STATE_FILE)))
+    } catch (e) {
+      ns.tprint(e)
+    }
+  }
 
   for (const script of scriptsToRun) {
     if (getAvailRam(ns) > ns.getScriptRam(script.name, DAEMON_SERVER)) {
@@ -61,52 +82,5 @@ export async function main(ns: NS): Promise<void> {
     }
   }
 
-  let currentPid = getScriptPid(ns, "batch-hwgw.js", DAEMON_SERVER)
-  let currentTarget: Target | undefined
-  let autobuyPid = getScriptPid(ns, "autobuy.js", DAEMON_SERVER)
-  let lastSwitch: number | undefined
-
-  while (true) {
-    await ns.asleep(1000)
-    if (currentTarget && lastSwitch) {
-      ns.print(
-        lastSwitch + currentTarget.weakenTime + 600_000,
-        " ",
-        Date.now(),
-        " ",
-        formatTime(lastSwitch + currentTarget.weakenTime + 600_000 - Date.now()),
-        " ",
-        lastSwitch + currentTarget.weakenTime + 600_000 > Date.now(),
-      )
-    }
-
-    const targets = getTargets(ns)
-      .filter((t) => t.openPorts >= t.openPortsReq)
-      .filter((t) => t.weakenTime < 200_000)
-
-    const bestTarget = targets.at(-1) ?? getTarget(ns, "n00dles")
-    ns.print(bestTarget.name)
-
-    if (bestTarget.name === currentTarget?.name && currentPid && ns.getRunningScript(currentPid)) {
-      continue
-    }
-
-    if (lastSwitch && currentTarget && lastSwitch + currentTarget.weakenTime + 600_000 > Date.now()) {
-      continue
-    }
-
-    if (currentPid > 0) {
-      ns.kill(currentPid)
-      currentPid = 0
-    }
-
-    if (autobuyPid > 0) {
-      ns.kill(autobuyPid)
-      autobuyPid = 0
-    }
-
-    currentPid = ns.exec("batch-hwgw.js", DAEMON_SERVER, 1, "--target", bestTarget.name)
-    currentTarget = bestTarget
-    lastSwitch = Date.now()
-  }
+  await cron(ns, stateMgr)
 }

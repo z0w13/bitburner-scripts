@@ -1,7 +1,8 @@
 import { NS } from "@ns"
 import { BATCH_INTERVAL } from "/config"
+import renderTable from "/lib/func/render-table"
 import { Script } from "/lib/objects"
-import { sum } from "/lib/util"
+import { formatGiB, formatNum, formatTime, sum } from "/lib/util"
 
 export abstract class Command {
   target: string
@@ -27,6 +28,18 @@ export abstract class Command {
   }
 
   public abstract setThreads(ns: NS, threads: number): void
+
+  public print(ns: NS) {
+    const renderCmd = {
+      script: this.script.file,
+      threads: formatNum(ns, this.threads, "0,00"),
+      time: formatTime(this.time),
+      ram: formatGiB(ns, this.ram),
+      security: formatNum(ns, this.security),
+    }
+
+    ns.print(renderTable(ns, Object.entries(renderCmd), false))
+  }
 }
 
 export class WeakenCommand extends Command {
@@ -70,6 +83,37 @@ export class CommandBatch {
 
   public get time(): number {
     return Math.max(...this.commands.map((c) => c.time)) + BATCH_INTERVAL
+  }
+
+  public print(ns: NS) {
+    ns.print(
+      renderTable(
+        ns,
+        [
+          ["Target", this.target],
+          ["Threads", this.threads],
+          ["RAM", formatGiB(ns, this.ram)],
+          ["Time", formatTime(this.time)],
+        ],
+        false,
+      ),
+    )
+
+    this.commands.forEach((cmd) => {
+      ns.print(
+        renderTable(
+          ns,
+          [
+            ["Script", cmd.script.file],
+            ["Threads", cmd.threads],
+            ["RAM", formatGiB(ns, cmd.ram)],
+            ["Time", formatTime(cmd.time)],
+            ["Sec", formatNum(ns, cmd.security)],
+          ],
+          false,
+        ),
+      )
+    })
   }
 }
 

@@ -15,8 +15,8 @@ import TravelForFactionAction from "/PlayerManager/Actions/TravelForFactionActio
 import BackdoorServersAction from "/PlayerManager/Actions/BackdoorServersAction"
 import DonateToFactionAction from "/PlayerManager/Actions/DonateToFactionAction"
 import UpgradeHacknetAction from "/PlayerManager/Actions/UpgradeHacknetAction"
-import { PlayerSettings } from "/lib/StateManager"
-import CreateCorpAction from "/PlayerManager/Actions/CreateCorpAction"
+import { PlayerSettings } from "/lib/GlobalStateManager"
+// import CreateCorpAction from "/PlayerManager/Actions/CreateCorpAction"
 
 export class ActionResolver {
   protected minLevel: number
@@ -60,7 +60,7 @@ export class ActionResolver {
     }
 
     if (settings.createCorp) {
-      this.addAction(new CreateCorpAction("ZCorp"), "AcceptFactionInvitationsAction")
+      // this.addAction(new CreateCorpAction("ZCorp", "AcceptFactionInvitationsAction"))
     }
 
     this.addAction(new MakeMoneyAction())
@@ -70,7 +70,7 @@ export class ActionResolver {
   addAction(action: BaseAction, before?: string) {
     if (before) {
       const beforeIdx = this.actions.findIndex((a) => a.constructor.name === before)
-      if (!beforeIdx) {
+      if (beforeIdx === -1) {
         throw new Error(`Action ${before} not found`)
       }
       this.actions.splice(beforeIdx - 1, 0, action)

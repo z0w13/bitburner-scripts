@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import * as bitburner from "./NetscriptDefinitions";
-import { GlobalState } from "/lib/StateManager";
+import { GlobalState } from "/lib/GlobalStateManager";
 
 export { };
 

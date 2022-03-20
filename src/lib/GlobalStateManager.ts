@@ -36,6 +36,7 @@ export default class GlobalStateManager {
   setPlayerSetting(setting: keyof PlayerSettings, value: boolean) {
     this.state.playerSettings[setting] = value
   }
+
   private state: GlobalState
 
   constructor(global?: GlobalThis) {
@@ -43,25 +44,8 @@ export default class GlobalStateManager {
       global = globalThis
     }
 
-    global.__globalState = {
-      jobs: [],
-      hackResults: [],
-      hackStats: {},
-      drainingServers: new Set<string>(),
-      playerSettings: {
-        focusHacking: true,
-        enableHacknet: false,
-        autoReset: false,
-        createGang: true,
-        createCorp: false,
-
-        ...((global.__globalState.playerSettings as Partial<PlayerSettings>) ?? {}),
-      },
-
-      ...((global.__globalState as Partial<GlobalState>) ?? {}),
-    }
-
     this.state = global.__globalState
+    this.restore({}, global)
   }
 
   registerHackResult(result: HackResult) {
@@ -106,5 +90,36 @@ export default class GlobalStateManager {
       stat.lastResult = Date.now()
       stat.startedAt = Date.now()
     }
+  }
+
+  public restore(snapshot: Partial<GlobalState>, global?: GlobalThis): void {
+    if (!global) {
+      global = globalThis
+    }
+
+    global.__globalState = {
+      ...global.__globalState,
+      ...snapshot,
+    }
+
+    global.__globalState = {
+      jobs: [],
+      hackResults: [],
+      hackStats: {},
+      drainingServers: new Set<string>(),
+      playerSettings: {
+        focusHacking: true,
+        enableHacknet: false,
+        autoReset: false,
+        createGang: true,
+        createCorp: false,
+
+        ...((global.__globalState.playerSettings as Partial<PlayerSettings>) ?? {}),
+      },
+
+      ...((global.__globalState as Partial<GlobalState>) ?? {}),
+    }
+
+    this.state = global.__globalState
   }
 }

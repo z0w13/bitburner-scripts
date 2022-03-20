@@ -36,4 +36,5 @@ export enum CantScheduleReason {
 export enum JobType {
   Prep = "prep",
   HackWeakenGrowWeaken = "hwgw",
+  Batch = "batch",
 }

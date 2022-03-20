@@ -10,7 +10,7 @@ export async function main(ns: NS): Promise<void> {
 
   ns.disableLog("ALL")
   ns.enableLog("joinFaction")
-  ns.enableLog("corporation.createCorporation")
+  //ns.enableLog("corporation.createCorporation")
   ns.enableLog("gang.createGang")
   //ns.enableLog("commitCrime")
   ns.enableLog("purchaseAugmentation")

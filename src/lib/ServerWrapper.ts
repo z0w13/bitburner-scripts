@@ -1,11 +1,10 @@
 import { NS, ProcessInfo, Server } from "@ns"
 import { PERCENTAGE_TO_HACK, HACK_MIN_MONEY, SECURITY_WIGGLE, MONEY_WIGGLE, TARGET_MAX_PREP_WEAKEN_TIME } from "/config"
-import { SCRIPT_HACK, SCRIPT_WRITE_FILE } from "/constants"
+import { SCRIPT_HACK } from "/constants"
 import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads-formulas"
 import getThreadsAvailable from "/lib/func/get-threads-available"
-import { ServerSnapshot } from "/lib/objects"
+import { Script, ServerSnapshot } from "/lib/objects"
 import { sum } from "/lib/util"
-import waitForPids from "/lib/func/wait-for-pids"
 
 export default class ServerWrapper {
   private readonly ns: NS
@@ -74,7 +73,7 @@ export default class ServerWrapper {
   }
 
   isDraining(): boolean {
-    return this.ns.fileExists("draining.txt", this.hostname)
+    return globalThis.__globalState.drainingServers.has(this.hostname)
   }
 
   isDrained(): boolean {
@@ -82,16 +81,13 @@ export default class ServerWrapper {
   }
 
   async waitTillDrained(): Promise<void> {
-    await waitForPids(
-      this.ns,
-      this.getProcesses().map((p) => p.pid),
-    )
+    while (!this.isDrained()) {
+      await this.ns.asleep(1000)
+    }
   }
 
-  async drain(): Promise<void> {
-    if (!this.isDraining()) {
-      await waitForPids(this.ns, [this.ns.exec(SCRIPT_WRITE_FILE, this.hostname, 1, ...["--filename", "draining.txt"])])
-    }
+  drain(): void {
+    globalThis.__globalState.drainingServers.add(this.hostname)
   }
 
   isRooted(): boolean {
@@ -256,7 +252,7 @@ export default class ServerWrapper {
   }
 
   isRecommendedTarget(): { recommended: boolean; rejectReason: string } {
-    const threadsAvail = getThreadsAvailable(this.ns, { file: SCRIPT_HACK, ram: this.ns.getScriptRam(SCRIPT_HACK) })
+    const threadsAvail = getThreadsAvailable(this.ns, Script.fromFile(this.ns, SCRIPT_HACK))
     if (this.purchasedByPlayer) {
       return {
         recommended: false,

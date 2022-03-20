@@ -1,6 +1,7 @@
 import { CONSTANTS } from "/game-constants"
 
 export const STATIC_DATA = "/data/static.txt"
+export const GLOBAL_STATE_FILE = "/data/global-state.txt"
 
 export const SCRIPT_WEAKEN = "/libexec/cmd-weaken.js"
 export const SCRIPT_HACK = "/libexec/cmd-hack.js"

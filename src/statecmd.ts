@@ -1,7 +1,7 @@
 import { NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import setupPolyfill from "/lib/ns-polyfill"
-import GlobalStateManager, { GlobalState, PlayerSettings } from "/lib/StateManager"
+import GlobalStateManager, { GlobalState, PlayerSettings } from "/lib/GlobalStateManager"
 import { toBool } from "/lib/util"
 
 function printHelp(ns: NS) {

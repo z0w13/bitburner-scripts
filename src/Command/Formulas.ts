@@ -3,15 +3,13 @@ import { PERCENTAGE_TO_HACK } from "/config"
 import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
 import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads-formulas"
 import { GrowCommand, HackCommand, WeakenCommand } from "/Command/Objects"
+import { Script } from "/lib/objects"
 
 export function getWeakenCommand(ns: NS, target: Server, player: Player): WeakenCommand {
   const weakenThreads = getWeakenThreads(target)
   const weakenTime = ns.formulas.hacking.weakenTime(target, player)
 
-  return new WeakenCommand(target.hostname, weakenThreads, weakenTime, 0, {
-    file: SCRIPT_WEAKEN,
-    ram: ns.getScriptRam(SCRIPT_WEAKEN),
-  })
+  return new WeakenCommand(target.hostname, weakenThreads, weakenTime, 0, Script.fromFile(ns, SCRIPT_WEAKEN))
 }
 
 export function getHackCommand(ns: NS, target: Server, player: Player): HackCommand {
@@ -19,10 +17,7 @@ export function getHackCommand(ns: NS, target: Server, player: Player): HackComm
   const time = ns.formulas.hacking.hackTime(target, player)
   const sec = ns.hackAnalyzeSecurity(threads)
 
-  return new HackCommand(target.hostname, threads, time, sec, {
-    file: SCRIPT_HACK,
-    ram: ns.getScriptRam(SCRIPT_HACK),
-  })
+  return new HackCommand(target.hostname, threads, time, sec, Script.fromFile(ns, SCRIPT_HACK))
 }
 
 export function getGrowCommand(ns: NS, target: Server, player: Player): GrowCommand {
@@ -30,8 +25,5 @@ export function getGrowCommand(ns: NS, target: Server, player: Player): GrowComm
   const time = ns.formulas.hacking.growTime(target, player)
   const sec = ns.growthAnalyzeSecurity(threads)
 
-  return new GrowCommand(target.hostname, threads, time, sec, {
-    file: SCRIPT_GROW,
-    ram: ns.getScriptRam(SCRIPT_GROW),
-  })
+  return new GrowCommand(target.hostname, threads, time, sec, Script.fromFile(ns, SCRIPT_GROW))
 }

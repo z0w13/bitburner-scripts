@@ -1,7 +1,7 @@
 import { NS } from "@ns"
 import { LOG_LEVEL, MAX_LOAD, MAX_PREP_LOAD } from "/config"
 import { Command } from "/Command/Objects"
-import { Job } from "/JobScheduler/JobObjects"
+import { Job, JobType } from "/JobScheduler/JobObjects"
 import Logger from "/lib/Logger"
 import { Script } from "/lib/objects"
 import ServerWrapper from "/lib/ServerWrapper"
@@ -90,9 +90,34 @@ export default class VirtualNetworkState {
     return command.threads <= this.getAllocatableThreads(command.script)
   }
 
+  canAllocateCommands(commands: Array<Command>): boolean {
+    try {
+      this.allocateCommands(commands)
+      return true
+    } catch (_err) {
+      return false
+    }
+  }
+
+  allocateCommands(commands: Array<Command>): VirtualNetworkState {
+    let state: VirtualNetworkState = this /* eslint-disable-line @typescript-eslint/no-this-alias */
+
+    while (commands.length > 0) {
+      const command = commands.pop()
+      if (!command) {
+        break
+      }
+
+      state = state.allocateCommand(command)
+    }
+
+    return state
+  }
+
   allocateCommand(command: Command) {
     let threadsRemaining = command.threads
-    const availableServers = [...this.snapshot]
+    const servers = [...this.snapshot.map((s) => ({ ...s }))]
+    const availableServers = [...servers]
 
     if (!this.canAllocateCommand(command)) {
       const err = this.ns.sprintf(
@@ -135,14 +160,20 @@ export default class VirtualNetworkState {
         threadsRemaining,
       )
     }
+
+    return new VirtualNetworkState(this.ns, servers, this.name)
   }
 
   canAllocateJob(job: Job): boolean {
-    const biggestCommand = [...job.commands].sort((a, b) => b.threads - a.threads)[0]
-    return this.canAllocateCommand(biggestCommand)
+    if (job.type !== JobType.Batch) {
+      const biggestCommand = [...job.commands].sort((a, b) => b.threads - a.threads)[0]
+      return this.canAllocateCommand(biggestCommand)
+    } else {
+      return this.canAllocateCommands(job.commands)
+    }
   }
 
-  allocateJob(job: Job) {
+  allocateJob(job: Job): VirtualNetworkState {
     const biggestCommand = [...job.commands].sort((a, b) => b.threads - a.threads)[0]
     if (!this.canAllocateJob(job)) {
       const err = this.ns.sprintf(
@@ -157,7 +188,7 @@ export default class VirtualNetworkState {
       throw new Error(err)
     }
 
-    this.allocateCommand(biggestCommand)
+    return job.type === JobType.Batch ? this.allocateCommands(job.commands) : this.allocateCommand(biggestCommand)
   }
 
   static fromServers(ns: NS, servers: Array<ServerWrapper>): VirtualNetworkState {

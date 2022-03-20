@@ -3,14 +3,13 @@ import { BATCH_GROW_MULTIPLIER, BATCH_INTERVAL, BATCH_WEAKEN_MULTIPLIER, PERCENT
 import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
 import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads"
 import { Command, CommandBatch, GrowCommand, HackCommand, WeakenCommand } from "/Command/Objects"
-import renderTable from "/lib/func/render-table"
-import { formatGiB, formatNum, formatTime } from "/lib/util"
+import { Script } from "/lib/objects"
 
 export function getWeakenCommand(ns: NS, target: string, additionalSec = 0): WeakenCommand {
   const threads = getWeakenThreads(ns, target, additionalSec)
   const time = ns.getWeakenTime(target)
 
-  return new WeakenCommand(target, threads, time, 0, { file: SCRIPT_WEAKEN, ram: ns.getScriptRam(SCRIPT_WEAKEN) })
+  return new WeakenCommand(target, threads, time, 0, Script.fromFile(ns, SCRIPT_WEAKEN))
 }
 
 // WARNING: Requires server to be expected money (after grow) and expected security for accurate calculation
@@ -19,7 +18,7 @@ export function getHackCommand(ns: NS, target: string): HackCommand {
   const time = ns.getHackTime(target)
   const sec = ns.hackAnalyzeSecurity(threads)
 
-  return new HackCommand(target, threads, time, sec, { file: SCRIPT_HACK, ram: ns.getScriptRam(SCRIPT_HACK) })
+  return new HackCommand(target, threads, time, sec, Script.fromFile(ns, SCRIPT_HACK))
 }
 
 // WARNING: Requires server to be expected money (after hack) and expected security for accurate calculation
@@ -28,7 +27,7 @@ export function getGrowCommand(ns: NS, target: string): GrowCommand {
   const time = ns.getGrowTime(target)
   const sec = ns.growthAnalyzeSecurity(threads)
 
-  return new GrowCommand(target, threads, time, sec, { file: SCRIPT_GROW, ram: ns.getScriptRam(SCRIPT_GROW) })
+  return new GrowCommand(target, threads, time, sec, Script.fromFile(ns, SCRIPT_GROW))
 }
 
 export function getHwBatch(ns: NS, target: string, hackCommand: Command): CommandBatch {
@@ -63,48 +62,4 @@ export function getBatch(ns: NS, target: string, hackCommand: Command, growComma
   weaken2Command.script.args = ["--delay", Math.round(longestWeakenTime - weaken2Command.time + commandDelay * 3)]
 
   return new CommandBatch([hackCommand, weaken1Command, growCommand, weaken2Command])
-}
-
-export function printBatch(ns: NS, batch: CommandBatch) {
-  ns.print(
-    renderTable(
-      ns,
-      [
-        ["Target", batch.target],
-        ["Threads", batch.threads],
-        ["RAM", ns.sprintf("%.2f", batch.ram)],
-        ["Time", Math.round(batch.time / 1000)],
-      ],
-      false,
-    ),
-  )
-
-  batch.commands.forEach((cmd) => {
-    ns.print(
-      renderTable(
-        ns,
-        [
-          ["Script", cmd.script.file],
-          ["Threads", cmd.threads],
-          ["RAM", ns.sprintf("%.2f", cmd.ram)],
-          ["Time", Math.round(cmd.time / 1000)],
-          ["Sec", ns.sprintf("%.2f", cmd.security)],
-        ],
-        false,
-      ),
-    )
-  })
-}
-
-export function printCommand(ns: NS, command: Command) {
-  const renderCmd = {
-    ...command,
-
-    script: command.script.file,
-    threads: formatNum(ns, command.threads, "0,00"),
-    time: formatTime(command.time),
-    ram: formatGiB(ns, command.ram),
-    security: formatNum(ns, command.security),
-  }
-  ns.print(renderTable(ns, Object.entries(renderCmd), false))
 }

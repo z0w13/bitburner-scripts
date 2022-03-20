@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { getHackCommand, getGrowCommand, getWeakenCommand, printCommand } from "/Command/Basic"
+import { getHackCommand, getGrowCommand, getWeakenCommand } from "/Command/Basic"
 import { FlagSchema } from "/lib/objects"
 import { MONEY_WIGGLE, SECURITY_WIGGLE } from "/config"
 import waitForPids from "/lib/func/wait-for-pids"
@@ -25,12 +25,12 @@ export async function main(ns: NS): Promise<void> {
         ns.getServerMinSecurityLevel(flags.target) * (1 + SECURITY_WIGGLE)
       ) {
         const command = getWeakenCommand(ns, flags.target)
-        printCommand(ns, command)
+        command.print(ns)
         await waitForPids(ns, runCommand(ns, command, { fill: true }))
       }
 
       const command = getGrowCommand(ns, flags.target)
-      printCommand(ns, command)
+      command.print(ns)
       await waitForPids(ns, runCommand(ns, command, { fill: true }))
     }
 
@@ -39,12 +39,12 @@ export async function main(ns: NS): Promise<void> {
       ns.getServerMinSecurityLevel(flags.target) * (1 + SECURITY_WIGGLE)
     ) {
       const command = getWeakenCommand(ns, flags.target)
-      printCommand(ns, command)
+      command.print(ns)
       await waitForPids(ns, runCommand(ns, command, { fill: true }))
     }
 
     const command = getHackCommand(ns, flags.target)
-    printCommand(ns, command)
+    command.print(ns)
     await waitForPids(ns, runCommand(ns, command, { fill: true }))
 
     await ns.asleep(1)

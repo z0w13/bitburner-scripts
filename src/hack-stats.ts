@@ -2,7 +2,7 @@ import { NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import setupPolyfill from "/lib/ns-polyfill"
 import { FlagSchema } from "/lib/objects"
-import GlobalStateManager from "/lib/StateManager"
+import GlobalStateManager from "/lib/GlobalStateManager"
 import { formatDate, formatMoney, formatTime } from "/lib/util"
 
 const flagSchema: FlagSchema = [["once", false]]
@@ -19,7 +19,6 @@ export async function main(ns: NS): Promise<void> {
 
   while (true) {
     ns.clearLog()
-    stateMgr.processResults()
 
     const table: RawTableData = [["Host", "# Hacks", "Last Hack", "Total $", "$/s", "Started At"]]
 
