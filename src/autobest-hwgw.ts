@@ -1,9 +1,54 @@
-import { NS } from "@ns"
+import { NS, Server } from "@ns"
+import { tail } from "/lib/util"
 import { DAEMON_SERVER } from "/config"
+import { JobType } from "/JobScheduler/JobObjects"
 import getScriptPid from "/lib/func/get-script-pid"
 import getTargets, { getTarget, Target } from "/lib/func/get-targets"
+import renderTable from "/lib/func/render-table"
 import setupPolyfill from "/lib/ns-polyfill"
-import { formatDate, formatTime, sortFunc } from "/lib/util"
+import { formatDate, formatMoney, formatNum, formatTime, renderProgress, sortFunc } from "/lib/util"
+
+interface AutobestState {
+  target: Target | undefined
+  type: JobType.HackWeakenGrowWeaken | JobType.Batch | undefined
+  pid: number
+  lastSwitch: number | undefined
+}
+
+function getState(ns: NS): AutobestState {
+  const current: AutobestState = {
+    target: undefined,
+    type: undefined,
+    pid: 0,
+    lastSwitch: undefined,
+  }
+
+  current.pid = getScriptPid(ns, "plan-batch.js", DAEMON_SERVER)
+
+  if (current.pid === 0) {
+    current.pid = getScriptPid(ns, "/libexec/basic-hwgw.js", DAEMON_SERVER)
+  } else {
+    current.type = JobType.Batch
+  }
+
+  if (current.pid > 0) {
+    const script = ns.getRunningScript(current.pid)
+    const targetFlagIdx = script.args.indexOf("--target")
+    if (targetFlagIdx > -1) {
+      current.target = getTarget(ns, script.args[targetFlagIdx + 1])
+    }
+  }
+
+  return current
+}
+
+function getNextSwitch(state: AutobestState) {
+  if (state.lastSwitch && state.target) {
+    return state.lastSwitch + state.target.weakenTime + 600_000
+  }
+
+  return Date.now()
+}
 
 export async function main(ns: NS): Promise<void> {
   setupPolyfill(ns)
@@ -11,90 +56,93 @@ export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
   ns.enableLog("exec")
 
-  let script = "batch-hwgw.js"
-  let currentPid = getScriptPid(ns, script, DAEMON_SERVER)
-
-  if (currentPid === 0) {
-    script = "basic-hwgw.js"
-    currentPid = getScriptPid(ns, script, DAEMON_SERVER)
-  }
-
-  let currentScript = script
-  let currentTarget: Target | undefined
-  let lastSwitch: number | undefined
-
-  if (currentPid > 0) {
-    const script = ns.getRunningScript(currentPid)
-    const targetFlagIdx = script.args.indexOf("--target")
-    if (targetFlagIdx > -1) {
-      currentTarget = getTarget(ns, script.args[targetFlagIdx + 1])
-    }
-  }
+  const state = getState(ns)
 
   while (true) {
     await ns.asleep(1000)
 
-    // If for some reason script exited, reset currentPid/currentTarget
-    if (!ns.getRunningScript(currentPid)) {
-      currentPid = 0
-      currentTarget = undefined
-      lastSwitch = undefined
+    // If for some reason script exited, reset state
+    if (!ns.getRunningScript(state.pid)) {
+      state.pid = 0
+      state.target = undefined
+      state.lastSwitch = undefined
     }
 
-    const nextSwitch = lastSwitch && currentTarget ? lastSwitch + currentTarget.weakenTime + 600_000 : Date.now()
+    const nextSwitch = getNextSwitch(state)
 
-    ns.print(
-      "Next Switch: ",
-      formatDate(ns, new Date(nextSwitch), false),
-      " | Current Time: ",
-      formatDate(ns, new Date(), false),
-      " | Time Remaining: ",
-      formatTime(nextSwitch - Date.now()),
-      " | Switching: ",
-      nextSwitch <= Date.now(),
-      " | Active: ",
-      currentPid > 0,
-      " | Current Target: ",
-      currentTarget?.name,
-    )
+    const table = [
+      ["Time", formatDate(ns, new Date(), false)],
+      ["Next Switch", formatDate(ns, new Date(nextSwitch), false)],
+      ["Remaining", formatTime(nextSwitch - Date.now(), false)],
+      ["Target", state.target?.name],
+      ["Profit/s", formatMoney(ns, state.target?.optimalProfit ?? 0)],
+      ["Type", state.type],
+    ]
 
-    if (nextSwitch > Date.now() && currentPid > 0) {
+    if (state.target) {
+      const targetInfo: Server = ns.getServer(state.target?.name)
+      table.push([
+        "Security",
+        ns.sprintf(
+          "%s/%s/%s",
+          formatNum(ns, targetInfo.minDifficulty, "0,0"),
+          formatNum(ns, targetInfo.baseDifficulty, "0,0"),
+          formatNum(ns, targetInfo.hackDifficulty, "0,0.00"),
+        ),
+      ])
+      table.push([
+        "",
+        "[" + renderProgress({ value: targetInfo.hackDifficulty, min: targetInfo.minDifficulty, max: 100 }) + "]",
+      ])
+      table.push([
+        "Money (Curr/Max/%)",
+        ns.sprintf(
+          "%s/%s/%s%%",
+          formatMoney(ns, targetInfo.moneyAvailable),
+          formatMoney(ns, targetInfo.moneyMax),
+          formatNum(ns, (targetInfo.moneyAvailable / targetInfo.moneyMax) * 100),
+        ),
+      ])
+      table.push(["", "[" + renderProgress({ value: targetInfo.moneyAvailable, max: targetInfo.moneyMax }) + "]"])
+    }
+
+    ns.clearLog()
+    ns.print(renderTable(ns, table, false))
+
+    const logs = ns.getRunningScript(state.pid)?.logs
+    if (logs) {
+      tail(ns, logs)
+    }
+
+    if (nextSwitch > Date.now() && state.pid > 0) {
       continue
     }
 
-    const targets = getTargets(ns)
-      .filter((t) => t.openPorts >= t.openPortsReq)
-      .filter((t) => t.weakenTime < 200_000)
-      .sort(sortFunc((t) => t.profitPerSecond))
-
-    let bestTarget: Target
-
-    if (!targets.at(-1)) {
-      const basicTargets = getTargets(ns, true)
+    const bestTarget =
+      getTargets(ns)
         .filter((t) => t.openPorts >= t.openPortsReq)
-        .filter((t) => t.weakenTime < 200_000)
-        .sort(sortFunc((t) => t.profitPerSecond))
+        .sort(sortFunc((t) => t.optimalProfit))
+        .at(-1) ?? getTarget(ns, "n00dles")
 
-      script = "basic-hwgw.js"
-      bestTarget = basicTargets.at(-1) ?? getTarget(ns, "n00dles")
-    } else {
-      script = "batch-hwgw.js"
-      bestTarget = targets.at(-1) ?? getTarget(ns, "n00dles")
-    }
-
-    if (bestTarget.name === currentTarget?.name && currentScript === script && currentPid > 0) {
-      lastSwitch = Date.now()
+    if (bestTarget.name === state.target?.name && bestTarget.optimalType === state.type && state.pid > 0) {
+      state.lastSwitch = Date.now()
       continue
     }
 
-    if (currentPid > 0) {
-      ns.kill(currentPid)
-      currentPid = 0
+    if (state.pid > 0) {
+      ns.kill(state.pid)
+      state.pid = 0
     }
 
-    currentScript = script
-    currentPid = ns.exec(script, DAEMON_SERVER, 1, "--target", bestTarget.name)
-    currentTarget = bestTarget
-    lastSwitch = Date.now()
+    state.type = bestTarget.optimalType
+    state.pid = ns.exec(
+      state.type === JobType.Batch ? "plan-batch.js" : "/libexec/basic-hwgw.js",
+      DAEMON_SERVER,
+      1,
+      "--target",
+      bestTarget.name,
+    )
+    state.target = bestTarget
+    state.lastSwitch = Date.now()
   }
 }

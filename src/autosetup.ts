@@ -5,6 +5,7 @@ import isHostSetup from "/lib/func/is-host-setup"
 import { COPY_SCRIPTS } from "/constants"
 import setupPolyfill from "/lib/ns-polyfill"
 import { DAEMON_SERVER } from "/config"
+import rsync from "/lib/func/rsync"
 
 export async function main(ns: NS): Promise<void> {
   setupPolyfill(ns)
@@ -28,7 +29,7 @@ export async function main(ns: NS): Promise<void> {
         continue
       }
 
-      await ns.scp(flags["scripts"], flags["host"], hostname)
+      await rsync(ns, flags["host"], hostname, [...flags["scripts"], new RegExp("/lib/shared/.*")])
       ns.printf("Set up %s", hostname)
     }
 

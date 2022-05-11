@@ -29,4 +29,8 @@ export default class CreateCorpAction extends BaseAction {
 
     return true
   }
+
+  shouldContinue(): boolean {
+    return true
+  }
 }

@@ -1,74 +1,73 @@
-import { NS } from "@ns"
+import { NodeStats, NS } from "@ns"
+import { sortFunc } from "/lib/util"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
+type NodeProp = "ram" | "cache" | "cores" | "level"
+type NodeUpgradeType = NodeProp | "node"
+
+interface IndexedNodeStats extends NodeStats {
+  idx: number
+}
+
 export default class UpgradeHacknetAction extends BaseAction {
-  getLowestLevelNode(ns: NS): number {
-    const nodes = ns.hacknet.numNodes()
-    if (nodes === 0) {
-      return -1
-    }
-
-    let lowestLevel = Infinity
-    let lowestIndex = -1
-    for (let i = 0; i < nodes; i++) {
-      const level = ns.hacknet.getNodeStats(i).level
-      if (lowestLevel > level) {
-        lowestLevel = level
-        lowestIndex = i
-      }
-    }
-
-    return lowestIndex
+  getNodes(ns: NS): Array<IndexedNodeStats> {
+    return [...Array(ns.hacknet.numNodes())].map((_val, idx) => {
+      return { idx, ...ns.hacknet.getNodeStats(idx) }
+    })
   }
-  getLowestRamNode(ns: NS): number {
-    const nodes = ns.hacknet.numNodes()
-    if (nodes === 0) {
-      return -1
-    }
 
-    let lowestRam = Infinity
-    let lowestIndex = -1
-    for (let i = 0; i < nodes; i++) {
-      const ram = ns.hacknet.getNodeStats(i).ram
-      if (lowestRam > ram) {
-        lowestRam = ram
-        lowestIndex = i
-      }
-    }
+  getLowestNodes(ns: NS): Record<NodeProp, number> {
+    const nodes = this.getNodes(ns)
 
-    return lowestIndex
+    return {
+      level: [...nodes].sort(sortFunc((v) => v.level)).at(0)?.idx ?? -1,
+      ram: [...nodes].sort(sortFunc((v) => v.ram)).at(0)?.idx ?? -1,
+      cores: [...nodes].sort(sortFunc((v) => v.cores)).at(0)?.idx ?? -1,
+      cache: [...nodes].sort(sortFunc((v) => v.cache)).at(0)?.idx ?? -1,
+    }
   }
-  getLowestCoreNode(ns: NS): number {
-    const nodes = ns.hacknet.numNodes()
-    if (nodes === 0) {
-      return -1
-    }
 
-    let lowestCores = Infinity
-    let lowestIndex = -1
-    for (let i = 0; i < nodes; i++) {
-      const cores = ns.hacknet.getNodeStats(i).cores
-      if (lowestCores > cores) {
-        lowestCores = cores
-        lowestIndex = i
-      }
-    }
+  getCheapestUpgrade(ns: NS): { type: NodeUpgradeType; idx: number; cost: number } | undefined {
+    return Object.values(this.getUpgradeCosts(ns))
+      .sort(sortFunc((v) => v.cost))
+      .at(0)
+  }
 
-    return lowestIndex
+  getUpgradeCosts(ns: NS): Record<NodeUpgradeType, { type: NodeUpgradeType; idx: number; cost: number }> {
+    const lowestNodes = this.getLowestNodes(ns)
+
+    return {
+      level: {
+        idx: lowestNodes.level,
+        type: "level",
+        cost: lowestNodes.level > -1 ? ns.hacknet.getLevelUpgradeCost(lowestNodes.level, 1) : Infinity,
+      },
+      cores: {
+        idx: lowestNodes.cores,
+        type: "cores",
+        cost: lowestNodes.cores > -1 ? ns.hacknet.getCoreUpgradeCost(lowestNodes.cores, 1) : Infinity,
+      },
+      ram: {
+        idx: lowestNodes.ram,
+        type: "ram",
+        cost: lowestNodes.ram > -1 ? ns.hacknet.getRamUpgradeCost(lowestNodes.ram, 1) : Infinity,
+      },
+      cache: {
+        idx: lowestNodes.cache,
+        type: "cache",
+        cost: lowestNodes.cache > -1 ? ns.hacknet.getCacheUpgradeCost(lowestNodes.cache, 1) : Infinity,
+      },
+      node: {
+        idx: -1,
+        type: "node",
+        cost: ns.hacknet.getPurchaseNodeCost(),
+      },
+    }
   }
 
   shouldPerform(ns: NS): boolean {
-    const nodeCost = ns.hacknet.getPurchaseNodeCost()
-    if (ns.hacknet.numNodes() === 0) {
-      return ns.getPlayer().money > nodeCost
-    }
-
-    const nodeLevelCost = ns.hacknet.getLevelUpgradeCost(this.getLowestLevelNode(ns), 1)
-    const nodeRamCost = ns.hacknet.getRamUpgradeCost(this.getLowestRamNode(ns), 1)
-    const nodeCoreCost = ns.hacknet.getCoreUpgradeCost(this.getLowestCoreNode(ns), 1)
-
-    const cheapest = Math.min(nodeCost, nodeLevelCost, nodeRamCost, nodeCoreCost)
-    return cheapest < ns.getPlayer().money
+    const cheapestUpgrade = this.getCheapestUpgrade(ns)
+    return !!cheapestUpgrade && cheapestUpgrade.cost < ns.getPlayer().money
   }
 
   isPerforming(_ns: NS): boolean {
@@ -84,41 +83,34 @@ export default class UpgradeHacknetAction extends BaseAction {
   }
 
   _perform(ns: NS): boolean {
-    const nodeCost = ns.hacknet.getPurchaseNodeCost()
-    if (ns.hacknet.numNodes() === 0) {
-      return ns.hacknet.purchaseNode() > -1
-    }
-
-    const nodeLevelCost = ns.hacknet.getLevelUpgradeCost(this.getLowestLevelNode(ns), 1)
-    const nodeRamCost = ns.hacknet.getRamUpgradeCost(this.getLowestRamNode(ns), 1)
-    const nodeCoreCost = ns.hacknet.getCoreUpgradeCost(this.getLowestCoreNode(ns), 1)
-
-    const cheapest = Math.min(nodeCost, nodeLevelCost, nodeRamCost, nodeCoreCost)
-
-    if (cheapest > ns.getPlayer().money) {
+    const cheapestUpgrade = this.getCheapestUpgrade(ns)
+    if (!cheapestUpgrade) {
       return false
     }
 
-    if (nodeCost === cheapest) {
-      return ns.hacknet.purchaseNode() > -1
+    if (cheapestUpgrade.cost > ns.getPlayer().money) {
+      return false
     }
 
-    if (nodeLevelCost === cheapest) {
-      return ns.hacknet.upgradeLevel(this.getLowestLevelNode(ns), 1)
+    switch (cheapestUpgrade.type) {
+      case "level":
+        return ns.hacknet.upgradeLevel(cheapestUpgrade.idx, 1)
+      case "cache":
+        return ns.hacknet.upgradeCache(cheapestUpgrade.idx, 1)
+      case "ram":
+        return ns.hacknet.upgradeRam(cheapestUpgrade.idx, 1)
+      case "cores":
+        return ns.hacknet.upgradeCore(cheapestUpgrade.idx, 1)
+      case "node":
+        return ns.hacknet.purchaseNode() > -1
     }
-
-    if (nodeRamCost === cheapest) {
-      return ns.hacknet.upgradeRam(this.getLowestRamNode(ns), 1)
-    }
-
-    if (nodeCoreCost === cheapest) {
-      return ns.hacknet.upgradeCore(this.getLowestCoreNode(ns), 1)
-    }
-
-    return false
   }
 
   isBackground(): boolean {
+    return true
+  }
+
+  shouldContinue(): boolean {
     return true
   }
 }

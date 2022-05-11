@@ -4,7 +4,8 @@ import { getWeakenCommand } from "/Command/Basic"
 import getThreadsAvailable from "/lib/func/get-threads-available"
 import runCommand from "/lib/func/run-command"
 import setupPolyfill from "/lib/ns-polyfill"
-import { Script } from "/lib/objects"
+import Script from "/lib/Script"
+import waitForPids from "/lib/func/wait-for-pids"
 
 interface Flags {
   target: string
@@ -23,7 +24,7 @@ export async function main(ns: NS): Promise<void> {
 
     if (command.threads > 10) {
       command.print(ns)
-      runCommand(ns, command, { fill: true })
+      await waitForPids(ns, runCommand(ns, command, { fill: true }))
       ns.printf("Exp: %.2fxp", ns.getScriptExpGain())
     }
 

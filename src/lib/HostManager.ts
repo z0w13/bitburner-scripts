@@ -1,9 +1,7 @@
 import { NS } from "@ns"
 import ServerWrapper from "/lib/ServerWrapper"
 import getHosts from "/lib/func/get-hosts"
-import { Script } from "/lib/objects"
-import { Command } from "/Command/Objects"
-import { DAEMON_SERVER, DEPRIORITIZE_HOME } from "/config"
+import Script from "/lib/Script"
 
 export default class HostManager {
   private ns: NS
@@ -89,92 +87,4 @@ export default class HostManager {
 
     return threads
   }
-
-  runCommandRaw(opts: RunCommandRawOptions): Array<number> {
-    const usableServers = this.getUsableServers()
-    if (DEPRIORITIZE_HOME && usableServers.findIndex((s) => s.hostname === DAEMON_SERVER) > 0) {
-      usableServers.push(...usableServers.splice(usableServers.findIndex((s) => s.hostname === DAEMON_SERVER)))
-    }
-
-    const hosts: Array<{ host: string; ram: number }> = []
-    const availableThreads = this.getThreadsAvailable(opts.script)
-
-    opts.args ??= []
-    opts.fill ??= false
-
-    if (opts.threads === 0) {
-      this.ns.print(`ERROR: Received ${opts.script.file} with 0 threads.`)
-    }
-
-    if (availableThreads < opts.threads && !opts.fill) {
-      this.ns.print(
-        `ERROR: Not enough threads available to run ${opts.script.file} with args ${opts.args ?? []} need ${
-          opts.threads
-        } have ${availableThreads}.`,
-      )
-      return []
-    }
-
-    for (const server of usableServers) {
-      hosts.push({ host: server.hostname, ram: server.maxRam - server.getRamUsed() })
-    }
-
-    let threadsRemaining = opts.threads
-
-    const pids: Array<number> = []
-    while (threadsRemaining > 0) {
-      const host = hosts.pop()
-      if (!host) {
-        this.ns.print(`WARN: Ran out of hosts to run ${opts.script.file}, ${threadsRemaining} not allocated`)
-        break
-      }
-
-      let hostThreads = Math.floor(host.ram / opts.script.ram)
-      if (hostThreads === 0) {
-        continue
-      }
-
-      if (threadsRemaining < hostThreads) {
-        host.ram -= hostThreads * opts.script.ram
-        hostThreads = threadsRemaining
-        hosts.push(host)
-      }
-
-      threadsRemaining -= hostThreads
-
-      const pid = this.ns.exec(
-        opts.script.file,
-        host.host,
-        hostThreads,
-        ...opts.args.map((a) => String(a).replace("__HOST_THREADS__", hostThreads.toString())),
-      )
-      pids.push(pid)
-    }
-
-    return pids
-  }
-
-  runCommand(cmd: Command, opts: RunCommandOptions = {}): Array<number> {
-    opts.args ??= []
-    opts.fill ??= false
-
-    return this.runCommandRaw({
-      script: cmd.script,
-      threads: cmd.threads,
-      fill: opts.fill ?? false,
-      args: ["--target", cmd.target, ...opts.args],
-    })
-  }
-}
-
-export interface RunCommandRawOptions {
-  script: Script
-  threads: number
-  fill?: boolean // If true ignore lack of space available
-  args?: Array<string | number>
-}
-
-interface RunCommandOptions {
-  fill?: boolean // If true ignore lack of space available
-  args?: Array<string | number>
 }

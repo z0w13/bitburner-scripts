@@ -2,12 +2,13 @@ import { NS } from "@ns"
 import * as basic from "/Command/Basic"
 import * as formulas from "/Command/Formulas"
 import { FlagSchema } from "/lib/objects"
-import { BATCH_INTERVAL, MONEY_WIGGLE, PERCENTAGE_TO_HACK, SECURITY_WIGGLE } from "/config"
+import { BATCH_INTERVAL, MONEY_WIGGLE, SECURITY_WIGGLE } from "/config"
 import waitForPids from "/lib/func/wait-for-pids"
 import runCommand from "/lib/func/run-command"
 import getThreadsAvailable from "/lib/func/get-threads-available"
 import ServerBuyer from "/lib/ServerBuyer"
 import { CommandBatch } from "/Command/Objects"
+import { getGlobalState } from "/lib/shared/GlobalStateManager"
 
 const flagSchema: FlagSchema = [["target", "n00dles"]]
 
@@ -38,21 +39,12 @@ async function minSecurity(ns: NS, target: string): Promise<void> {
 }
 
 async function calcBatch(ns: NS, target: string): Promise<CommandBatch> {
-  const player = ns.getPlayer()
-
   // Prep
   await maxMoney(ns, target)
   await minSecurity(ns, target)
 
-  const hackCommand = formulas.getHackCommand(ns, ns.getServer(target), player)
-  const growCommand = formulas.getGrowCommand(
-    ns,
-    { ...ns.getServer(target), moneyAvailable: ns.getServerMoneyAvailable(target) * (1 - PERCENTAGE_TO_HACK) },
-    player,
-  )
-
   // Batchboys
-  return basic.getBatch(ns, target, hackCommand, growCommand)
+  return formulas.getBatch(ns, ns.getServer(target), ns.getPlayer())
 }
 
 // TODO(zowie): Find a way to optimise, probably make command calculation not use ServerWrapper
@@ -102,6 +94,13 @@ export async function main(ns: NS): Promise<void> {
       ),
     )
 
+    getGlobalState().batchHwgwState[flags.target] = {
+      target: flags.target,
+      batches,
+      stage: "batch",
+      doneAt: batchEnd,
+    }
+
     await waitForPids(ns, pids.flat(1))
 
     const script = ns.getRunningScript()
@@ -118,6 +117,12 @@ export async function main(ns: NS): Promise<void> {
 
     // Recalculate batch if player skill changes
     if (!isMaxMoney(ns, flags.target) || !isMinSecurity(ns, flags.target)) {
+      getGlobalState().batchHwgwState[flags.target] = {
+        target: flags.target,
+        batches: 0,
+        stage: "prep",
+        doneAt: 0,
+      }
       batch = await calcBatch(ns, flags.target)
     }
 

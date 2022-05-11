@@ -1,7 +1,7 @@
 import { NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import setupPolyfill from "/lib/ns-polyfill"
-import GlobalStateManager, { GlobalState, PlayerSettings } from "/lib/GlobalStateManager"
+import GlobalStateManager, { GlobalState, PlayerSettings } from "/lib/shared/GlobalStateManager"
 import { toBool } from "/lib/util"
 
 function printHelp(ns: NS) {
@@ -18,7 +18,6 @@ function printState(ns: NS, state: GlobalState) {
     table.push(["Latest hack result", JSON.stringify(state.hackResults.at(-1))])
   }
 
-  table.push(["Running jobs", state.jobs.length])
   table.push(["Host hack stats", Object.values(state.hackStats).length])
 
   if (state.drainingServers.size > 0) {
@@ -65,7 +64,7 @@ export async function main(ns: NS): Promise<void> {
       printState(ns, state)
       break
     }
-    case "player-set": {
+    case "set": {
       setPlayerSetting(ns, state.playerSettings, stateMgr, ns.args)
       break
     }

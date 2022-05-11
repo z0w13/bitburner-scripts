@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import * as bitburner from "./NetscriptDefinitions";
-import { GlobalState } from "/lib/GlobalStateManager";
+import { GlobalState } from "/lib/shared/GlobalStateManager";
 
 export { };
 
@@ -21,5 +21,5 @@ declare global {
 
 
 declare global {
-  var __globalState: GlobalState
+  var __globalState: GlobalState | undefined
 }

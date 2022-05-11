@@ -3,26 +3,40 @@ import { LOG_LEVEL, MAX_LOAD, MAX_PREP_LOAD } from "/config"
 import { Command } from "/Command/Objects"
 import { Job, JobType } from "/JobScheduler/JobObjects"
 import Logger from "/lib/Logger"
-import { Script } from "/lib/objects"
+import Script from "/lib/Script"
 import ServerWrapper from "/lib/ServerWrapper"
-import { sum } from "/lib/util"
+import { formatGiB, sum } from "/lib/util"
 
-interface BasicServerSnapshot {
-  hostname: string
-  availableRam: number
-  maxRam: number
+class BasicServerSnapshot {
+  readonly hostname: string
+  readonly availableRam: number
+  readonly maxRam: number
+
+  constructor(hostname: string, availableRam: number, maxRam: number) {
+    this.hostname = hostname
+    this.availableRam = availableRam
+    this.maxRam = maxRam
+  }
+
+  allocateRam(ram: number): BasicServerSnapshot {
+    return new BasicServerSnapshot(this.hostname, this.availableRam - ram, this.maxRam)
+  }
+
+  copy(): BasicServerSnapshot {
+    return new BasicServerSnapshot(this.hostname, this.availableRam, this.maxRam)
+  }
 }
 
 export default class VirtualNetworkState {
   private name: string
   private ns: NS
-  private snapshot: Array<BasicServerSnapshot>
+  private snapshot: ReadonlyArray<BasicServerSnapshot>
   private log: Logger
 
   constructor(ns: NS, snapshot: Array<BasicServerSnapshot>, name = "") {
     this.name = name
     this.ns = ns
-    this.snapshot = [...snapshot.map((s) => ({ ...s }))]
+    this.snapshot = [...snapshot.map((s) => s.copy())]
     this.log = new Logger(ns, LOG_LEVEL, "VirtualNetworkState" + (name !== "" ? `-${name}` : ""))
   }
 
@@ -43,7 +57,7 @@ export default class VirtualNetworkState {
       return -1
     }
 
-    const temp = new VirtualNetworkState(this.ns, this.snapshot)
+    const temp = new VirtualNetworkState(this.ns, this.getSnapshot())
     temp.allocateJob(job)
 
     return this.getLoad() - temp.getLoad()
@@ -87,7 +101,11 @@ export default class VirtualNetworkState {
   }
 
   canAllocateCommand(command: Command): boolean {
-    return command.threads <= this.getAllocatableThreads(command.script)
+    if (command.distribute) {
+      return command.threads <= this.getAllocatableThreads(command.script)
+    } else {
+      return this.snapshot.findIndex((s) => s.availableRam > command.ram) > -1
+    }
   }
 
   canAllocateCommands(commands: Array<Command>): boolean {
@@ -116,7 +134,7 @@ export default class VirtualNetworkState {
 
   allocateCommand(command: Command) {
     let threadsRemaining = command.threads
-    const servers = [...this.snapshot.map((s) => ({ ...s }))]
+    const servers = [...this.snapshot.map((s) => s.copy())]
     const availableServers = [...servers]
 
     if (!this.canAllocateCommand(command)) {
@@ -132,7 +150,7 @@ export default class VirtualNetworkState {
     }
 
     while (threadsRemaining > 0) {
-      const server = availableServers.pop()
+      let server = availableServers.pop()
       if (!server) {
         // Ran out of servers before we ran out of threads
         break
@@ -149,7 +167,7 @@ export default class VirtualNetworkState {
         throw Error("AAAAA")
       }
 
-      server.availableRam -= serverThreads * command.script.ram
+      server = server.allocateRam(serverThreads * command.script.ram)
       threadsRemaining -= serverThreads
 
       this.log.debug(
@@ -166,15 +184,15 @@ export default class VirtualNetworkState {
 
   canAllocateJob(job: Job): boolean {
     if (job.type !== JobType.Batch) {
-      const biggestCommand = [...job.commands].sort((a, b) => b.threads - a.threads)[0]
+      const biggestCommand = [...job.getCommands()].sort((a, b) => b.threads - a.threads)[0]
       return this.canAllocateCommand(biggestCommand)
     } else {
-      return this.canAllocateCommands(job.commands)
+      return this.canAllocateCommands(job.getCommands())
     }
   }
 
   allocateJob(job: Job): VirtualNetworkState {
-    const biggestCommand = [...job.commands].sort((a, b) => b.threads - a.threads)[0]
+    const biggestCommand = [...job.getCommands()].sort((a, b) => b.threads - a.threads)[0]
     if (!this.canAllocateJob(job)) {
       const err = this.ns.sprintf(
         "Job for '%s' Tried to allocate '%s' with %d threads but only %d available",
@@ -188,13 +206,45 @@ export default class VirtualNetworkState {
       throw new Error(err)
     }
 
-    return job.type === JobType.Batch ? this.allocateCommands(job.commands) : this.allocateCommand(biggestCommand)
+    return job.type === JobType.Batch ? this.allocateCommands(job.getCommands()) : this.allocateCommand(biggestCommand)
+  }
+
+  allocateScript(script: Script, threads: number): [VirtualNetworkState, string] {
+    const ram = script.ram * threads
+    const server = this.snapshot.find((s) => s.availableRam > ram)
+
+    if (!server) {
+      throw Error(`Cannot allocate ${script.file} with ${threads} threads taking ${formatGiB(this.ns, ram)}`)
+    }
+
+    const newState = this.allocateServerRam(server.hostname, ram)
+    return [newState, server.hostname]
+  }
+
+  allocateServerRam(hostname: string, ram: number): VirtualNetworkState {
+    const snapshot = this.getSnapshot()
+    const serverIdx = snapshot.findIndex((s) => s.hostname === hostname)
+
+    if (serverIdx === -1) {
+      throw Error(`Couldn't find server with hostname ${hostname} in snapshot`)
+    }
+
+    snapshot[serverIdx] = snapshot[serverIdx].allocateRam(ram)
+    return new VirtualNetworkState(this.ns, snapshot, this.name)
+  }
+
+  getSnapshot(): Array<BasicServerSnapshot> {
+    return this.snapshot.map((s) => s.copy())
+  }
+
+  copy(): VirtualNetworkState {
+    return new VirtualNetworkState(this.ns, [...this.snapshot], this.name)
   }
 
   static fromServers(ns: NS, servers: Array<ServerWrapper>): VirtualNetworkState {
     return new VirtualNetworkState(
       ns,
-      servers.map((s) => ({ hostname: s.hostname, maxRam: s.maxRam, availableRam: s.maxRam - s.getRamUsed() })),
+      servers.map((s) => new BasicServerSnapshot(s.hostname, s.maxRam, s.maxRam - s.getRamUsed())),
     )
   }
   /**
@@ -203,11 +253,7 @@ export default class VirtualNetworkState {
   static fromServersWithoutCommands(ns: NS, servers: Array<ServerWrapper>): VirtualNetworkState {
     return new VirtualNetworkState(
       ns,
-      servers.map((s) => ({
-        hostname: s.hostname,
-        maxRam: s.maxRam,
-        availableRam: s.maxRam - s.getNonCommandRamUsed(),
-      })),
+      servers.map((s) => new BasicServerSnapshot(s.hostname, s.maxRam, s.maxRam - s.getNonCommandRamUsed())),
     )
   }
 }

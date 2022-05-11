@@ -1,9 +1,9 @@
 import { NS } from "@ns"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
-export default class AcceptFactionInvitationsAction extends BaseAction {
+export default class SpendHashesAction extends BaseAction {
   shouldPerform(ns: NS): boolean {
-    return ns.checkFactionInvitations().length > 0
+    return ns.hacknet.numHashes() > 4
   }
 
   isPerforming(_ns: NS): boolean {
@@ -11,7 +11,15 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
   }
 
   async perform(ns: NS): Promise<boolean> {
-    return ns.checkFactionInvitations().every((f) => ns.joinFaction(f))
+    while (this.shouldPerform(ns) && this._perform(ns)) {
+      continue
+    }
+
+    return true
+  }
+
+  _perform(ns: NS): boolean {
+    return ns.hacknet.spendHashes("Sell for Money")
   }
 
   isBackground(): boolean {

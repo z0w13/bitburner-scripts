@@ -144,4 +144,8 @@ export default class TrainAction extends BaseAction {
         throw new Error("Unknown attribute: " + this.attribute)
     }
   }
+
+  toString(): string {
+    return `<${this.constructor.name} attribute=${this.attribute}>`
+  }
 }

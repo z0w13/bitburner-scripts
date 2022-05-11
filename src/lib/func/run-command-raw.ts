@@ -1,18 +1,18 @@
 import { NS } from "@ns"
 import getSetupHosts from "/lib/func/get-setup-hosts"
 import getThreadsAvailable from "/lib/func/get-threads-available"
-import { Script } from "/lib/objects"
+import Script from "/lib/Script"
 
 interface RunCommandRawOptions {
   script: Script
   threads: number
+  host?: string
   fill?: boolean // If true ignore lack of space available
   args?: Array<string | number | boolean>
 }
 
 export default function runCommandRaw(ns: NS, opts: RunCommandRawOptions): Array<number> {
-  const usableHosts = getSetupHosts(ns)
-
+  const usableHosts = opts.host ? [opts.host] : getSetupHosts(ns)
   const hosts: Array<{ host: string; ram: number }> = []
   const availableThreads = getThreadsAvailable(ns, opts.script)
 

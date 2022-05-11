@@ -37,7 +37,6 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
       }
 
       const path = getHostPath(ns, server)
-      ns.print(server, " path ", path)
       if (!path) {
         continue
       }
@@ -55,6 +54,6 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
   }
 
   isBackground(): boolean {
-    return false
+    return true
   }
 }

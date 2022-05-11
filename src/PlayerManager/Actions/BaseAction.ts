@@ -8,4 +8,12 @@ export default abstract class BaseAction {
   isBackground(): boolean {
     return false
   }
+
+  shouldContinue(): boolean {
+    return false
+  }
+
+  toString(): string {
+    return `<${this.constructor.name}>`
+  }
 }

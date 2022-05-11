@@ -14,7 +14,7 @@ export async function main(ns: NS): Promise<void> {
 
     const procs = ns.ps(DAEMON_SERVER)
     for (const proc of procs) {
-      if (proc.filename !== "batch-hwgw.js") {
+      if (proc.filename !== "/libexec/batch-hwgw.js") {
         continue
       }
 

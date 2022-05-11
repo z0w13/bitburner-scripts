@@ -1,9 +1,12 @@
 import { NS, ProcessInfo, Server } from "@ns"
+import { getBatch } from "/Command/Formulas"
 import { PERCENTAGE_TO_HACK, HACK_MIN_MONEY, SECURITY_WIGGLE, MONEY_WIGGLE, TARGET_MAX_PREP_WEAKEN_TIME } from "/config"
 import { SCRIPT_HACK } from "/constants"
 import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads-formulas"
 import getThreadsAvailable from "/lib/func/get-threads-available"
-import { Script, ServerSnapshot } from "/lib/objects"
+import { getGlobalState } from "/lib/shared/GlobalStateManager"
+import { ServerSnapshot } from "/lib/objects"
+import Script from "/lib/Script"
 import { sum } from "/lib/util"
 
 export default class ServerWrapper {
@@ -73,7 +76,7 @@ export default class ServerWrapper {
   }
 
   isDraining(): boolean {
-    return globalThis.__globalState.drainingServers.has(this.hostname)
+    return getGlobalState().drainingServers.has(this.hostname)
   }
 
   isDrained(): boolean {
@@ -87,7 +90,7 @@ export default class ServerWrapper {
   }
 
   drain(): void {
-    globalThis.__globalState.drainingServers.add(this.hostname)
+    getGlobalState().drainingServers.add(this.hostname)
   }
 
   isRooted(): boolean {
@@ -167,7 +170,7 @@ export default class ServerWrapper {
         player,
       )
 
-    return this.moneyMax / totalTime
+    return (this.moneyMax * PERCENTAGE_TO_HACK) / (totalTime / 1000)
   }
 
   //////////////////////////////////////////////
@@ -240,6 +243,10 @@ export default class ServerWrapper {
     const player = this.ns.getPlayer()
 
     return getHackThreads(this.ns, server, player, PERCENTAGE_TO_HACK)
+  }
+
+  getBatchThreads(): number {
+    return getBatch(this.ns, this.getServer(), this.ns.getPlayer()).threads
   }
 
   getMaxThreadsRequired(): number {
@@ -329,5 +336,9 @@ export default class ServerWrapper {
       recommended: recommended.recommended,
       rejectReason: recommended.recommended ? "" : recommended.rejectReason,
     }
+  }
+
+  static fromServer(ns: NS, target: Server): ServerWrapper {
+    return new ServerWrapper(ns, target.hostname)
   }
 }

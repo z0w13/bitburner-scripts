@@ -1,24 +1,5 @@
 import { BitNodeMultipliers, CrimeStats } from "@ns"
-import { DAEMON_SERVER } from "/config"
 import { City, LocationName } from "/data/LocationNames"
-
-export type ScriptArg = string | number | boolean
-
-export class Script {
-  file: string
-  ram: number
-  args?: Array<ScriptArg>
-
-  constructor(file: string, ram: number, args?: Array<ScriptArg>) {
-    this.file = file
-    this.ram = ram
-    this.args = args
-  }
-
-  static fromFile(ns: NS, file: string, args?: Array<ScriptArg>) {
-    return new Script(file, ns.getScriptRam(file, DAEMON_SERVER), args)
-  }
-}
 
 export interface PreppedTargetInfo {
   hostname: string

@@ -7,8 +7,9 @@ import Logger from "/lib/Logger"
 import ServerWrapper from "/lib/ServerWrapper"
 import { sum } from "/lib/util"
 import waitForPids from "/lib/func/wait-for-pids"
-import { Job, JobType } from "/JobScheduler/JobObjects"
+import { BatchJob, Job, JobType, SerialJob } from "/JobScheduler/JobObjects"
 import { Command } from "/Command/Objects"
+import runCommand from "/lib/func/run-command"
 
 export default class JobManager {
   private readonly ns: NS
@@ -28,9 +29,9 @@ export default class JobManager {
 
     this.jobs = new Set()
     this.jobsByType = {
-      [JobType.Prep]: new Set<Job>(),
-      [JobType.HackWeakenGrowWeaken]: new Set<Job>(),
-      [JobType.Batch]: new Set<Job>(),
+      [JobType.Prep]: new Set<SerialJob>(),
+      [JobType.HackWeakenGrowWeaken]: new Set<SerialJob>(),
+      [JobType.Batch]: new Set<BatchJob>(),
     }
     this.serversWithJobs = new Set()
   }
@@ -47,9 +48,9 @@ export default class JobManager {
     })
   }
 
-  recalculateCommand(job: Job, cmd: Command): Command {
+  __recalculateCommand(job: Job, cmd: Command): Command {
     // Only recalculate HWGW tbh
-    if (job.type === JobType.Prep) {
+    if (job.type !== JobType.HackWeakenGrowWeaken) {
       return cmd
     }
 
@@ -103,18 +104,18 @@ export default class JobManager {
 
   private async _runJob(job: Job): Promise<Job> {
     // NOTE(zowie): Temporary, mainly to check how often this occurs, and how severely
-    for (const cmd of job.commands) {
-      const newCmd = this.recalculateCommand(job, cmd)
-
-      cmd.time = newCmd.time
-      cmd.setThreads(this.ns, newCmd.threads)
-
-      job.current = cmd
-      await waitForPids(this.ns, this.hostMgr.runCommand(newCmd))
-      job.jobsDone++
+    for (const cmd of job.getCommands()) {
+      //job.current = cmd
+      await waitForPids(
+        this.ns,
+        runCommand(this.ns, cmd, {
+          args: ["--target", cmd.target],
+        }),
+      )
+      //job.jobsDone++
     }
 
-    job.done = true
+    //job.done = true
     return job
   }
 
@@ -143,7 +144,7 @@ export default class JobManager {
 
   getUsedRamForJobs(jobs: Array<Job>): number {
     return jobs
-      .map((j) => Math.max(...j.commands.map((c) => c.ram)))
+      .map((j) => Math.max(...j.getCommands().map((c) => c.ram)))
       .flat()
       .reduce((acc, val) => acc + val, 0)
   }

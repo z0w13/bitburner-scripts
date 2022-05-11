@@ -13,7 +13,7 @@ import {
 import { getGrowCommand, getHackCommand, getWeakenCommand } from "/Command/Formulas"
 import HostManager from "/lib/HostManager"
 import Logger from "/lib/Logger"
-import { CantScheduleReason, Job, JobType } from "/JobScheduler/JobObjects"
+import { CantScheduleReason, Job, JobType, SerialJob } from "/JobScheduler/JobObjects"
 import { Command } from "/Command/Objects"
 import { SerializedDaemonStatus } from "/lib/serialized"
 import ServerWrapper from "/lib/ServerWrapper"
@@ -21,6 +21,7 @@ import { sortFunc } from "/lib/util"
 import VirtualNetworkState from "/lib/VirtualNetworkState"
 import ServerBuyer from "/lib/ServerBuyer"
 import { PreppedTargetInfo } from "/lib/objects"
+import { getGlobalState } from "/lib/shared/GlobalStateManager"
 
 // TODO(zowie): Move draining stuff to JobManager
 export default class JobScheduler {
@@ -152,15 +153,12 @@ export default class JobScheduler {
       player,
     )
 
-    return {
-      type: JobType.HackWeakenGrowWeaken,
-      done: false,
-      partial: false,
+    return new SerialJob(
+      JobType.HackWeakenGrowWeaken,
       target,
-      snapshot: target.getSnapshot(),
-      jobsDone: 0,
-      createdAt: Date.now(),
-      commands: [
+      Date.now(),
+
+      [
         hackCommand,
         getWeakenCommand(
           this.ns,
@@ -174,7 +172,8 @@ export default class JobScheduler {
           player,
         ),
       ],
-    }
+      false,
+    )
   }
 
   planHwgwJobs(networkState: VirtualNetworkState): Array<Job> {
@@ -258,18 +257,9 @@ export default class JobScheduler {
 
       const recalc = this.recalculateCommandsForRam(commands, networkState)
 
-      const job = {
-        type: JobType.Prep,
-        done: false,
-        partial: recalc.changed,
-        target,
-        //snapshot: target.getSnapshot(),
-        jobsDone: 0,
-        createdAt: Date.now(),
-        commands: recalc.commands,
-      }
+      const job = new SerialJob(JobType.Prep, target, Date.now(), recalc.commands, recalc.changed)
 
-      if (job.commands.length === 0) {
+      if (job.getCommands().length === 0) {
         this.log.debug("Can't schedule %s job for %s no commands left after recalc", job.type, job.target.hostname)
         continue
       }
@@ -329,7 +319,7 @@ export default class JobScheduler {
           this.log.debug(
             "Can't schedule prep job for %s with %d Thr %.2f RAM would exceed %.2f prep load with %.2f",
             job.target.hostname,
-            Math.max(...job.commands.map((c) => c.ram)),
+            Math.max(...job.getCommands().map((c) => c.ram)),
             this.jobMgr.getUsedRamForJobs([job]),
             MAX_PREP_LOAD,
             this.jobMgr.calculatePrepLoad(this.jobMgr.getPrepJobs().concat(job)),
@@ -339,7 +329,7 @@ export default class JobScheduler {
           this.log.debug(
             "Can't schedule prep job for %s with %d Thr %.2f RAM would exceed %.2f load with %.2f",
             job.target.hostname,
-            Math.max(...job.commands.map((c) => c.ram)),
+            Math.max(...job.getCommands().map((c) => c.ram)),
             this.jobMgr.getUsedRamForJobs([job]),
             MAX_LOAD,
             this.jobMgr.calculateMaxLoad(this.jobMgr.getJobs().concat(job)),
@@ -457,8 +447,13 @@ export default class JobScheduler {
       load: this.jobMgr.currentMaxLoad(),
       jobs: this.jobMgr.getJobs().map((j) => ({
         ...j,
+
+        // TODO(zowie): Fix with actual data
+        done: false,
+        jobsDone: 0,
+
         target: j.target.hostname,
-        commands: j.commands.map((c) => ({
+        commands: j.getCommands().map((c) => ({
           ...c,
 
           threads: c.threads,
@@ -468,6 +463,7 @@ export default class JobScheduler {
       })),
     }
 
+    //getGlobalState().daemonState = serialized
     await this.ns.write("jobs.json", JSON.stringify(serialized), "w")
   }
 }

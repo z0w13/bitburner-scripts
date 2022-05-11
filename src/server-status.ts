@@ -1,7 +1,8 @@
 import { NS } from "@ns"
 import getSetupHosts from "/lib/func/get-setup-hosts"
 import renderTable from "/lib/func/render-table"
-import { formatGiB } from "/lib/util"
+import { formatGiB, SEGMENT_FULL } from "/lib/util"
+import { renderProgress } from "/lib/util"
 
 function printStatus(ns: NS): void {
   const hosts = getSetupHosts(ns)
@@ -37,11 +38,11 @@ function printStatus(ns: NS): void {
     table.push([
       host,
       hostThreads.toString(),
-      ns.vsprintf("%7s/%7s (%3d%%) [%-20s]", [
+      ns.vsprintf("%7s/%7s (%3d%%) [%s]", [
         formatGiB(ns, server.ramUsed),
         formatGiB(ns, server.maxRam),
         (server.ramUsed / server.maxRam) * 100,
-        "=".repeat(Math.ceil((server.ramUsed / server.maxRam) * 20)),
+        renderProgress({ value: server.ramUsed, max: server.maxRam, width: 20, segmentSymbols: SEGMENT_FULL }),
       ]),
     ])
   }
@@ -49,11 +50,11 @@ function printStatus(ns: NS): void {
   table.push([
     "Total (" + hosts.length + ")",
     totalThreads.toString(),
-    ns.vsprintf("%7s/%7s (%3d%%) [%-20s]", [
+    ns.vsprintf("%7s/%7s (%3d%%) [%s]", [
       formatGiB(ns, totalRamUsed),
       formatGiB(ns, totalRam),
       (totalRamUsed / totalRam) * 100,
-      "=".repeat(Math.ceil((totalRamUsed / totalRam) * 20)),
+      renderProgress({ value: totalRamUsed, max: totalRam, width: 20, segmentSymbols: SEGMENT_FULL }),
     ]),
   ])
 

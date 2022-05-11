@@ -38,7 +38,7 @@ export async function main(ns: NS): Promise<void> {
   const jobScheduler = new JobScheduler(ns, hostMgr, jobMgr, serverBuyer)
 
   //if (hostMgr.getTotalRam() < 1024) {
-  //  ns.spawn("basic-hwgw.js", 1)
+  //  ns.spawn("/libexec/basic-hwgw.js", 1)
   //  return
   //}
 

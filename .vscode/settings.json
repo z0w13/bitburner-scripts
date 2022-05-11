@@ -29,4 +29,6 @@
     "typescript.format.semicolons": "remove",
     "typescript.preferences.quoteStyle": "double",
     "eslint.format.enable": true,
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.updateImportsOnFileMove.enabled": "always",
 }

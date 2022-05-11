@@ -1,7 +1,7 @@
 import { NS } from "@ns"
 import { BATCH_INTERVAL } from "/config"
 import renderTable from "/lib/func/render-table"
-import { Script } from "/lib/objects"
+import Script from "/lib/Script"
 import { formatGiB, formatNum, formatTime, sum } from "/lib/util"
 
 export abstract class Command {
@@ -10,13 +10,30 @@ export abstract class Command {
   time: number
   security: number
   script: Script
+  delay: number
+  distribute: boolean
+  host?: string
 
-  constructor(target: string, threads: number, time: number, security: number, script: Script) {
+  constructor(
+    target: string,
+    threads: number,
+    time: number,
+    security: number,
+    script: Script,
+    delay = 0,
+    distribute = true,
+  ) {
     this.target = target
     this._threads = threads
     this.time = time
     this.security = security
     this.script = script
+    this.delay = delay
+    this.distribute = distribute
+  }
+
+  public getTotalTime(): number {
+    return this.time + this.delay
   }
 
   public get ram(): number {
@@ -62,11 +79,34 @@ export class HackCommand extends Command {
   }
 }
 
+export class BatchCommand {
+  innerCommand: Command
+
+  constructor(innerCommand: Command) {
+    this.innerCommand = innerCommand
+  }
+
+  getCommand(endTime: number, uniqId: number): Command {
+    const now = Date.now()
+    const delay = endTime - now - this.innerCommand.time
+    this.innerCommand.script.flags["delay"] = delay
+    this.innerCommand.script.args.push("batch-" + uniqId)
+
+    return this.innerCommand
+  }
+}
+
 export class CommandBatch {
   commands: Array<Command>
+  delay: number
 
-  public constructor(commands: Array<Command>) {
+  public constructor(commands: Array<Command>, delay = 0) {
+    if (commands.length === 0) {
+      throw Error("CommandBatch received empty commands array, minimum of 1 command")
+    }
+
     this.commands = commands
+    this.delay = delay
   }
 
   public get target(): string {
@@ -92,6 +132,7 @@ export class CommandBatch {
         [
           ["Target", this.target],
           ["Threads", this.threads],
+          ["Delay", formatNum(ns, this.delay / 1000)],
           ["RAM", formatGiB(ns, this.ram)],
           ["Time", formatTime(this.time)],
         ],

@@ -3,7 +3,7 @@ import { BATCH_GROW_MULTIPLIER, BATCH_INTERVAL, BATCH_WEAKEN_MULTIPLIER, PERCENT
 import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
 import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads"
 import { Command, CommandBatch, GrowCommand, HackCommand, WeakenCommand } from "/Command/Objects"
-import { Script } from "/lib/objects"
+import Script from "/lib/Script"
 
 export function getWeakenCommand(ns: NS, target: string, additionalSec = 0): WeakenCommand {
   const threads = getWeakenThreads(ns, target, additionalSec)
@@ -56,10 +56,10 @@ export function getBatch(ns: NS, target: string, hackCommand: Command, growComma
   const commandDelay = BATCH_INTERVAL / 4
 
   const longestWeakenTime = Math.max(weaken1Command.time, weaken2Command.time)
-  hackCommand.script.args = ["--delay", Math.round(longestWeakenTime - hackCommand.time)]
-  weaken1Command.script.args = ["--delay", Math.round(longestWeakenTime - weaken1Command.time + commandDelay)]
-  growCommand.script.args = ["--delay", Math.round(longestWeakenTime - growCommand.time + commandDelay * 2)]
-  weaken2Command.script.args = ["--delay", Math.round(longestWeakenTime - weaken2Command.time + commandDelay * 3)]
+  hackCommand.script.flags["delay"] = Math.round(longestWeakenTime - hackCommand.time)
+  weaken1Command.script.flags["delay"] = Math.round(longestWeakenTime - weaken1Command.time + commandDelay)
+  growCommand.script.flags["delay"] = Math.round(longestWeakenTime - growCommand.time + commandDelay * 2)
+  weaken2Command.script.flags["delay"] = Math.round(longestWeakenTime - weaken2Command.time + commandDelay * 3)
 
   return new CommandBatch([hackCommand, weaken1Command, growCommand, weaken2Command])
 }

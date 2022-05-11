@@ -2,6 +2,7 @@ import { NS, Server } from "@ns"
 import { LOG_LEVEL } from "/config"
 import { CONSTANTS } from "/game-constants"
 import { getMoneyToReserve } from "/lib/func/get-money-to-reserve"
+import { getGlobalState } from "/lib/shared/GlobalStateManager"
 import Logger from "/lib/Logger"
 import { LogLevel } from "/lib/objects"
 //import { SerializedDaemonStatus } from "/lib/objects"
@@ -112,14 +113,15 @@ export default class ServerBuyer {
   }
 
   async drainAndWait(hostname: string): Promise<void> {
-    globalThis.__globalState.drainingServers.add(hostname)
+    const drainingServers = getGlobalState().drainingServers
+    drainingServers.add(hostname)
 
     while (this.ns.ps(hostname).length !== 0) {
       this.log.debug(`Waiting for ${hostname} to drain...`)
       await this.ns.asleep(1000)
     }
 
-    globalThis.__globalState.drainingServers.delete(hostname)
+    drainingServers.delete(hostname)
   }
 
   deleteServer(server: Server) {

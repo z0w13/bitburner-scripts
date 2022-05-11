@@ -73,4 +73,8 @@ export default class DonateToFactionAction extends BaseAction {
   isBackground(): boolean {
     return true
   }
+
+  shouldContinue(): boolean {
+    return true
+  }
 }
