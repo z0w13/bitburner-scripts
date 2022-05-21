@@ -5,7 +5,7 @@ function getFactionsSortedByFavour(ns: NS, factions: Array<string>): Array<{ nam
   const inGang = ns.gang.inGang()
 
   const factionsByFavour = factions
-    .map((f) => ({ name: f, favor: ns.getFactionFavor(f) }))
+    .map((f) => ({ name: f, favor: ns.singularity.getFactionFavor(f) }))
     .sort(sortFunc((f) => f.favor, true))
 
   if (inGang) {

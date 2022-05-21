@@ -92,13 +92,13 @@ export default class TrainAction extends BaseAction {
   async perform(ns: NS): Promise<boolean> {
     const player = ns.getPlayer()
 
-    const shouldFocus = !ns.getOwnedAugmentations().includes("Neuroreceptor Management Implant")
+    const shouldFocus = !ns.singularity.getOwnedAugmentations().includes("Neuroreceptor Management Implant")
 
     switch (this.attribute) {
       case Attribute.CHARISMA:
       case Attribute.HACKING: {
         const uniName =
-          player.city !== this.BEST_UNI_CITY && !ns.travelToCity(this.BEST_UNI_CITY)
+          player.city !== this.BEST_UNI_CITY && !ns.singularity.travelToCity(this.BEST_UNI_CITY)
             ? this.UNI_MAP[player.city]
             : this.UNI_MAP[this.BEST_UNI_CITY]
 
@@ -106,14 +106,14 @@ export default class TrainAction extends BaseAction {
           return false
         }
 
-        return ns.universityCourse(uniName, this.getCourseName(), shouldFocus)
+        return ns.singularity.universityCourse(uniName, this.getCourseName(), shouldFocus)
       }
       case Attribute.STRENGTH:
       case Attribute.DEFENSE:
       case Attribute.AGILITY:
       case Attribute.DEXTERITY: {
         const gymName =
-          player.city !== this.BEST_GYM_CITY && !ns.travelToCity(this.BEST_GYM_CITY)
+          player.city !== this.BEST_GYM_CITY && !ns.singularity.travelToCity(this.BEST_GYM_CITY)
             ? this.GYM_MAP[player.city]
             : this.GYM_MAP[this.BEST_GYM_CITY]
 
@@ -121,7 +121,7 @@ export default class TrainAction extends BaseAction {
           return false
         }
 
-        return ns.gymWorkout(gymName, this.getCourseName(), shouldFocus)
+        return ns.singularity.gymWorkout(gymName, this.getCourseName(), shouldFocus)
       }
     }
   }

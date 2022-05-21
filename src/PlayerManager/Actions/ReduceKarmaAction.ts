@@ -7,7 +7,7 @@ export default class ReduceKarmaAction extends BaseAction {
   shouldPerform(ns: NS): boolean {
     return (
       ns.getPlayer().numPeopleKilled * 3 < 54000 &&
-      ns.getCrimeChance(CONSTANTS.CrimeHomicide) > 0.8 &&
+      ns.singularity.getCrimeChance(CONSTANTS.CrimeHomicide) > 0.8 &&
       !ns.gang.inGang()
     )
   }
@@ -31,7 +31,7 @@ export default class ReduceKarmaAction extends BaseAction {
       ns.print(`Killed ${player.numPeopleKilled} out of 18000 so far, ${18000 - player.numPeopleKilled} to go`)
     }
 
-    ns.commitCrime(CONSTANTS.CrimeHomicide)
+    ns.singularity.commitCrime(CONSTANTS.CrimeHomicide)
     return true
   }
 }

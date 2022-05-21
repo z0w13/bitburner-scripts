@@ -29,7 +29,7 @@ export default class UpgradeAugmentAction extends BaseAction {
 
   async perform(ns: NS): Promise<boolean> {
     const aug = getLowestMetRepAug(ns, this.hackFocus)
-    return aug?.meetRepFaction !== undefined && ns.purchaseAugmentation(aug.meetRepFaction, aug.name)
+    return aug?.meetRepFaction !== undefined && ns.singularity.purchaseAugmentation(aug.meetRepFaction, aug.name)
   }
 
   isBackground(): boolean {

@@ -32,12 +32,12 @@ export default class WorkAction extends BaseAction {
     }
 
     if (!this.getJob(ns, bestJob.company)) {
-      if (!ns.applyToCompany(bestJob.company, bestJob.name)) {
+      if (!ns.singularity.applyToCompany(bestJob.company, bestJob.name)) {
         return false
       }
     }
 
-    const shouldFocus = !ns.getOwnedAugmentations().includes("Neuroreceptor Management Implant")
-    return ns.workForCompany(bestJob.company, shouldFocus)
+    const shouldFocus = !ns.singularity.getOwnedAugmentations().includes("Neuroreceptor Management Implant")
+    return ns.singularity.workForCompany(bestJob.company, shouldFocus)
   }
 }

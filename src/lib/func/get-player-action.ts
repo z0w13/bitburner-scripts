@@ -94,41 +94,41 @@ export default function getPlayerAction(ns: NS): PlayerAction {
     case CONSTANTS.WorkTypeCompanyPartTime:
       return {
         type: PlayerActionType.WorkForCompany,
-        focus: ns.isFocused(),
+        focus: ns.singularity.isFocused(),
         company: player.currentWorkFactionName,
         rep: player.workRepGained,
       } as PlayerWorkForCompanyAction
     case CONSTANTS.WorkTypeFaction:
       return {
         type: PlayerActionType.WorkForFaction,
-        focus: ns.isFocused(),
+        focus: ns.singularity.isFocused(),
         faction: player.currentWorkFactionName,
         rep: player.workRepGained,
       } as PlayerWorkForFactionAction
     case CONSTANTS.WorkTypeCreateProgram:
       return {
         type: PlayerActionType.CreateProgram,
-        focus: ns.isFocused(),
+        focus: ns.singularity.isFocused(),
         program: player.createProgramName,
       } as PlayerCreateProgramAction
     case CONSTANTS.WorkTypeCrime:
       return {
         type: PlayerActionType.Crime,
-        focus: ns.isFocused(),
+        focus: ns.singularity.isFocused(),
         crime: player.crimeType,
       } as PlayerCrimeAction
     case CONSTANTS.WorkTypeStudyClass:
       if (player.location.includes("Gym")) {
         return {
           type: PlayerActionType.Exercise,
-          focus: ns.isFocused(),
+          focus: ns.singularity.isFocused(),
           gym: player.location,
           exercise: player.className,
         } as PlayerExerciseAction
       } else {
         return {
           type: PlayerActionType.Study,
-          focus: ns.isFocused(),
+          focus: ns.singularity.isFocused(),
           uni: player.location,
           course: player.className,
         } as PlayerStudyAction

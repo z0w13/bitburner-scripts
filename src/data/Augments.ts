@@ -20,11 +20,11 @@ export function getAugmentPurchaseInfo(ns: NS): Array<AugmentPurchaseInfo> {
   const augs: Record<string, AugmentPurchaseInfo> = {}
 
   for (const faction of factions) {
-    for (const aug of ns.getAugmentationsFromFaction(faction)) {
-      const rep = ns.getAugmentationRepReq(aug)
-      const money = ns.getAugmentationPrice(aug)
-      const stats = ns.getAugmentationStats(aug)
-      const meetRep = ns.getFactionRep(faction) >= rep
+    for (const aug of ns.singularity.getAugmentationsFromFaction(faction)) {
+      const rep = ns.singularity.getAugmentationRepReq(aug)
+      const money = ns.singularity.getAugmentationPrice(aug)
+      const stats = ns.singularity.getAugmentationStats(aug)
+      const meetRep = ns.singularity.getFactionRep(faction) >= rep
 
       if (aug in augs) {
         augs[aug].factions.push(faction)
@@ -58,10 +58,10 @@ export function getAvailableAugs(ns: NS, hackFocus = false): Array<AugmentPurcha
     return []
   }
 
-  const owned = ns.getOwnedAugmentations(true)
+  const owned = ns.singularity.getOwnedAugmentations(true)
   return augs
     .filter((a) => !owned.includes(a.name) || a.name.includes("NeuroFlux Governor"))
-    .sort(sortFunc((v) => Math.max(...v.factions.map((f) => ns.getFactionRep(f))) - v.rep, true))
+    .sort(sortFunc((v) => Math.max(...v.factions.map((f) => ns.singularity.getFactionRep(f))) - v.rep, true))
     .filter(
       (a) =>
         !hackFocus ||
@@ -82,7 +82,7 @@ export function getLowestDonateAug(ns: NS, hackFocus = false): AugmentPurchaseIn
   const favorToDonate = ns.getFavorToDonate()
 
   return getAvailableAugs(ns, hackFocus)
-    .filter((a) => !!a.factions.find((f) => ns.getFactionFavor(f) >= favorToDonate))
+    .filter((a) => !!a.factions.find((f) => ns.singularity.getFactionFavor(f) >= favorToDonate))
     .at(0)
 }
 

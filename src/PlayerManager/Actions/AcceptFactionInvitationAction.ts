@@ -3,7 +3,7 @@ import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class AcceptFactionInvitationsAction extends BaseAction {
   shouldPerform(ns: NS): boolean {
-    return ns.checkFactionInvitations().length > 0
+    return ns.singularity.checkFactionInvitations().length > 0
   }
 
   isPerforming(_ns: NS): boolean {
@@ -11,7 +11,7 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
   }
 
   async perform(ns: NS): Promise<boolean> {
-    return ns.checkFactionInvitations().every((f) => ns.joinFaction(f))
+    return ns.singularity.checkFactionInvitations().every((f) => ns.singularity.joinFaction(f))
   }
 
   isBackground(): boolean {

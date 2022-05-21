@@ -6,7 +6,7 @@ import { StaticData } from "/lib/objects"
 export async function main(ns: NS): Promise<void> {
   const player = ns.getPlayer()
   const staticData: StaticData = {
-    crimes: CRIMES.map((name) => ns.getCrimeStats(name)),
+    crimes: CRIMES.map((name) => ns.singularity.getCrimeStats(name)),
     bitnode_mult: getBitNodeMultipliers(ns),
     player_mult: {
       hacking_money: player.hacking_money_mult,

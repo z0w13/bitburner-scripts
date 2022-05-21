@@ -25,7 +25,7 @@ export default class WorkForFactionAction extends BaseAction {
     }
 
     const player = ns.getPlayer()
-    const factionRep = ns.getFactionRep(faction) + (this.isPerforming(ns) ? player.workRepGained : 0)
+    const factionRep = ns.singularity.getFactionRep(faction) + (this.isPerforming(ns) ? player.workRepGained : 0)
     return factionRep < aug.rep
   }
 
@@ -56,9 +56,9 @@ export default class WorkForFactionAction extends BaseAction {
     }
 
     const types = ["hacking", "field", "security"]
-    const shouldFocus = !ns.getOwnedAugmentations().includes("Neuroreceptor Management Implant")
+    const shouldFocus = !ns.singularity.getOwnedAugmentations().includes("Neuroreceptor Management Implant")
     for (const type of types) {
-      if (ns.workForFaction(faction, type, shouldFocus)) {
+      if (ns.singularity.workForFaction(faction, type, shouldFocus)) {
         return true
       }
     }

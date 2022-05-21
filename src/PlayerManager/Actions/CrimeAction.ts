@@ -26,7 +26,7 @@ export default class CrimeAction extends BaseAction {
       return false
     }
 
-    ns.commitCrime(crime.name)
+    ns.singularity.commitCrime(crime.name)
     return true
   }
 }

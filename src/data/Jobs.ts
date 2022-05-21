@@ -49,7 +49,7 @@ export const Jobs: ReadonlyArray<Job> = CompaniesMetadata.flatMap((meta) =>
 
 export function getBestJob(ns: NS): Job | null {
   for (const job of [...Jobs].sort(sortFunc((v) => v.salary, false))) {
-    if (job.requiredRep > ns.getCompanyRep(job.company)) {
+    if (job.requiredRep > ns.singularity.getCompanyRep(job.company)) {
       continue
     }
 

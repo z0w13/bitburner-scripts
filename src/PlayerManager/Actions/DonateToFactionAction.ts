@@ -14,7 +14,7 @@ export default class DonateToFactionAction extends BaseAction {
 
   calcDonationAmount(ns: NS, faction: string, targetRep: number): number {
     const repMulti = ns.getPlayer().faction_rep_mult
-    const repRequired = targetRep - ns.getFactionRep(faction)
+    const repRequired = targetRep - ns.singularity.getFactionRep(faction)
 
     // Simplified formula to calculate donation amount for rep
     return Math.ceil((repRequired / repMulti) * 1_000_000)
@@ -23,7 +23,7 @@ export default class DonateToFactionAction extends BaseAction {
   getFaction(ns: NS, aug: AugmentPurchaseInfo): string | undefined {
     const favorToDonate = ns.getFavorToDonate()
     return aug.factions
-      .filter((f) => ns.getFactionFavor(f) >= favorToDonate)
+      .filter((f) => ns.singularity.getFactionFavor(f) >= favorToDonate)
       .sort(sortFunc((f) => this.calcDonationAmount(ns, f, aug.rep), true))
       .at(0)
   }
@@ -44,7 +44,10 @@ export default class DonateToFactionAction extends BaseAction {
       return false
     }
 
-    return ns.getFactionRep(faction) < aug.rep && ns.getFactionFavor(faction) >= ns.getFavorToDonate()
+    return (
+      ns.singularity.getFactionRep(faction) < aug.rep &&
+      ns.singularity.getFactionFavor(faction) >= ns.getFavorToDonate()
+    )
   }
 
   isPerforming(_ns: NS): boolean {
@@ -67,7 +70,7 @@ export default class DonateToFactionAction extends BaseAction {
       return false
     }
 
-    return ns.donateToFaction(faction, donateAmount)
+    return ns.singularity.donateToFaction(faction, donateAmount)
   }
 
   isBackground(): boolean {

@@ -21,6 +21,6 @@ export async function main(ns: NS): Promise<void> {
       continue
     }
 
-    ns.commitCrime(crime.name)
+    ns.singularity.commitCrime(crime.name)
   }
 }

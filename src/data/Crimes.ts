@@ -16,7 +16,7 @@ export function getCrimes(ns: NS): Array<Crime> {
 
   return crimeStats.map((crime) => {
     const name = crime.name
-    const chance = ns.getCrimeChance(crime.name)
+    const chance = ns.singularity.getCrimeChance(crime.name)
     const profitPerSec = (crime.money / (crime.time / 1000)) * chance
 
     return {

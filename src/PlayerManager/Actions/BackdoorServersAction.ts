@@ -41,13 +41,13 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
         continue
       }
 
-      if (!path.every((h) => ns.connect(h))) {
+      if (!path.every((h) => ns.singularity.connect(h))) {
         continue
       }
 
-      await ns.installBackdoor()
+      await ns.singularity.installBackdoor()
 
-      ns.connect(DAEMON_SERVER)
+      ns.singularity.connect(DAEMON_SERVER)
     }
 
     return true

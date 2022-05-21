@@ -75,7 +75,7 @@ export class PlayerManager {
 
       if (!action.isPerforming(ns)) {
         if (!action.isBackground()) {
-          ns.stopAction()
+          ns.singularity.stopAction()
         }
 
         const res = await action.perform(ns)

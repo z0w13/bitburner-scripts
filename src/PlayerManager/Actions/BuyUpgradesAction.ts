@@ -54,7 +54,7 @@ export default class BuyUpgradesAction extends BaseAction {
           }
           return upgrade
         case UpgradeType.HOME_RAM:
-          if (ns.getUpgradeHomeRamCost() > player.money) {
+          if (ns.singularity.getUpgradeHomeRamCost() > player.money) {
             continue
           }
           return upgrade
@@ -80,11 +80,11 @@ export default class BuyUpgradesAction extends BaseAction {
 
     switch (upgrade.type) {
       case UpgradeType.TOR:
-        return ns.purchaseTor()
+        return ns.singularity.purchaseTor()
       case UpgradeType.PROGRAM:
-        return ns.purchaseProgram(upgrade.name)
+        return ns.singularity.purchaseProgram(upgrade.name)
       case UpgradeType.HOME_RAM:
-        return ns.upgradeHomeRam()
+        return ns.singularity.upgradeHomeRam()
     }
   }
 

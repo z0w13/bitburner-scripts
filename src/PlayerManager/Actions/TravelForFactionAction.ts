@@ -19,7 +19,7 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
   }
 
   async perform(ns: NS): Promise<boolean> {
-    return ns.travelToCity(LocationName.NewTokyo)
+    return ns.singularity.travelToCity(LocationName.NewTokyo)
   }
 
   isBackground(): boolean {

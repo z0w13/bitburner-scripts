@@ -28,10 +28,11 @@ export function getBitNodeMultipliers(ns: NS): BitNodeMultipliers {
     HomeComputerRamCost: 1,
 
     PurchasedServerCost: 1,
-    PurchasedServerSoftCap: 1,
+    PurchasedServerSoftcap: 1,
     PurchasedServerLimit: 1,
     PurchasedServerMaxRam: 1,
 
+    CorporationSoftcap: 1,
     CompanyWorkMoney: 1,
     CrimeMoney: 1,
     HacknetNodeMoney: 1,
