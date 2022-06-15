@@ -69,6 +69,13 @@ export class PlayerManager {
   async run(ns: NS): Promise<void> {
     const log = new Logger(ns, LogLevel.Info, "PlayerManager")
     for (const action of this.actions) {
+      log.debug(
+        "%s shouldPerform=%t isPerforming=%t isBackground=%t",
+        action.toString(),
+        action.shouldPerform(ns),
+        action.isPerforming(ns),
+        action.isBackground(),
+      )
       if (!action.shouldPerform(ns)) {
         continue
       }
