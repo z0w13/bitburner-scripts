@@ -268,6 +268,13 @@ export default class ServerWrapper {
 
   isRecommendedTarget(): { recommended: boolean; rejectReason: string } {
     const threadsAvail = getThreadsAvailable(this.ns, Script.fromFile(this.ns, SCRIPT_HACK))
+    if (!this.isRooted()) {
+      return {
+        recommended: false,
+        rejectReason: "Server not rooted",
+      }
+    }
+
     if (this.purchasedByPlayer) {
       return {
         recommended: false,
