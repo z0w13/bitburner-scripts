@@ -6,7 +6,7 @@ import { BatchJob, CommandForBatch } from "/JobScheduler/JobObjects"
 import ServerWrapper from "/lib/ServerWrapper"
 
 export function getBatchJob(ns: NS, target: Server, player: Player, network: VirtualNetworkState): BatchJob {
-  const batchLimit = Math.floor(getBatch(ns, target, player).time / BATCH_INTERVAL)
+  const batchLimit = Math.min(100, Math.floor(getBatch(ns, target, player).time / BATCH_INTERVAL))
   const commands = []
 
   for (let batchNum = 0; batchNum < batchLimit; batchNum++) {
