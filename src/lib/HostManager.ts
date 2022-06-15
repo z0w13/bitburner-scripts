@@ -2,6 +2,7 @@ import { NS } from "@ns"
 import ServerWrapper from "/lib/ServerWrapper"
 import getHosts from "/lib/func/get-hosts"
 import Script from "/lib/Script"
+import { sortFunc } from "/lib/util"
 
 export default class HostManager {
   private ns: NS
@@ -32,7 +33,9 @@ export default class HostManager {
   }
 
   getUsableServers(): Array<ServerWrapper> {
-    return this.getServers().filter((s) => s.isSetup() && !s.isDraining())
+    return this.getServers()
+      .filter((s) => s.isSetup() && !s.isDraining())
+      .sort(sortFunc((v) => v.getPriority()))
   }
 
   getRecommendedServers(): Array<ServerWrapper> {

@@ -1,6 +1,14 @@
 import { NS, ProcessInfo, Server } from "@ns"
 import { getBatch } from "/Command/Formulas"
-import { PERCENTAGE_TO_HACK, HACK_MIN_MONEY, SECURITY_WIGGLE, MONEY_WIGGLE, TARGET_MAX_PREP_WEAKEN_TIME } from "/config"
+import {
+  PERCENTAGE_TO_HACK,
+  HACK_MIN_MONEY,
+  SECURITY_WIGGLE,
+  MONEY_WIGGLE,
+  TARGET_MAX_PREP_WEAKEN_TIME,
+  DAEMON_SERVER,
+  SERVER_PREFIX,
+} from "/config"
 import { SCRIPT_HACK } from "/constants"
 import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads-formulas"
 import getThreadsAvailable from "/lib/func/get-threads-available"
@@ -340,5 +348,22 @@ export default class ServerWrapper {
 
   static fromServer(ns: NS, target: Server): ServerWrapper {
     return new ServerWrapper(ns, target.hostname)
+  }
+
+  // Lower number means should be used first
+  getPriority(): number {
+    if (this.hostname === "home" || this.hostname === DAEMON_SERVER) {
+      return 99
+    }
+
+    if (this.hostname.startsWith("hacknet-node-")) {
+      return 50
+    }
+
+    if (this.hostname.startsWith(SERVER_PREFIX)) {
+      return 0
+    }
+
+    return 20
   }
 }
