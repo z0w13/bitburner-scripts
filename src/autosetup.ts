@@ -25,12 +25,10 @@ export async function main(ns: NS): Promise<void> {
         continue
       }
 
-      if (!hackHost(ns, hostname)) {
-        continue
-      }
-
       await rsync(ns, flags["host"], hostname, [...flags["scripts"], new RegExp("/lib/shared/.*")])
       ns.printf("Set up %s", hostname)
+
+      hackHost(ns, hostname)
     }
 
     await ns.asleep(flags["interval"])
