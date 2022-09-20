@@ -1,5 +1,3 @@
-import { CONSTANTS } from "/game-constants"
-
 export const STATIC_DATA = "/data/static.txt"
 export const GLOBAL_STATE_FILE = "/data/global-state.txt"
 
@@ -17,17 +15,19 @@ export const SCRIPT_LIST_TARGETS = "list-targets.js"
 // from src/Constants.ts
 export const SERVER_WEAKEN_AMOUNT = 0.05
 
-export const CRIMES = [
-  CONSTANTS.CrimeShoplift,
-  CONSTANTS.CrimeRobStore,
-  CONSTANTS.CrimeMug,
-  CONSTANTS.CrimeLarceny,
-  CONSTANTS.CrimeDrugs,
-  CONSTANTS.CrimeBondForgery,
-  CONSTANTS.CrimeTraffickArms,
-  CONSTANTS.CrimeHomicide,
-  CONSTANTS.CrimeGrandTheftAuto,
-  CONSTANTS.CrimeKidnap,
-  CONSTANTS.CrimeAssassination,
-  CONSTANTS.CrimeHeist,
-]
+// From https://github.com/danielyxie/bitburner/blob/a8bef50ef519f34e4387f5826e4b8f3998a764bb/src/utils/WorkType.ts
+export enum CrimeType {
+  None = "",
+  SHOPLIFT = "SHOPLIFT", //"shoplift",
+  ROB_STORE = "ROBSTORE", //"rob a store",
+  MUG = "MUG", //"mug someone",
+  LARCENY = "LARCENY", //"commit larceny",
+  DRUGS = "DRUGS", //"deal drugs",
+  BOND_FORGERY = "BONDFORGERY", //"forge corporate bonds",
+  TRAFFIC_ARMS = "TRAFFICKARMS", //"traffick illegal arms",
+  HOMICIDE = "HOMICIDE", //"commit homicide",
+  GRAND_THEFT_AUTO = "GRANDTHEFTAUTO", //"commit grand theft auto",
+  KIDNAP = "KIDNAP", //"kidnap someone for ransom",
+  ASSASSINATION = "ASSASSINATION", //"assassinate a high-profile target",
+  HEIST = "HEIST", //"pull off the ultimate heist",
+}

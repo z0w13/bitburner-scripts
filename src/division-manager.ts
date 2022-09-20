@@ -1,4 +1,6 @@
 import { NS, Division, CorporationInfo, EmployeeJobs, Warehouse } from "@ns"
+import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import { CORP_MAIN_CITY } from "/config"
 import renderTable from "/lib/func/render-table"
 import setupPolyfill from "/lib/ns-polyfill"
 import { FlagSchema } from "/lib/objects"
@@ -49,7 +51,6 @@ const MULTIPLIER_MATERIALS = ["Robots", "Hardware", "AI Cores", "Real Estate"]
 
 // Config
 const MAX_MULTIPLIER = 100
-const MAIN_CITY = "Sector-12"
 
 function getProductLimit(ns: NS, division: string): number {
   if (!ns.corporation.hasUnlockUpgrade("Office API")) {
@@ -116,7 +117,7 @@ function developAndDiscontinue(ns: NS, division: Division, ticks: number): void 
   if (division.products.length >= getProductLimit(ns, division.name)) {
     // TODO(zowie): not sure how to figure out quality, for now just remove oldest product
     //const lowestQual = division.products
-    //  .map((p) => ns.corporation.getMaterial(division.name, MAIN_CITY, p))
+    //  .map((p) => ns.corporation.getMaterial(division.name, CORP_MAIN_CITY, p))
     //  .sort(sortFunc((m) => m.qlt))[0]
     const lowestQual = division.products[0]
     ns.corporation.discontinueProduct(division.name, lowestQual)
@@ -124,7 +125,7 @@ function developAndDiscontinue(ns: NS, division: Division, ticks: number): void 
   }
 
   const prodName = division.name + ticks + Math.round(Math.random() * 100)
-  ns.corporation.makeProduct(division.name, MAIN_CITY, prodName, 0, 0)
+  ns.corporation.makeProduct(division.name, CORP_MAIN_CITY, prodName, 0, 0)
   ns.print(`${division.name} developing ${prodName}`)
 }
 
@@ -157,7 +158,7 @@ function adjustPrices(ns: NS, division: Division): void {
 
   if (division.type in nonProductMap) {
     for (const materialName of nonProductMap[division.type]) {
-      const mat = ns.corporation.getMaterial(division.name, MAIN_CITY, materialName)
+      const mat = ns.corporation.getMaterial(division.name, CORP_MAIN_CITY, materialName)
       const qty = mat.qty
 
       const price = getNewPrice(ns, division, mat.name, qty, 100, mat.sCost)
@@ -174,15 +175,15 @@ function adjustPrices(ns: NS, division: Division): void {
 
   for (const productName of division.products) {
     const product = ns.corporation.getProduct(division.name, productName)
-    const [qty] = product.cityData[MAIN_CITY]
+    const [qty] = product.cityData[CORP_MAIN_CITY]
 
     const price = getNewPrice(ns, division, product.name, qty, product.developmentProgress, product.sCost)
 
     if (hasTAII) {
-      ns.corporation.sellProduct(division.name, MAIN_CITY, product.name, "MAX", "MP", true)
+      ns.corporation.sellProduct(division.name, CORP_MAIN_CITY, product.name, "MAX", "MP", true)
       ns.corporation.setProductMarketTA2(division.name, product.name, true)
     } else if (price !== product.sCost) {
-      ns.corporation.sellProduct(division.name, MAIN_CITY, product.name, "MAX", price, true)
+      ns.corporation.sellProduct(division.name, CORP_MAIN_CITY, product.name, "MAX", price, true)
     }
   }
 }
@@ -256,15 +257,15 @@ function upgradeOffice(ns: NS, division: string, city: string, limit: number): v
   const budget = ns.corporation.getCorporation().funds / 2
 
   if (office.size < limit) {
-    let cost = Infinity
     let upgradeSize = 60
+    let cost = ns.corporation.getOfficeSizeUpgradeCost(division, city, upgradeSize)
 
     while (cost > budget) {
-      cost = ns.corporation.getOfficeSizeUpgradeCost(division, city, upgradeSize)
       upgradeSize -= 3
       if (upgradeSize < 1) {
         return
       }
+      cost = ns.corporation.getOfficeSizeUpgradeCost(division, city, upgradeSize)
     }
 
     //ns.print(
@@ -288,16 +289,16 @@ async function manageOffices(ns: NS, division: Division): Promise<void> {
     return
   }
 
-  if (!ns.corporation.getDivision(division.name).cities.includes(MAIN_CITY)) {
+  if (!ns.corporation.getDivision(division.name).cities.includes(CORP_MAIN_CITY)) {
     return
   }
 
-  const aevumSize = ns.corporation.getOffice(division.name, MAIN_CITY).size
+  const mainCitySize = ns.corporation.getOffice(division.name, CORP_MAIN_CITY).size
   for (const city of division.cities) {
-    if (city === MAIN_CITY) {
-      upgradeOffice(ns, division.name, city, aevumSize + 15)
+    if (city === CORP_MAIN_CITY) {
+      upgradeOffice(ns, division.name, city, mainCitySize + 15)
     } else {
-      upgradeOffice(ns, division.name, city, aevumSize - (aevumSize < 60 ? 0 : 60))
+      upgradeOffice(ns, division.name, city, mainCitySize - (mainCitySize < 60 ? 0 : 60))
     }
 
     while (
@@ -323,7 +324,7 @@ async function redistributeEmployees(ns: NS, division: string, city: string): Pr
 
   const employeeJobs = getEmployeeJobs(ns, division, city)
 
-  if (employeeJobs.Unassigned > 0) {
+  if (employeeJobs.Unassigned > 0 || employeeJobs.Training > 0) {
     //for (const pos of Object.keys(ratio)) {
     //  await ns.corporation.setAutoJobAssignment(division, city, pos, 0)
     //}
@@ -343,7 +344,7 @@ async function redistributeEmployees(ns: NS, division: string, city: string): Pr
     }
 
     const jobs = ns.corporation.getOffice(division, city).employeeJobs
-    const researchCount = jobs.Unassigned + jobs["Research & Development"]
+    const researchCount = jobs.Unassigned + jobs.Training + jobs["Research & Development"]
 
     await ns.corporation.setAutoJobAssignment(division, city, "Research & Development", researchCount)
 
@@ -394,7 +395,9 @@ function manageWarehouses(ns: NS, division: Division): void {
       ns.corporation.setSmartSupply(division.name, city, true)
     }
   }
+}
 
+function expandWarehouses(ns: NS, division: Division): void {
   const warehouses = getWarehouses(ns, division.name).sort(sortFunc((w) => w.size))
   if (warehouses.length === 0) {
     return
@@ -457,7 +460,7 @@ export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")
   let ticks = 0
 
-  const flags = ns.flags(flagSchema) as Flags
+  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
 
   while (true) {
     await ns.asleep(1000)
@@ -499,6 +502,14 @@ export async function main(ns: NS): Promise<void> {
       ns.print("# Manage Warehouses")
       manageWarehouses(ns, division)
 
+      if (ns.corporation.getOffice(division.name, CORP_MAIN_CITY).size >= 15) {
+        ns.print("# Expand Warehouses")
+        expandWarehouses(ns, division)
+
+        ns.print("# Manage Adverts")
+        manageAdVert(ns, division)
+      }
+
       ns.print("# Adjust Prices")
       if (division.name in stockHistory) {
         const tableData = Object.entries(stockHistory[division.name]).map(([prod, val]) => [
@@ -511,7 +522,7 @@ export async function main(ns: NS): Promise<void> {
         }
       }
 
-      if (division.cities.includes(MAIN_CITY)) {
+      if (division.cities.includes(CORP_MAIN_CITY)) {
         adjustPrices(ns, division)
 
         if (division.makesProducts) {
@@ -522,8 +533,6 @@ export async function main(ns: NS): Promise<void> {
 
       ns.print("# Manage Research")
       buyResearch(ns, division)
-      ns.print("# Manage Adverts")
-      manageAdVert(ns, division)
     }
 
     await ns.asleep(1000)

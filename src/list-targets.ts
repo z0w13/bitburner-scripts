@@ -6,6 +6,7 @@ import { FlagSchema } from "/lib/objects"
 import Script from "/lib/Script"
 import { formatMoney, formatNum, formatTime } from "/lib/util"
 import getTargets from "/lib/func/get-targets"
+import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 
 const flagSchema: FlagSchema = [["all", false]]
 
@@ -16,7 +17,7 @@ interface Flags {
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
-  const flags = ns.flags(flagSchema) as Flags
+  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
 
   const servers = getTargets(ns, flags.all)
 

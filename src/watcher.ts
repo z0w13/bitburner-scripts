@@ -41,7 +41,11 @@ export async function main(ns: NS): Promise<void> {
   }
 }
 
-const getHash = (input: string): number => {
+const getHash = (input: string | number): number => {
+  if (typeof input === "number") {
+    input = input.toString()
+  }
+
   let hash = 0,
     i,
     chr

@@ -6,6 +6,13 @@ import { COPY_SCRIPTS } from "/constants"
 import setupPolyfill from "/lib/ns-polyfill"
 import { DAEMON_SERVER } from "/config"
 import rsync from "/lib/func/rsync"
+import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+
+interface Flags {
+  interval: number
+  host: string
+  scripts: Array<string>
+}
 
 export async function main(ns: NS): Promise<void> {
   setupPolyfill(ns)
@@ -16,19 +23,19 @@ export async function main(ns: NS): Promise<void> {
     ["interval", 1000],
     ["host", DAEMON_SERVER],
     ["scripts", COPY_SCRIPTS], // Scripts to install
-  ])
+  ]) as Flags & ScriptArgs
 
   while (true) {
     const hosts = getHosts(ns)
     for (const hostname of hosts) {
+      hackHost(ns, hostname)
+
       if (isHostSetup(ns, hostname)) {
         continue
       }
 
       await rsync(ns, flags["host"], hostname, [...flags["scripts"], new RegExp("/lib/shared/.*")])
       ns.printf("Set up %s", hostname)
-
-      hackHost(ns, hostname)
     }
 
     await ns.asleep(flags["interval"])

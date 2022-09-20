@@ -91,8 +91,4 @@ export default class BuyUpgradesAction extends BaseAction {
   isBackground(): boolean {
     return true
   }
-
-  shouldContinue(): boolean {
-    return true
-  }
 }

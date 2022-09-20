@@ -54,29 +54,29 @@ export function getBestJob(ns: NS): Job | null {
     }
 
     const player = ns.getPlayer()
-    if (job.requiredAttrib[Attribute.HACKING] > player.hacking) {
+    if (job.requiredAttrib[Attribute.HACKING] > player.skills.hacking) {
       continue
     }
-    if (job.requiredAttrib[Attribute.STRENGTH] > player.strength) {
+    if (job.requiredAttrib[Attribute.STRENGTH] > player.skills.strength) {
       continue
     }
-    if (job.requiredAttrib[Attribute.DEFENSE] > player.defense) {
+    if (job.requiredAttrib[Attribute.DEFENSE] > player.skills.defense) {
       continue
     }
-    if (job.requiredAttrib[Attribute.AGILITY] > player.agility) {
+    if (job.requiredAttrib[Attribute.AGILITY] > player.skills.agility) {
       continue
     }
-    if (job.requiredAttrib[Attribute.DEXTERITY] > player.dexterity) {
+    if (job.requiredAttrib[Attribute.DEXTERITY] > player.skills.dexterity) {
       continue
     }
-    if (job.requiredAttrib[Attribute.CHARISMA] > player.charisma) {
+    if (job.requiredAttrib[Attribute.CHARISMA] > player.skills.charisma) {
       continue
     }
 
     return {
       ...job,
 
-      salary: job.salary * ns.getPlayer().work_money_mult * 0.1 * (1000 / CONSTANTS.MilliPerCycle),
+      salary: job.salary * ns.getPlayer().mults.work_money * 0.1 * (1000 / CONSTANTS.MilliPerCycle),
     }
   }
 

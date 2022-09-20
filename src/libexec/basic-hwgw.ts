@@ -1,11 +1,7 @@
 import { NS } from "@ns"
-import { getHackCommand, getGrowCommand, getWeakenCommand } from "/Command/Basic"
 import { FlagSchema } from "/lib/objects"
-import { MONEY_WIGGLE, SECURITY_WIGGLE } from "/config"
-import waitForPids from "/lib/func/wait-for-pids"
-import runCommand from "/lib/func/run-command"
-import { getGlobalState } from "/lib/shared/GlobalStateManager"
 import { hack, maxMoney, minSecurity } from "/lib/HwgwShared"
+import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 
 const flagSchema: FlagSchema = [["target", "n00dles"]]
 
@@ -18,7 +14,7 @@ export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
   ns.enableLog("exec")
 
-  const flags = ns.flags(flagSchema) as Flags
+  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
 
   while (true) {
     await maxMoney(ns, flags.target)

@@ -9,7 +9,7 @@ export default function getStaticData(ns: NS): StaticData | null {
   }
 
   try {
-    return JSON.parse(ns.read(STATIC_DATA)) as StaticData
+    return JSON.parse(ns.read(STATIC_DATA).toString()) as StaticData
   } catch (e) {
     ns.tprint("ERROR: ", e)
     return null

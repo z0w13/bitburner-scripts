@@ -65,13 +65,13 @@ export function getAvailableAugs(ns: NS, hackFocus = false): Array<AugmentPurcha
     .filter(
       (a) =>
         !hackFocus ||
-        notNullMoreThanZero(a.stats.hacking_chance_mult) ||
-        notNullMoreThanZero(a.stats.hacking_exp_mult) ||
-        notNullMoreThanZero(a.stats.hacking_grow_mult) ||
-        notNullMoreThanZero(a.stats.hacking_money_mult) ||
-        notNullMoreThanZero(a.stats.hacking_mult) ||
-        notNullMoreThanZero(a.stats.hacking_speed_mult) ||
-        notNullMoreThanZero(a.stats.faction_rep_mult) ||
+        notNullMoreThanZero(a.stats.hacking_chance) ||
+        notNullMoreThanZero(a.stats.hacking_exp) ||
+        notNullMoreThanZero(a.stats.hacking_grow) ||
+        notNullMoreThanZero(a.stats.hacking_money) ||
+        notNullMoreThanZero(a.stats.hacking) ||
+        notNullMoreThanZero(a.stats.hacking_speed) ||
+        notNullMoreThanZero(a.stats.faction_rep) ||
         a.name === "CashRoot Starter Kit" ||
         a.name === "BitRunners Neurolink" ||
         a.name === "Neuroreceptor Management Implant",

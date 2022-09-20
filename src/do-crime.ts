@@ -2,6 +2,7 @@ import { NS } from "@ns"
 import setupPolyfill from "/lib/ns-polyfill"
 import { getBestCrime } from "/data/Crimes"
 import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
+import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 
 interface Flags {
   karmawhore: boolean
@@ -10,7 +11,7 @@ interface Flags {
 export async function main(ns: NS): Promise<void> {
   setupPolyfill(ns)
 
-  const flags = ns.flags([["karmawhore", false]]) as Flags
+  const flags = ns.flags([["karmawhore", false]]) as Flags & ScriptArgs
 
   ns.disableLog("ALL")
   ns.enableLog("commitCrime")

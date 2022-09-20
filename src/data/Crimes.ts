@@ -2,6 +2,10 @@ import { NS } from "@ns"
 import getStaticData from "/lib/func/get-static-data"
 import { sortFunc } from "/lib/util"
 
+export enum Crimes {
+  Homicide = "Homicide",
+}
+
 export interface Crime {
   name: string
   chance: number

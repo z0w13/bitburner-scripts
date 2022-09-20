@@ -1,4 +1,5 @@
 import { NS } from "@ns"
+import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 
 interface Flags {
   filename: string
@@ -11,7 +12,7 @@ export async function main(ns: NS): Promise<void> {
     ["filename", ""],
     ["content", ""],
     ["mode", "w"],
-  ]) as Flags
+  ]) as Flags & ScriptArgs
 
   if (flags.filename.length === 0) {
     ns.print("Error: no filename specified")

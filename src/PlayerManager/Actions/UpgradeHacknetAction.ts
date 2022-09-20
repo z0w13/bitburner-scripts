@@ -23,7 +23,7 @@ export default class UpgradeHacknetAction extends BaseAction {
       level: [...nodes].sort(sortFunc((v) => v.level)).at(0)?.idx ?? -1,
       ram: [...nodes].sort(sortFunc((v) => v.ram)).at(0)?.idx ?? -1,
       cores: [...nodes].sort(sortFunc((v) => v.cores)).at(0)?.idx ?? -1,
-      cache: [...nodes].sort(sortFunc((v) => v.cache)).at(0)?.idx ?? -1,
+      cache: [...nodes].sort(sortFunc((v) => v.cache ?? 0)).at(0)?.idx ?? -1,
     }
   }
 
@@ -107,10 +107,6 @@ export default class UpgradeHacknetAction extends BaseAction {
   }
 
   isBackground(): boolean {
-    return true
-  }
-
-  shouldContinue(): boolean {
     return true
   }
 }

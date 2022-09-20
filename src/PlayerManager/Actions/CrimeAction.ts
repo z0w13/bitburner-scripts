@@ -15,9 +15,8 @@ export default class CrimeAction extends BaseAction {
     }
 
     const bestCrime = getBestCrime(ns)
-    const currentCrime = action.crime.toLowerCase()
 
-    return bestCrime !== null && currentCrime.includes(bestCrime.name.toLowerCase())
+    return bestCrime !== null && bestCrime.name.toLowerCase().includes(action.crime.toLowerCase())
   }
 
   async perform(ns: NS): Promise<boolean> {

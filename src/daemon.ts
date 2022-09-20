@@ -8,6 +8,7 @@ import JobScheduler from "/JobScheduler/JobScheduler"
 import ServerBuyer from "/lib/ServerBuyer"
 import { DAEMON_SERVER, LOAD_BUY_THRESHOLD } from "/config"
 import waitForPids from "/lib/func/wait-for-pids"
+import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 
 const flagSchema: FlagSchema = [
   ["once", false],
@@ -30,7 +31,7 @@ export async function main(ns: NS): Promise<void> {
 
   ns.disableLog("ALL")
 
-  const flags = ns.flags(flagSchema) as Flags
+  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
 
   const hostMgr = new HostManager(ns)
   const jobMgr = new JobManager(ns, hostMgr)

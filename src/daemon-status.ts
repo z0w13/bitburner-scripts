@@ -16,7 +16,7 @@ export async function main(ns: NS): Promise<void> {
       continue
     }
 
-    const data = JSON.parse(ns.read("jobs.json.txt")) as SerializedDaemonStatus
+    const data = JSON.parse(ns.read("jobs.json.txt") as string) as SerializedDaemonStatus
     ns.print(renderStatusTable(ns, data))
     ns.print(
       renderJobTable(

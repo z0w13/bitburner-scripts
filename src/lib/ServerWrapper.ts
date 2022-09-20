@@ -289,12 +289,11 @@ export default class ServerWrapper {
       }
     }
 
-    if (this.requiredHackingSkill > this.ns.getPlayer().hacking) {
+    const hackSkill = this.ns.getPlayer().skills.hacking
+    if (this.requiredHackingSkill > hackSkill) {
       return {
         recommended: false,
-        rejectReason: `Server requires ${this.requiredHackingSkill} hacking but player only has ${
-          this.ns.getPlayer().hacking
-        }`,
+        rejectReason: `Server requires ${this.requiredHackingSkill} hacking but player only has ${hackSkill}`,
       }
     }
 

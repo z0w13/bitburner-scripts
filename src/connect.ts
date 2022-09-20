@@ -1,4 +1,5 @@
 import { NS } from "@ns"
+import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 import { DAEMON_SERVER } from "/config"
 import getHostPath from "/lib/func/get-host-path"
 
@@ -14,7 +15,7 @@ interface Flags {
 export async function main(ns: NS): Promise<void> {
   setupPolyfill(ns)
 
-  const flags = ns.flags(flagSchema) as Flags
+  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
   const path = getHostPath(ns, flags.host)
   if (!path) {
     ns.tprint(`ERROR: No path to ${flags.host}`)

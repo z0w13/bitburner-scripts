@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { DAEMON_SERVER } from "/config"
+import { CORP_MAIN_CITY, DAEMON_SERVER } from "/config"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import setupPolyfill from "/lib/ns-polyfill"
 import { formatMoney } from "/lib/util"
@@ -83,7 +83,9 @@ export async function main(ns: NS): Promise<void> {
       }
     }
 
-    manageUpgrades(ns)
+    if (corp.divisions.length > 1 && ns.corporation.getOffice(corp.divisions[0].name, CORP_MAIN_CITY).size >= 15) {
+      manageUpgrades(ns)
+    }
 
     const tableData: RawTableData = [["Division", "Income", "Expense", "Net"]]
     for (const division of corp.divisions) {

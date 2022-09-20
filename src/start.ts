@@ -7,6 +7,7 @@ import { FlagSchema } from "/lib/objects"
 import GlobalStateManager from "/lib/shared/GlobalStateManager"
 import { DAEMON_SERVER } from "/config"
 import { GLOBAL_STATE_FILE } from "/constants"
+import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 
 interface ScriptToRun {
   name: string
@@ -52,7 +53,7 @@ export async function main(ns: NS): Promise<void> {
   setupPolyfill(ns)
 
   ns.disableLog("ALL")
-  const flags = ns.flags(flagSchema) as Flags
+  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
 
   await waitForPids(ns, [ns.exec("/libexec/static-data.js", DAEMON_SERVER, 1)])
 
@@ -60,7 +61,7 @@ export async function main(ns: NS): Promise<void> {
   const stateMgr = new GlobalStateManager(globalThis)
   if (ns.fileExists(GLOBAL_STATE_FILE)) {
     try {
-      stateMgr.restore(JSON.parse(await ns.read(GLOBAL_STATE_FILE)))
+      stateMgr.restore(JSON.parse(await ns.read(GLOBAL_STATE_FILE).toString()))
     } catch (e) {
       ns.tprint(e)
     }

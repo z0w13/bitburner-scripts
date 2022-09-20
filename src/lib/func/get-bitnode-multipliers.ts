@@ -3,7 +3,7 @@ import { BitNodeMultipliers } from "@ns"
 
 export function getBitNodeMultipliers(ns: NS): BitNodeMultipliers {
   const hasSourceFile5 =
-    ns
+    ns.singularity
       .getOwnedSourceFiles()
       .map((s) => s.n)
       .indexOf(5) > 0

@@ -12,7 +12,7 @@ export default function hackHost(ns: NS, target: string): boolean {
   }
 
   if (!server.hasAdminRights) {
-    if (player.hacking < server.requiredHackingSkill) {
+    if (player.skills.hacking < server.requiredHackingSkill) {
       return false
     }
 

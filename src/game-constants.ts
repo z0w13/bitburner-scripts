@@ -4,115 +4,92 @@
  * Constants for specific mechanics or features will NOT be here.
  */
 export const CONSTANTS: {
-  VersionString: string
-  VersionNumber: number
-  _idleSpeed: number
-  MaxSkillLevel: number
-  MilliPerCycle: number
-  CorpFactionRepRequirement: number
-  BaseFocusBonus: number
-  BaseCostFor1GBOfRamHome: number
-  BaseCostFor1GBOfRamServer: number
-  TravelCost: number
-  BaseFavorToDonate: number
-  DonateMoneyToRepDivisor: number
-  FactionReputationToFavorBase: number
-  FactionReputationToFavorMult: number
-  CompanyReputationToFavorBase: number
-  CompanyReputationToFavorMult: number
-  NeuroFluxGovernorLevelMult: number
-  NumNetscriptPorts: number
-  HomeComputerMaxRam: number
-  ServerBaseGrowthRate: number
-  ServerMaxGrowthRate: number
-  ServerFortifyAmount: number
-  ServerWeakenAmount: number
-  PurchasedServerLimit: number
-  PurchasedServerMaxRam: number
-  MultipleAugMultiplier: number
-  TorRouterCost: number
-  WSEAccountCost: number
-  TIXAPICost: number
-  MarketData4SCost: number
-  MarketDataTixApi4SCost: number
-  StockMarketCommission: number
-  HospitalCostPerHp: number
-  IntelligenceCrimeWeight: number
-  IntelligenceInfiltrationWeight: number
-  IntelligenceCrimeBaseExpGain: number
-  IntelligenceProgramBaseExpGain: number
-  IntelligenceTerminalHackBaseExpGain: number
-  IntelligenceSingFnBaseExpGain: number
-  IntelligenceClassBaseExpGain: number
-  MillisecondsPer20Hours: number
-  GameCyclesPer20Hours: number
-  MillisecondsPer10Hours: number
-  GameCyclesPer10Hours: number
-  MillisecondsPer8Hours: number
-  GameCyclesPer8Hours: number
-  MillisecondsPer4Hours: number
-  GameCyclesPer4Hours: number
-  MillisecondsPer2Hours: number
-  GameCyclesPer2Hours: number
-  MillisecondsPerHour: number
-  GameCyclesPerHour: number
-  MillisecondsPerHalfHour: number
-  GameCyclesPerHalfHour: number
-  MillisecondsPerQuarterHour: number
-  GameCyclesPerQuarterHour: number
-  MillisecondsPerFiveMinutes: number
-  GameCyclesPerFiveMinutes: number
-  FactionWorkHacking: string
-  FactionWorkField: string
-  FactionWorkSecurity: string
-  WorkTypeCompany: string
-  WorkTypeCompanyPartTime: string
-  WorkTypeFaction: string
-  WorkTypeCreateProgram: string
-  WorkTypeStudyClass: string
-  WorkTypeCrime: string
-  ClassStudyComputerScience: string
-  ClassDataStructures: string
-  ClassNetworks: string
-  ClassAlgorithms: string
-  ClassManagement: string
-  ClassLeadership: string
-  ClassGymStrength: string
-  ClassGymDefense: string
-  ClassGymDexterity: string
-  ClassGymAgility: string
-  ClassDataStructuresBaseCost: number
-  ClassNetworksBaseCost: number
-  ClassAlgorithmsBaseCost: number
-  ClassManagementBaseCost: number
-  ClassLeadershipBaseCost: number
-  ClassGymBaseCost: number
-  ClassStudyComputerScienceBaseExp: number
-  ClassDataStructuresBaseExp: number
-  ClassNetworksBaseExp: number
-  ClassAlgorithmsBaseExp: number
-  ClassManagementBaseExp: number
-  ClassLeadershipBaseExp: number
-  CrimeShoplift: string
-  CrimeRobStore: string
-  CrimeMug: string
-  CrimeLarceny: string
-  CrimeDrugs: string
-  CrimeBondForgery: string
-  CrimeTraffickArms: string
-  CrimeHomicide: string
-  CrimeGrandTheftAuto: string
-  CrimeKidnap: string
-  CrimeAssassination: string
-  CrimeHeist: string
-  CodingContractBaseFactionRepGain: number
-  CodingContractBaseCompanyRepGain: number
-  CodingContractBaseMoneyGain: number
-  TotalNumBitNodes: number
-  LatestUpdate: string
+  VersionString: string;
+  VersionNumber: number;
+  _idleSpeed: number;
+  MaxSkillLevel: number;
+  MilliPerCycle: number;
+  CorpFactionRepRequirement: number;
+  BaseFocusBonus: number;
+  BaseCostFor1GBOfRamHome: number;
+  BaseCostFor1GBOfRamServer: number;
+  TravelCost: number;
+  BaseFavorToDonate: number;
+  DonateMoneyToRepDivisor: number;
+  FactionReputationToFavorBase: number;
+  FactionReputationToFavorMult: number;
+  CompanyReputationToFavorBase: number;
+  CompanyReputationToFavorMult: number;
+  NeuroFluxGovernorLevelMult: number;
+  NumNetscriptPorts: number;
+  HomeComputerMaxRam: number;
+  ServerBaseGrowthRate: number;
+  ServerMaxGrowthRate: number;
+  ServerFortifyAmount: number;
+  ServerWeakenAmount: number;
+  PurchasedServerLimit: number;
+  PurchasedServerMaxRam: number;
+  MultipleAugMultiplier: number;
+  TorRouterCost: number;
+  WSEAccountCost: number;
+  TIXAPICost: number;
+  MarketData4SCost: number;
+  MarketDataTixApi4SCost: number;
+  StockMarketCommission: number;
+  HospitalCostPerHp: number;
+  IntelligenceCrimeWeight: number;
+  IntelligenceInfiltrationWeight: number;
+  IntelligenceCrimeBaseExpGain: number;
+  IntelligenceProgramBaseExpGain: number;
+  IntelligenceGraftBaseExpGain: number;
+  IntelligenceTerminalHackBaseExpGain: number;
+  IntelligenceSingFnBaseExpGain: number;
+  IntelligenceClassBaseExpGain: number;
+  MillisecondsPer20Hours: number;
+  GameCyclesPer20Hours: number;
+  MillisecondsPer10Hours: number;
+  GameCyclesPer10Hours: number;
+  MillisecondsPer8Hours: number;
+  GameCyclesPer8Hours: number;
+  MillisecondsPer4Hours: number;
+  GameCyclesPer4Hours: number;
+  MillisecondsPer2Hours: number;
+  GameCyclesPer2Hours: number;
+  MillisecondsPerHour: number;
+  GameCyclesPerHour: number;
+  MillisecondsPerHalfHour: number;
+  GameCyclesPerHalfHour: number;
+  MillisecondsPerQuarterHour: number;
+  GameCyclesPerQuarterHour: number;
+  MillisecondsPerFiveMinutes: number;
+  GameCyclesPerFiveMinutes: number;
+  ClassDataStructuresBaseCost: number;
+  ClassNetworksBaseCost: number;
+  ClassAlgorithmsBaseCost: number;
+  ClassManagementBaseCost: number;
+  ClassLeadershipBaseCost: number;
+  ClassGymBaseCost: number;
+  ClassStudyComputerScienceBaseExp: number;
+  ClassDataStructuresBaseExp: number;
+  ClassNetworksBaseExp: number;
+  ClassAlgorithmsBaseExp: number;
+  ClassManagementBaseExp: number;
+  ClassLeadershipBaseExp: number;
+  CodingContractBaseFactionRepGain: number;
+  CodingContractBaseCompanyRepGain: number;
+  CodingContractBaseMoneyGain: number;
+  AugmentationGraftingCostMult: number;
+  AugmentationGraftingTimeBase: number;
+  SoACostMult: number;
+  SoARepMult: number;
+  EntropyEffect: number;
+  TotalNumBitNodes: number;
+  InfiniteLoopLimit: number;
+  Donations: number; // number of blood/plasma/palette donation the dev have verified., boosts NFG
+  LatestUpdate: string;
 } = {
-  VersionString: "1.4.0",
-  VersionNumber: 10,
+  VersionString: "2.0.2",
+  VersionNumber: 25,
 
   // Speed (in ms) at which the main loop is updated
   _idleSpeed: 200,
@@ -127,7 +104,7 @@ export const CONSTANTS: {
   MilliPerCycle: 200,
 
   // How much reputation is needed to join a megacorporation's faction
-  CorpFactionRepRequirement: 200e3,
+  CorpFactionRepRequirement: 400e3,
 
   // Base RAM costs
   BaseCostFor1GBOfRamHome: 32000,
@@ -180,6 +157,7 @@ export const CONSTANTS: {
   IntelligenceInfiltrationWeight: 0.1, // Weight for how much int affects infiltration success rates
   IntelligenceCrimeBaseExpGain: 0.05,
   IntelligenceProgramBaseExpGain: 0.1, // Program required hack level divided by this to determine int exp gain
+  IntelligenceGraftBaseExpGain: 0.05,
   IntelligenceTerminalHackBaseExpGain: 200, // Hacking exp divided by this to determine int exp gain
   IntelligenceSingFnBaseExpGain: 1.5,
   IntelligenceClassBaseExpGain: 0.01,
@@ -214,27 +192,6 @@ export const CONSTANTS: {
 
   // Player Work & Action
   BaseFocusBonus: 0.8,
-  FactionWorkHacking: "Faction Hacking Work",
-  FactionWorkField: "Faction Field Work",
-  FactionWorkSecurity: "Faction Security Work",
-
-  WorkTypeCompany: "Working for Company",
-  WorkTypeCompanyPartTime: "Working for Company part-time",
-  WorkTypeFaction: "Working for Faction",
-  WorkTypeCreateProgram: "Working on Create a Program",
-  WorkTypeStudyClass: "Studying or Taking a class at university",
-  WorkTypeCrime: "Committing a crime",
-
-  ClassStudyComputerScience: "studying Computer Science",
-  ClassDataStructures: "taking a Data Structures course",
-  ClassNetworks: "taking a Networks course",
-  ClassAlgorithms: "taking an Algorithms course",
-  ClassManagement: "taking a Management course",
-  ClassLeadership: "taking a Leadership course",
-  ClassGymStrength: "training your strength at a gym",
-  ClassGymDefense: "training your defense at a gym",
-  ClassGymDexterity: "training your dexterity at a gym",
-  ClassGymAgility: "training your agility at a gym",
 
   ClassDataStructuresBaseCost: 40,
   ClassNetworksBaseCost: 80,
@@ -250,45 +207,106 @@ export const CONSTANTS: {
   ClassManagementBaseExp: 2,
   ClassLeadershipBaseExp: 4,
 
-  CrimeShoplift: "shoplift",
-  CrimeRobStore: "rob a store",
-  CrimeMug: "mug someone",
-  CrimeLarceny: "commit larceny",
-  CrimeDrugs: "deal drugs",
-  CrimeBondForgery: "forge corporate bonds",
-  CrimeTraffickArms: "traffick illegal arms",
-  CrimeHomicide: "commit homicide",
-  CrimeGrandTheftAuto: "commit grand theft auto",
-  CrimeKidnap: "kidnap someone for ransom",
-  CrimeAssassination: "assassinate a high-profile target",
-  CrimeHeist: "pull off the ultimate heist",
-
   // Coding Contract
   // TODO: Move this into Coding contract implementation?
   CodingContractBaseFactionRepGain: 2500,
   CodingContractBaseCompanyRepGain: 4000,
   CodingContractBaseMoneyGain: 75e6,
 
+  // Augmentation grafting multipliers
+  AugmentationGraftingCostMult: 3,
+  AugmentationGraftingTimeBase: 3600000,
+
+  // SoA mults
+  SoACostMult: 7,
+  SoARepMult: 1.3,
+
+  // Value raised to the number of entropy stacks, then multiplied to player multipliers
+  EntropyEffect: 0.98,
+
   // BitNode/Source-File related stuff
   TotalNumBitNodes: 24,
 
+  InfiniteLoopLimit: 2000,
+
+  Donations: 22,
+
   LatestUpdate: `
-    v1.4.0 - 2022-01-18 Sharing is caring
-    -------------------------------------
+v2.0.0 - 2022-07-19 Work rework
+-------------------------------
 
-    ** Computer sharing **
+  API break rewards
 
-    * A new mechanic has been added, it's is invoked by calling the new function 'share'.
-      This mechanic helps you farm reputation faster.
+  * Everyone is awarded 10 NFG.
+  * All work in progress program is auto completed.
+  * All work in progress crafting is auto completed without adding entropy.
 
-    ** gang **
+  Work (Create program / Work for faction / Studying / etc ...)
 
-    * Installing augs means losing a little bit of ascension multipliers.
+  * Working has been rebuilt from the grounds up. The motivation for that change is that all
+    different types of work all required different cached variables on the main Player object.
+    This caused a lot of bugs and crashes. It's been reworked in such a way as to prevent bugs
+    and make it nearly trivial to add new kinds of work. However, since this caused a few API break
+    I've decided to mark this version following semver protocols and call it 2.0.0
+  * Crime can be unfocused and auto loops, no more spam clicking.
+  * All work type give their reward immediately. No need to stop work to bank rewards like reputation.
+  * Faction and Company work no longer have a time limit.
+  * Company work no longer reduces rep gain by half for quitting early.
+  * Company faction require 400k rep to join (from 200k)
+  * Backdooring company server reduces faction requirement to 300k.
+  * All work generally no longer keep track of cumulative gains like exp and reputation since it's applied instantly.
+  * getPlayer returns way less fields but does return the new 'currentWork' field, some fields are moved around.
 
-    ** There's more but I'm going to write it later. **
+  API breaks
 
-    ** Misc. **
+  * workForCompany argument 'companyName' is now not-optional
+  * commitCrime now has 'focus' optional parameter
+  * using getScriptIncome to get total income has been separated to getTotalScriptIncome.
+  * using getScriptExpGain to get total income has been separated to getTotalScriptExpGain.
+  * scp has it's 2 last argument reversed, the signature is now (files, destination, optional_source)
+  * ns.connect and other singularity function are no longer available at the top level.
+    They were already hidden from documentation but now they're gone.
+  * stock.buy and stock.sell were renamed to stock.buyStock and stock.sellStock because 'buy' and 'sell'
+    are very common tokens.
+  * corporation.bribe no longer allows to give shares as bribe.
+  * hasWseAccount, hasTixApiAccess, has4SData, has4SDataTixApi have been removed and replaced with similar stock functions.
 
-    * Nerf noodle bar.
+  Netscript
+
+  * Add singularity.getCurrentWork
+  * Add singularity.getAugmentationBasePrice
+  * Add sleeve.getSleeveAugmentationPrice
+  * Add sleeve.getSleeveAugmentationRepReq
+  * Fix infiltration.getInfiltrationLocations
+  * Singularity.goToLocation support for non-city-specific locations (@Ansopedian)
+  * All corporation functions are synchronous. Job assignment only works on the following cycle. (@stalefishies)
+  * Add batch functionality to NS spendHashes API (@undeemiss)
+  * Fix #3661 Add missing memory property to Sleeve API (@borisflagell)
+  * FIX#3732 Cannot assign two sleeve on "Take on contracts" regardless of contract type. (@borisflagell)
+
+  Corporation
+
+  * Dividend fixes and exposing dividends info via scripts (@stalefishies)
+  * Add big number format support in some Corporation's modal (@borisflagell)
+  * Fix #3261 Industry overview number formatting (@nickofolas)
+
+  Multipliers
+
+  * The main player object was also plagues with a million fields all called '*_mult'. Representing the different multipliers
+  * These have been refactored in a field called 'mults'.
+
+  Misc. 
+
+  * #3596 Enhanced terminal command parsing (@RevanProdigalKnight)
+  * Fix #3366 Sleeve UI would sometimes displays the wrong stat while working out. (@borisflagell)
+  * Two new encryption themed contracts - caesar and vigenere (@Markus-D-M)
+  * Fixes #3132 several Sleeve can no longer works concurrently in the same company (@borisflagell)
+  * FIX #3514 Clear recently killed tab on BN end event (@Daniel-Barbera)
+  * HammingCodes description and implementation fixes (@s2ks)
+  * FIX #3794 Sleeve were getting less shocked when hospitalized (was positive, should have detrimental) (@borisflagell)
+  * Fix #3803 Servers can no longer have duplicate IPs (@crimsonhawk47)
+  * Fix #3854 ctrl+c does not clear terminal input (@evil-tim)
+  * Nerf noodle bar, obviously.
+
 `,
-}
+};

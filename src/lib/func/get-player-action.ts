@@ -1,5 +1,13 @@
 import { NS } from "@ns"
-import { CONSTANTS } from "/game-constants"
+import {
+  ClassWork,
+  CompanyWork,
+  CreateProgramWork,
+  CrimeWork,
+  FactionWork,
+  Work,
+  WorkType,
+} from "/AdditionalNetscriptDefinitions"
 
 export enum PlayerActionType {
   Idle = "Idle",
@@ -32,7 +40,6 @@ export function isCreateProgramAction(action: BasePlayerAction): action is Playe
 export interface PlayerWorkForCompanyAction extends BasePlayerAction {
   type: PlayerActionType.WorkForCompany
   company: string
-  rep: number
 }
 
 export function isWorkForCompanyAction(action: BasePlayerAction): action is PlayerWorkForCompanyAction {
@@ -42,7 +49,7 @@ export function isWorkForCompanyAction(action: BasePlayerAction): action is Play
 export interface PlayerWorkForFactionAction extends BasePlayerAction {
   type: PlayerActionType.WorkForFaction
   faction: string
-  rep: number
+  workType: string
 }
 
 export function isWorkForFactionAction(action: BasePlayerAction): action is PlayerWorkForFactionAction {
@@ -88,49 +95,57 @@ export function isExerciseAction(action: BasePlayerAction): action is PlayerExer
 }
 
 export default function getPlayerAction(ns: NS): PlayerAction {
+  const work = ns.singularity.getCurrentWork() as Work
+  const focus = ns.singularity.isFocused()
   const player = ns.getPlayer()
-  switch (player.workType) {
-    case CONSTANTS.WorkTypeCompany:
-    case CONSTANTS.WorkTypeCompanyPartTime:
+
+  if (!work) {
+    return {
+      type: PlayerActionType.Idle,
+      focus: false,
+    } as PlayerIdleAction
+  }
+
+  switch (work.type) {
+    case WorkType.COMPANY:
       return {
         type: PlayerActionType.WorkForCompany,
-        focus: ns.singularity.isFocused(),
-        company: player.currentWorkFactionName,
-        rep: player.workRepGained,
+        company: (work as CompanyWork).companyName,
+        focus,
       } as PlayerWorkForCompanyAction
-    case CONSTANTS.WorkTypeFaction:
+    case WorkType.FACTION:
       return {
         type: PlayerActionType.WorkForFaction,
-        focus: ns.singularity.isFocused(),
-        faction: player.currentWorkFactionName,
-        rep: player.workRepGained,
+        workType: (work as FactionWork).factionWorkType,
+        faction: (work as FactionWork).factionName,
+        focus,
       } as PlayerWorkForFactionAction
-    case CONSTANTS.WorkTypeCreateProgram:
+    case WorkType.CREATE_PROGRAM:
       return {
         type: PlayerActionType.CreateProgram,
-        focus: ns.singularity.isFocused(),
-        program: player.createProgramName,
+        program: (work as CreateProgramWork).programName,
+        focus,
       } as PlayerCreateProgramAction
-    case CONSTANTS.WorkTypeCrime:
+    case WorkType.CRIME:
       return {
         type: PlayerActionType.Crime,
-        focus: ns.singularity.isFocused(),
-        crime: player.crimeType,
+        crime: (work as CrimeWork).crimeType,
+        focus,
       } as PlayerCrimeAction
-    case CONSTANTS.WorkTypeStudyClass:
+    case WorkType.CLASS:
       if (player.location.includes("Gym")) {
         return {
           type: PlayerActionType.Exercise,
-          focus: ns.singularity.isFocused(),
-          gym: player.location,
-          exercise: player.className,
+          gym: (work as ClassWork).location,
+          exercise: (work as ClassWork).classType,
+          focus,
         } as PlayerExerciseAction
       } else {
         return {
           type: PlayerActionType.Study,
-          focus: ns.singularity.isFocused(),
-          uni: player.location,
-          course: player.className,
+          uni: (work as ClassWork).location,
+          course: (work as ClassWork).classType,
+          focus,
         } as PlayerStudyAction
       }
   }
@@ -138,5 +153,5 @@ export default function getPlayerAction(ns: NS): PlayerAction {
   return {
     type: PlayerActionType.Idle,
     focus: false,
-  }
+  } as PlayerIdleAction
 }

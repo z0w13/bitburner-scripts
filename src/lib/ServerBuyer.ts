@@ -55,6 +55,11 @@ export default class ServerBuyer {
     const currentMoney = Math.max(0, player.money - getMoneyToReserve(this.ns))
     let buyRam = this.minRam
 
+    if (limit === 0) {
+      this.log.debug("Server limit is 0, not buying")
+      return false
+    }
+
     // If we're not at the limit just buy the lowest tier
     if (ownedServers.length < limit) {
       if (currentMoney < this.ns.getPurchasedServerCost(this.minRam)) {

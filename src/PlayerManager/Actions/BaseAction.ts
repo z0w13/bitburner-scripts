@@ -9,10 +9,6 @@ export default abstract class BaseAction {
     return false
   }
 
-  shouldContinue(): boolean {
-    return false
-  }
-
   toString(): string {
     return `<${this.constructor.name}>`
   }

@@ -1,4 +1,5 @@
 import { NS } from "@ns"
+import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 import { updateHwgCommand } from "/lib/shared/CommandResult"
 import { HwgCommand, HwgState } from "/lib/shared/Objects"
 import { getUniqueId } from "/lib/shared/util"
@@ -18,7 +19,7 @@ export async function main(ns: NS): Promise<void> {
     ["delay", 0],
     ["endTime", 0],
     ["commandTime", 0],
-  ]) as Flags
+  ]) as Flags & ScriptArgs
 
   if (flags.target.length === 0) {
     ns.tprintf("ERROR: %s - %s No target specified", ns.getHostname(), ns.getScriptName())

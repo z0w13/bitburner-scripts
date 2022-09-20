@@ -17,8 +17,4 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
   isBackground(): boolean {
     return true
   }
-
-  shouldContinue(): boolean {
-    return true
-  }
 }

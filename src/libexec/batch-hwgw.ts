@@ -9,6 +9,7 @@ import getThreadsAvailable from "/lib/func/get-threads-available"
 import ServerBuyer from "/lib/ServerBuyer"
 import { CommandBatch } from "/Command/Objects"
 import { getGlobalState } from "/lib/shared/GlobalStateManager"
+import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 
 const flagSchema: FlagSchema = [["target", "n00dles"]]
 
@@ -51,7 +52,7 @@ async function calcBatch(ns: NS, target: string): Promise<CommandBatch> {
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
-  const flags = ns.flags(flagSchema) as Flags
+  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
 
   let batch = await calcBatch(ns, flags.target)
   const serverBuyer = new ServerBuyer(ns, 8)
@@ -104,6 +105,11 @@ export async function main(ns: NS): Promise<void> {
     await waitForPids(ns, pids.flat(1))
 
     const script = ns.getRunningScript()
+    if (!script) {
+      ns.tprint("ERROR: ns.getRunningScript() is null, this should be impossible, exiting...")
+      return
+    }
+
     ns.print(
       ns.sprintf(
         "INFO: Money/s: %.2f Exp/s: %.2f Server Money: %.2f%% Server Sec: %.2f of %d",

@@ -28,8 +28,4 @@ export default class CreateGangAction extends BaseAction {
 
     return true
   }
-
-  shouldContinue(): boolean {
-    return true
-  }
 }

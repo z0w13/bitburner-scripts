@@ -68,8 +68,4 @@ export default class SpendHashesAction extends BaseAction {
   isBackground(): boolean {
     return true
   }
-
-  shouldContinue(): boolean {
-    return true
-  }
 }

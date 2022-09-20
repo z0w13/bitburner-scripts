@@ -33,9 +33,13 @@ function getState(ns: NS): AutobestState {
 
   if (current.pid > 0) {
     const script = ns.getRunningScript(current.pid)
+    if (!script) {
+      return current
+    }
+
     const targetFlagIdx = script.args.indexOf("--target")
     if (targetFlagIdx > -1) {
-      current.target = getTarget(ns, script.args[targetFlagIdx + 1])
+      current.target = getTarget(ns, script.args[targetFlagIdx + 1].toString())
     }
   }
 

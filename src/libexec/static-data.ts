@@ -1,17 +1,17 @@
 import { NS } from "@ns"
-import { CRIMES, STATIC_DATA } from "/constants"
+import { CrimeType, STATIC_DATA } from "/constants"
 import { getBitNodeMultipliers } from "/lib/func/get-bitnode-multipliers"
 import { StaticData } from "/lib/objects"
 
 export async function main(ns: NS): Promise<void> {
   const player = ns.getPlayer()
   const staticData: StaticData = {
-    crimes: CRIMES.map((name) => ns.singularity.getCrimeStats(name)),
+    crimes: Object.values(CrimeType).map((name) => ns.singularity.getCrimeStats(name)),
     bitnode_mult: getBitNodeMultipliers(ns),
     player_mult: {
-      hacking_money: player.hacking_money_mult,
-      hacking_speed: player.hacking_speed_mult,
-      hacking_grow: player.hacking_grow_mult,
+      hacking_money: player.mults.hacking_money,
+      hacking_speed: player.mults.hacking_speed,
+      hacking_grow: player.mults.hacking_grow,
     },
   }
 

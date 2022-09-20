@@ -3,27 +3,47 @@ import { LOG_LEVEL } from "/config"
 import getPlayerAction from "/lib/func/get-player-action"
 import { getGlobalState } from "/lib/shared/GlobalStateManager"
 import setupPolyfill from "/lib/ns-polyfill"
-import { LogLevel } from "/lib/objects"
+import { FlagSchema, LogLevel } from "/lib/objects"
 import { PlayerManager } from "/PlayerManager/PlayerManager"
+import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+
+const flagSchema: FlagSchema = [
+  ["focusHacking", false],
+  ["passiveOnly", false],
+  ["enableHacknet", false],
+]
+
+interface Flags {
+  focusHacking: boolean
+  passiveOnly: boolean
+  enableHacknet: boolean
+}
 
 export async function main(ns: NS): Promise<void> {
+  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
+  const playerSettings = getGlobalState().playerSettings
+
+  playerSettings.enableHacknet = flags.enableHacknet
+  playerSettings.focusHacking = flags.focusHacking
+  playerSettings.passiveOnly = flags.passiveOnly
+
   setupPolyfill(ns)
 
   ns.disableLog("ALL")
-  ns.enableLog("joinFaction")
+  ns.enableLog("singularity.joinFaction")
   //ns.enableLog("corporation.createCorporation")
   ns.enableLog("gang.createGang")
   //ns.enableLog("commitCrime")
-  ns.enableLog("purchaseAugmentation")
-  ns.enableLog("purchaseTor")
-  ns.enableLog("purchaseProgram")
-  ns.enableLog("upgradeHomeRam")
-  ns.enableLog("workForFaction")
-  ns.enableLog("installAugmentations")
-  ns.enableLog("universityCourse")
-  ns.enableLog("gymWorkout")
-  ns.enableLog("workForCompany")
-  ns.enableLog("applyToCompany")
+  ns.enableLog("singularity.purchaseAugmentation")
+  ns.enableLog("singularity.purchaseTor")
+  ns.enableLog("singularity.purchaseProgram")
+  ns.enableLog("singularity.upgradeHomeRam")
+  //ns.enableLog("singularity.workForFaction")
+  ns.enableLog("singularity.installAugmentations")
+  ns.enableLog("singularity.universityCourse")
+  ns.enableLog("singularity.gymWorkout")
+  ns.enableLog("singularity.workForCompany")
+  ns.enableLog("singularity.applyToCompany")
 
   const playerMgr = new PlayerManager(getGlobalState().playerSettings)
 

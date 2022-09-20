@@ -10,7 +10,7 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
     const player = ns.getPlayer()
 
     return this.TARGET_SERVERS.filter((s) => !ns.getServer(s).backdoorInstalled)
-      .filter((s) => ns.getServerRequiredHackingLevel(s) < player.hacking)
+      .filter((s) => ns.getServerRequiredHackingLevel(s) < player.skills.hacking)
       .filter((s) => ns.getServerNumPortsRequired(s) <= ns.getServer(s).openPortCount)
   }
 
@@ -28,7 +28,7 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
 
     for (const server of backdoorable) {
       const hackLevel = ns.getServerRequiredHackingLevel(server)
-      if (player.hacking < hackLevel) {
+      if (player.skills.hacking < hackLevel) {
         continue
       }
 

@@ -20,7 +20,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
   },
   plugins: ["@typescript-eslint", "prettier", "no-relative-import-paths"],
-  ignorePatterns: ["*.d.ts", "*.js"],
+  ignorePatterns: ["*.d.ts", "*.js", "game-constants.ts"],
   rules: {
     "no-constant-condition": "off",
     "@typescript-eslint/no-unused-vars": ["error", { varsIgnorePattern: "^_", argsIgnorePattern: "^_" }],

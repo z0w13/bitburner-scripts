@@ -149,7 +149,7 @@ function manageMember(ns: NS, info: GangMemberInfo): string {
       ns.gang.getGangInformation().territory >= TARGET_TERRITORY
     ) {
       // TODO(zowie): Select task based on stats
-      return "Human Trafficking"
+      return ns.gang.getGangInformation().isHacking ? "Money Laundering" : "Human Trafficking"
     } else {
       return "Territory Warfare"
     }
