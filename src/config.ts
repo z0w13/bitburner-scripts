@@ -7,7 +7,7 @@ export const DEPRIORITIZE_HOME = true // Schedule jobs on home last
 
 export const PERCENTAGE_TO_HACK = 0.75
 export const TARGET_MAX_WEAKEN_TIME = 5 * 60 * 1000 // 5 minutes
-export const TARGET_MAX_PREP_WEAKEN_TIME = 10 * 60 * 1000 // 5 minutes
+export const TARGET_MAX_PREP_WEAKEN_TIME = 30 * 60 * 1000 // 30 minutes
 export const HACK_MIN_MONEY = 1_500_000 // Minimum money target should have to consider hacking it
 
 export const LOAD_BUY_THRESHOLD = 0.5 // Purchase additional servers if load above this threshold
