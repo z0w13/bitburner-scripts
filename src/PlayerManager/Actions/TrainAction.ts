@@ -70,7 +70,7 @@ export function shouldTrain(ns: NS, attr: Attribute, targetLevel: number): boole
   const player = ns.getPlayer()
   const nextLevelExp = ns.formulas.skills.calculateExp(player.skills[attr], player.mults[attr])
   const nextLevelExpRemaining = nextLevelExp - player.exp[attr]
-  const timeForLevel = nextLevelExpRemaining / (getExpPerSec(attr) * player.mults[`${attr}_exp`])
+  const timeForLevel = nextLevelExpRemaining / (getExpPerSec(attr) * (player.mults[`${attr}_exp`] || 0))
 
   return player.skills[attr] < targetLevel && timeForLevel < 60 && !!getTrainingCity(ns, attr)
 }

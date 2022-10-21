@@ -76,7 +76,7 @@ export function getBestJob(ns: NS): Job | null {
     return {
       ...job,
 
-      salary: job.salary * ns.getPlayer().mults.work_money * 0.1 * (1000 / CONSTANTS.MilliPerCycle),
+      salary: job.salary * (ns.getPlayer().mults.work_money || 1) * 0.1 * (1000 / CONSTANTS.MilliPerCycle),
     }
   }
 

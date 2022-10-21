@@ -9,9 +9,9 @@ export async function main(ns: NS): Promise<void> {
     crimes: Object.values(CrimeType).map((name) => ns.singularity.getCrimeStats(name)),
     bitnode_mult: getBitNodeMultipliers(ns),
     player_mult: {
-      hacking_money: player.mults.hacking_money,
-      hacking_speed: player.mults.hacking_speed,
-      hacking_grow: player.mults.hacking_grow,
+      hacking_money: player.mults.hacking_money || 1,
+      hacking_speed: player.mults.hacking_speed || 1,
+      hacking_grow: player.mults.hacking_grow || 1,
     },
   }
 

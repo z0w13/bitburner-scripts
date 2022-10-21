@@ -13,7 +13,7 @@ export default class DonateToFactionAction extends BaseAction {
   }
 
   calcDonationAmount(ns: NS, faction: string, targetRep: number): number {
-    const repMulti = ns.getPlayer().mults.faction_rep
+    const repMulti = ns.getPlayer().mults.faction_rep || 1
     const repRequired = targetRep - ns.singularity.getFactionRep(faction)
 
     // Simplified formula to calculate donation amount for rep

@@ -1,4 +1,4 @@
-import { AugmentationStats, NS } from "@ns"
+import { Multipliers, NS } from "@ns"
 import { getMoneyToReserve } from "/lib/func/get-money-to-reserve"
 import { notNullMoreThanZero, sortFunc } from "/lib/util"
 
@@ -6,7 +6,7 @@ export interface AugmentPurchaseInfo {
   name: string
   rep: number
   price: number
-  stats: AugmentationStats
+  stats: Multipliers
   factions: Array<string>
 
   meetRep: boolean
