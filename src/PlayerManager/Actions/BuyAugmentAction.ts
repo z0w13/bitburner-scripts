@@ -9,7 +9,7 @@ import BaseAction from "/PlayerManager/Actions/BaseAction"
  *  3A. If none found return
  *  3B. Work for rep
  */
-export default class UpgradeAugmentAction extends BaseAction {
+export default class BuyAugmentAction extends BaseAction {
   hackFocus: boolean
 
   constructor(hackFocus = false) {

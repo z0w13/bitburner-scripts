@@ -6,7 +6,7 @@ import WorkForFactionAction from "/PlayerManager/Actions/WorkForFaction"
 import IdleAction from "/PlayerManager/Actions/IdleAction"
 import AcceptFactionInvitationsAction from "/PlayerManager/Actions/AcceptFactionInvitationAction"
 import MakeMoneyAction from "/PlayerManager/Actions/MakeMoneyAction"
-import UpgradeAugmentAction from "/PlayerManager/Actions/UpgradeAugmentAction"
+import BuyAugmentAction from "/PlayerManager/Actions/BuyAugmentAction"
 import BuyUpgradesAction from "/PlayerManager/Actions/BuyUpgradesAction"
 import InstallAugmentsAction from "/PlayerManager/Actions/InstallAugmentsAction"
 import ReduceKarmaAction from "/PlayerManager/Actions/ReduceKarmaAction"
@@ -41,6 +41,7 @@ export class PlayerManager {
       settings.enableHacknet ? new SpendHashesAction() : null,
       new BuyUpgradesAction(),
       new TravelForFactionAction(),
+      new BuyAugmentAction(settings.focusHacking),
       new BuyServerAction(ns, false, 8),
       settings.enableHacknet ? new UpgradeHacknetAction() : null,
 
