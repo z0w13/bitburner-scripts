@@ -1,16 +1,16 @@
 import { NS } from "@ns"
 import { Attribute, LogLevel } from "/lib/objects"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
-import TrainAction, { isTraining, shouldTrain, train } from "/PlayerManager/Actions/TrainAction"
+import TrainAction from "/PlayerManager/Actions/TrainAction"
 import WorkForFactionAction from "/PlayerManager/Actions/WorkForFaction"
-import IdleAction from "/PlayerManager/Actions/IdleAction"
 import AcceptFactionInvitationsAction from "/PlayerManager/Actions/AcceptFactionInvitationAction"
 import MakeMoneyAction from "/PlayerManager/Actions/MakeMoneyAction"
 import BuyAugmentAction from "/PlayerManager/Actions/BuyAugmentAction"
 import BuyUpgradesAction from "/PlayerManager/Actions/BuyUpgradesAction"
 import InstallAugmentsAction from "/PlayerManager/Actions/InstallAugmentsAction"
 import ReduceKarmaAction from "/PlayerManager/Actions/ReduceKarmaAction"
-import CreateGangAction from "/PlayerManager/Actions/CreateGangAction"
+// import CreateGangAction from "/PlayerManager/Actions/CreateGangAction"
+// import CreateCorpAction from "/PlayerManager/Actions/CreateCorpAction"
 import TravelForFactionAction from "/PlayerManager/Actions/TravelForFactionAction"
 import BackdoorServersAction from "/PlayerManager/Actions/BackdoorServersAction"
 import DonateToFactionAction from "/PlayerManager/Actions/DonateToFactionAction"
@@ -18,7 +18,6 @@ import UpgradeHacknetAction from "/PlayerManager/Actions/UpgradeHacknetAction"
 import { PlayerSettings } from "/lib/shared/GlobalStateManager"
 import SpendHashesAction from "/PlayerManager/Actions/SpendHashesAction"
 import Logger from "/lib/Logger"
-import { decide } from "/lib/DecisionTree"
 import { LOG_LEVEL } from "/config"
 import ManageSleevesAction from "/PlayerManager/Actions/ManageSleevesAction"
 import BuySleeveAugmentsAction from "/PlayerManager/Actions/BuySleeveAugmentsAction"
@@ -121,37 +120,4 @@ export class PlayerManager {
       }
     }
   }
-}
-
-export interface ScriptState {
-  targetLevel: number
-}
-
-export async function makePlayerDecision(settings: PlayerSettings, state: ScriptState, ns: NS): Promise<ScriptState> {
-  const player = ns.getPlayer()
-  // Passive actions
-
-  // Active actions
-  if (!settings.passiveOnly) {
-    // Training
-    if (shouldTrain(ns, Attribute.HACKING, state.targetLevel) && !isTraining(ns, Attribute.HACKING)) {
-      await train(ns, Attribute.HACKING)
-    }
-
-    if (!settings.focusHacking) {
-      if (shouldTrain(ns, Attribute.STRENGTH, state.targetLevel) && !isTraining(ns, Attribute.STRENGTH)) {
-        await train(ns, Attribute.STRENGTH)
-      } else if (shouldTrain(ns, Attribute.DEFENSE, state.targetLevel) && !isTraining(ns, Attribute.DEFENSE)) {
-        await train(ns, Attribute.DEFENSE)
-      } else if (shouldTrain(ns, Attribute.DEXTERITY, state.targetLevel) && !isTraining(ns, Attribute.DEXTERITY)) {
-        await train(ns, Attribute.DEXTERITY)
-      } else if (shouldTrain(ns, Attribute.AGILITY, state.targetLevel) && !isTraining(ns, Attribute.AGILITY)) {
-        await train(ns, Attribute.AGILITY)
-      } else if (shouldTrain(ns, Attribute.CHARISMA, state.targetLevel) && !isTraining(ns, Attribute.CHARISMA)) {
-        await train(ns, Attribute.CHARISMA)
-      }
-    }
-  }
-
-  return state
 }
