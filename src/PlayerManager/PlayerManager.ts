@@ -24,10 +24,12 @@ import { LOG_LEVEL } from "/config"
 
 export class PlayerManager {
   protected minLevel: number
+  protected passiveOnly: boolean
   protected actions: Array<BaseAction>
 
   constructor(settings: PlayerSettings) {
     this.minLevel = 10
+    this.passiveOnly = settings.passiveOnly
     this.actions = [
       settings.autoReset ? new InstallAugmentsAction() : null,
       new BackdoorServersAction(),
@@ -45,16 +47,16 @@ export class PlayerManager {
       new DonateToFactionAction(settings.focusHacking),
       new WorkForFactionAction(settings.focusHacking),
 
-      !settings.passiveOnly ? new TrainAction(Attribute.HACKING, this.minLevel) : null,
+      new TrainAction(Attribute.HACKING, this.minLevel),
 
-      !settings.passiveOnly && !settings.focusHacking ? new TrainAction(Attribute.STRENGTH, this.minLevel) : null,
-      !settings.passiveOnly && !settings.focusHacking ? new TrainAction(Attribute.DEFENSE, this.minLevel) : null,
-      !settings.passiveOnly && !settings.focusHacking ? new TrainAction(Attribute.DEXTERITY, this.minLevel) : null,
-      !settings.passiveOnly && !settings.focusHacking ? new TrainAction(Attribute.AGILITY, this.minLevel) : null,
-      !settings.passiveOnly && !settings.focusHacking ? new TrainAction(Attribute.CHARISMA, this.minLevel) : null,
+      !settings.focusHacking ? new TrainAction(Attribute.STRENGTH, this.minLevel) : null,
+      !settings.focusHacking ? new TrainAction(Attribute.DEFENSE, this.minLevel) : null,
+      !settings.focusHacking ? new TrainAction(Attribute.DEXTERITY, this.minLevel) : null,
+      !settings.focusHacking ? new TrainAction(Attribute.AGILITY, this.minLevel) : null,
+      !settings.focusHacking ? new TrainAction(Attribute.CHARISMA, this.minLevel) : null,
 
-      // settings.createGang && !settings.passiveOnly ? new ReduceKarmaAction() : null,
-      !settings.passiveOnly ? new MakeMoneyAction() : null,
+      settings.createGang ? new ReduceKarmaAction() : null,
+      new MakeMoneyAction(),
     ].filter((v): v is BaseAction => v !== null)
   }
 
@@ -82,6 +84,10 @@ export class PlayerManager {
 
       const res = await action.perform(ns)
       log.info("%s result=%t background=%t", action.toString(), res, action.isBackground())
+    }
+
+    if (this.passiveOnly) {
+      return
     }
 
     // Run non-background actions
