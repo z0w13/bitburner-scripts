@@ -82,6 +82,10 @@ export class PlayerManager {
         action.isBackground(),
       )
 
+      if (!action.shouldPerform(ns)) {
+        continue
+      }
+
       const res = await action.perform(ns)
       log.info("%s result=%t background=%t", action.toString(), res, action.isBackground())
     }
