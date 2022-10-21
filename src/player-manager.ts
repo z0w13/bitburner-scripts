@@ -45,7 +45,7 @@ export async function main(ns: NS): Promise<void> {
   ns.enableLog("singularity.workForCompany")
   ns.enableLog("singularity.applyToCompany")
 
-  const playerMgr = new PlayerManager(getGlobalState().playerSettings)
+  const playerMgr = new PlayerManager(ns, getGlobalState().playerSettings)
 
   while (true) {
     await ns.asleep(2000)

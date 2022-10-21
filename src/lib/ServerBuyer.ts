@@ -47,8 +47,7 @@ export default class ServerBuyer {
     return buyRam
   }
 
-  async buy(nextstep = false): Promise<boolean> {
-    this.log.debug("Attempting to buy server, nextstep: %s", nextstep ? "true" : "false")
+  getServerToBuy(nextStep = false): { replace?: string; cost: number; ram: number } | undefined {
     const limit = this.ns.getPurchasedServerLimit()
     const ownedServers = this.getPurchasedServers()
     const player = this.ns.getPlayer()
@@ -56,65 +55,80 @@ export default class ServerBuyer {
     let buyRam = this.minRam
 
     if (limit === 0) {
-      this.log.debug("Server limit is 0, not buying")
-      return false
+      return
     }
 
-    // If we're not at the limit just buy the lowest tier
     if (ownedServers.length < limit) {
       if (currentMoney < this.ns.getPurchasedServerCost(this.minRam)) {
-        this.log.debug("Cheapest server costs more than available money, can't buy")
-        return false
+        return
       }
 
-      if (!nextstep) {
+      if (!nextStep) {
         buyRam = this.getHighestTierAffordable(currentMoney)
         if (buyRam < this.minRam) {
-          this.log.debug("buyRam %.2f is less than minRam %.2f, can't buy", buyRam, this.minRam)
-          return false
+          return
         }
       }
 
-      return this.buyServer(buyRam)
+      return { cost: this.ns.getPurchasedServerCost(buyRam), ram: buyRam }
     }
 
     const lowestHosts = this.getLowestRamHosts()
     if (lowestHosts.servers.length === 0) {
       this.log.error("lowestHosts is empty, shouldn't happen tbh")
-      return false
+      return
     }
 
     if (lowestHosts.ram >= CONSTANTS.PurchasedServerMaxRam) {
-      this.log.info("All servers are max tier, doing nothing.")
-      return false
+      this.log.info("All servers are max tier.")
+      return
     }
 
-    buyRam = nextstep ? lowestHosts.ram * 2 : this.getHighestTierAffordable(currentMoney)
-
+    buyRam = nextStep ? lowestHosts.ram * 2 : this.getHighestTierAffordable(currentMoney)
     if (currentMoney < this.ns.getPurchasedServerCost(buyRam)) {
-      return false
+      return
     }
 
     if (buyRam <= lowestHosts.ram) {
       this.log.debug("buyRam %.2f is less than or equal to lowest host RAM %.2f, can't buy", buyRam, lowestHosts.ram)
-      return false
+      return
     }
 
     if (ownedServers.length >= limit) {
       // First look for any owned servers of the lowest tier that are idle, if found delete it
       const emptyServer = lowestHosts.servers.find((s) => this.ns.ps(s.hostname).length === 0)
       if (emptyServer) {
-        this.deleteServer(emptyServer)
-        return this.buyServer(buyRam)
+        return {
+          replace: emptyServer.hostname,
+          cost: this.ns.getPurchasedServerCost(buyRam),
+          ram: buyRam,
+        }
       }
 
       // If not pick a random one from the lowest tier, drain and delete it
       const server = lowestHosts.servers[Math.floor(Math.random() * lowestHosts.servers.length)]
-      await this.drainAndWait(server.hostname)
-      this.deleteServer(server)
+      return {
+        replace: server.hostname,
+        cost: this.ns.getPurchasedServerCost(buyRam),
+        ram: buyRam,
+      }
     }
 
-    return this.buyServer(buyRam)
+    return
+  }
+
+  async buy(nextStep = false): Promise<boolean> {
+    const toBuy = this.getServerToBuy(nextStep)
+    if (!toBuy) {
+      return false
+    }
+
+    if (toBuy.replace) {
+      await this.drainAndWait(toBuy.replace)
+      this.deleteServer(toBuy.replace)
+    }
+
+    return this.buyServer(toBuy.ram)
   }
 
   async drainAndWait(hostname: string): Promise<void> {
@@ -129,10 +143,12 @@ export default class ServerBuyer {
     drainingServers.delete(hostname)
   }
 
-  deleteServer(server: Server) {
-    this.ns.killall(server.hostname)
-    this.ns.deleteServer(server.hostname)
-    this.log.info("Deleted old server %s with %s RAM", server.hostname, formatGiB(this.ns, server.maxRam))
+  deleteServer(hostname: string) {
+    const ram = this.ns.getServer(hostname).maxRam
+
+    this.ns.killall(hostname)
+    this.ns.deleteServer(hostname)
+    this.log.info("Deleted old server %s with %s RAM", hostname, formatGiB(this.ns, ram))
   }
 
   buyServer(ram: number): boolean {

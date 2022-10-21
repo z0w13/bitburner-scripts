@@ -20,14 +20,14 @@ import SpendHashesAction from "/PlayerManager/Actions/SpendHashesAction"
 import Logger from "/lib/Logger"
 import { decide } from "/lib/DecisionTree"
 import { LOG_LEVEL } from "/config"
-// import CreateCorpAction from "/PlayerManager/Actions/CreateCorpAction"
+import { BuyServerAction } from "/PlayerManager/Actions/BuyServerAction"
 
 export class PlayerManager {
   protected minLevel: number
   protected passiveOnly: boolean
   protected actions: Array<BaseAction>
 
-  constructor(settings: PlayerSettings) {
+  constructor(ns: NS, settings: PlayerSettings) {
     this.minLevel = 10
     this.passiveOnly = settings.passiveOnly
     this.actions = [
@@ -41,7 +41,7 @@ export class PlayerManager {
       settings.enableHacknet ? new SpendHashesAction() : null,
       new BuyUpgradesAction(),
       new TravelForFactionAction(),
-      new UpgradeAugmentAction(settings.focusHacking),
+      new BuyServerAction(ns, false, 8),
       settings.enableHacknet ? new UpgradeHacknetAction() : null,
 
       new DonateToFactionAction(settings.focusHacking),
