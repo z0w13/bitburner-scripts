@@ -20,6 +20,8 @@ import SpendHashesAction from "/PlayerManager/Actions/SpendHashesAction"
 import Logger from "/lib/Logger"
 import { decide } from "/lib/DecisionTree"
 import { LOG_LEVEL } from "/config"
+import ManageSleevesAction from "/PlayerManager/Actions/ManageSleevesAction"
+import BuySleeveAugmentsAction from "/PlayerManager/Actions/BuySleeveAugmentsAction"
 import { BuyServerAction } from "/PlayerManager/Actions/BuyServerAction"
 
 export class PlayerManager {
@@ -39,6 +41,8 @@ export class PlayerManager {
 
       new AcceptFactionInvitationsAction(),
       settings.enableHacknet ? new SpendHashesAction() : null,
+      new BuySleeveAugmentsAction(),
+      new ManageSleevesAction(),
       new BuyUpgradesAction(),
       new TravelForFactionAction(),
       new BuyAugmentAction(settings.focusHacking),
