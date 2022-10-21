@@ -1,4 +1,5 @@
 import { AugmentationStats, NS } from "@ns"
+import { getMoneyToReserve } from "/lib/func/get-money-to-reserve"
 import { notNullMoreThanZero, sortFunc } from "/lib/util"
 
 export interface AugmentPurchaseInfo {
@@ -43,7 +44,7 @@ export function getAugmentPurchaseInfo(ns: NS): Array<AugmentPurchaseInfo> {
 
           meetRep,
           meetRepFaction: faction,
-          meetMoney: player.money >= money,
+          meetMoney: player.money - getMoneyToReserve(ns) > money,
         }
       }
     }
