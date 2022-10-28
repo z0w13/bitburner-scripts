@@ -1,8 +1,9 @@
 import { NS } from "@ns"
+import { Contract } from "/data/Bladeburner"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import setupPolyfill from "/lib/ns-polyfill"
 import { formatMoney, formatNum } from "/lib/util"
-import BladeburnerAction, { getMoneyBeforeOps } from "/PlayerManager/Actions/BladeburnerAction"
+import BladeburnerAction, { getBestContract, getMoneyBeforeOps } from "/PlayerManager/Actions/BladeburnerAction"
 import BladeburnerLevelSkillAction from "/PlayerManager/Actions/BladeburnerLevelSkillAction"
 
 function printStatus(ns: NS): void {
@@ -19,7 +20,10 @@ function printStatus(ns: NS): void {
     [],
     ["Stamina", `${formatNum(ns, curStam)}/${formatNum(ns, maxStam)}`],
     ["Skill Points", ns.bladeburner.getSkillPoints()],
-    ["Money Before Ops", formatMoney(ns, getMoneyBeforeOps(ns))],
+    [
+      "Money Before Ops",
+      formatMoney(ns, getMoneyBeforeOps(ns, getBestContract(ns, ns.bladeburner.getContractNames() as Array<Contract>))),
+    ],
     [],
     ["City", city],
     ["Pop", formatNum(ns, ns.bladeburner.getCityEstimatedPopulation(city), "0,0.00a")],
