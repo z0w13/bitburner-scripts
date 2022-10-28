@@ -1,5 +1,5 @@
 import { NS, Server } from "@ns"
-import { LOG_LEVEL } from "/config"
+import { LOG_LEVEL, SERVER_DRAIN_TIMEOUT } from "/config"
 import { CONSTANTS } from "/game-constants"
 import { getMoneyToReserve } from "/lib/func/get-money-to-reserve"
 import { getGlobalState } from "/lib/shared/GlobalStateManager"
@@ -133,9 +133,16 @@ export default class ServerBuyer {
 
   async drainAndWait(hostname: string): Promise<void> {
     const drainingServers = getGlobalState().drainingServers
+    let timedOut = false
+
     drainingServers.add(hostname)
 
-    while (this.ns.ps(hostname).length !== 0) {
+    const drainTimeout = setTimeout(() => {
+      timedOut = true
+      clearTimeout(drainTimeout)
+    }, SERVER_DRAIN_TIMEOUT)
+
+    while (this.ns.ps(hostname).length !== 0 && !timedOut) {
       this.log.debug(`Waiting for ${hostname} to drain...`)
       await this.ns.asleep(1000)
     }

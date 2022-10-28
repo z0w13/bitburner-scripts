@@ -15,6 +15,8 @@ export const MAX_PREP_LOAD = 0.5 // Use a maximum of 10% of available power to p
 export const MAX_LOAD = 0.9 // Don't exceed 90% of available power in general
 export const MAX_SIMULTANEOUS_PREP_JOBS = 10000
 
+export const SERVER_DRAIN_TIMEOUT = 60 * 1000 // Time before we force kill processes when deleting a server (in ms)
+
 export const BATCH_INTERVAL = 300 // Time between batch jobs
 export const BATCH_WEAKEN_MULTIPLIER = 1.5 // How much to mutliply weaken threads with to offset player level gain
 export const BATCH_GROW_MULTIPLIER = 2.5 // How much to mutliply grow threads with to offset player level gain
