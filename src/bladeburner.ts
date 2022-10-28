@@ -3,7 +3,7 @@ import { Contract } from "/data/Bladeburner"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import setupPolyfill from "/lib/ns-polyfill"
 import { formatMoney, formatNum } from "/lib/util"
-import BladeburnerAction, { getBestContract, getMoneyBeforeOps } from "/PlayerManager/Actions/BladeburnerAction"
+import BladeburnerAction, { getBestContract, getMoneyBeforeOps } from "PlayerManager/Actions/BladeburnerPerformAction"
 import BladeburnerLevelSkillAction from "/PlayerManager/Actions/BladeburnerLevelSkillAction"
 
 function printStatus(ns: NS): void {

@@ -39,6 +39,11 @@ function generateEnums(ns: NS) {
   ns.tprintf("%s", resultLines.join("\n"))
 }
 
+export interface BladeburnerAction {
+  type: ActionType
+  name: Contract | Operation | GeneralAction | BlackOp
+}
+
 export enum Contract {
   "Tracking" = "Tracking",
   "BountyHunter" = "Bounty Hunter",

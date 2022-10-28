@@ -23,7 +23,7 @@ import ManageSleevesAction from "/PlayerManager/Actions/ManageSleevesAction"
 import BuySleeveAugmentsAction from "/PlayerManager/Actions/BuySleeveAugmentsAction"
 import { BuyServerAction } from "/PlayerManager/Actions/BuyServerAction"
 import BladeburnerLevelSkillAction from "/PlayerManager/Actions/BladeburnerLevelSkillAction"
-import BladeburnerAction from "/PlayerManager/Actions/BladeburnerAction"
+import BladeburnerPerformAction from "/PlayerManager/Actions/BladeburnerPerformAction"
 
 export class PlayerManager {
   protected minLevel: number
@@ -62,7 +62,7 @@ export class PlayerManager {
       !settings.focusHacking ? new TrainAction(Attribute.AGILITY, this.minLevel) : null,
       !settings.focusHacking ? new TrainAction(Attribute.CHARISMA, this.minLevel) : null,
 
-      new BladeburnerAction(),
+      new BladeburnerPerformAction(),
       settings.createGang ? new ReduceKarmaAction() : null,
       new MakeMoneyAction(),
     ].filter((v): v is BaseAction => v !== null)

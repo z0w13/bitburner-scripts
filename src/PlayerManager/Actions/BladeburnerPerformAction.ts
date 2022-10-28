@@ -1,5 +1,5 @@
 import { BladeburnerCurAction, NS } from "@ns"
-import { ActionType, Contract, GeneralAction, Operation, Skill } from "/data/Bladeburner"
+import { ActionType, BladeburnerAction, Contract, GeneralAction, Operation, Skill } from "/data/Bladeburner"
 
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
@@ -51,19 +51,20 @@ export function getMoneyBeforeOps(ns: NS, contract: Contract = Contract.Retireme
   return moneyGain * contractsBeforeMet
 }
 
-function getBestAction(ns: NS): { type: ActionType; name: string } {
-  const currentAction = ns.bladeburner.getCurrentAction()
+function getBestAction(ns: NS): BladeburnerAction {
+  const currentAction = ns.bladeburner.getCurrentAction() as BladeburnerAction
 
   if (currentAction.type == ActionType.BlackOp) {
     return { type: currentAction.type, name: currentAction.name }
   }
 
   const staminaPct = getStaminaPct(...ns.bladeburner.getStamina())
-  if (
-    actionIsEqual(currentAction, { type: ActionType.General, name: GeneralAction.FieldAnalysis }) &&
-    staminaPct < 0.9
-  ) {
-    return { type: ActionType.General, name: GeneralAction.FieldAnalysis }
+  const isRecoveringStamina =
+    actionIsEqual(currentAction, { type: ActionType.General, name: GeneralAction.FieldAnalysis }) ||
+    actionIsEqual(currentAction, { type: ActionType.General, name: GeneralAction.HyperbolicRegenerationChamber })
+
+  if (isRecoveringStamina && staminaPct < 0.9) {
+    return currentAction
   }
 
   if (staminaPct < 0.5) {
@@ -85,7 +86,7 @@ function getBestAction(ns: NS): { type: ActionType; name: string } {
   return { type: ActionType.Contract, name: bestContract }
 }
 
-export default class BladeburnerAction extends BaseAction {
+export default class BladeburnerPerformAction extends BaseAction {
   shouldPerform(_ns: NS): boolean {
     return true
   }
