@@ -22,6 +22,8 @@ import { LOG_LEVEL } from "/config"
 import ManageSleevesAction from "/PlayerManager/Actions/ManageSleevesAction"
 import BuySleeveAugmentsAction from "/PlayerManager/Actions/BuySleeveAugmentsAction"
 import { BuyServerAction } from "/PlayerManager/Actions/BuyServerAction"
+import BladeburnerLevelSkillAction from "/PlayerManager/Actions/BladeburnerLevelSkillAction"
+import BladeburnerAction from "/PlayerManager/Actions/BladeburnerAction"
 
 export class PlayerManager {
   protected minLevel: number
@@ -40,6 +42,7 @@ export class PlayerManager {
 
       new AcceptFactionInvitationsAction(),
       settings.enableHacknet ? new SpendHashesAction() : null,
+      new BladeburnerLevelSkillAction(),
       new BuySleeveAugmentsAction(),
       new ManageSleevesAction(),
       new BuyUpgradesAction(),
@@ -59,6 +62,7 @@ export class PlayerManager {
       !settings.focusHacking ? new TrainAction(Attribute.AGILITY, this.minLevel) : null,
       !settings.focusHacking ? new TrainAction(Attribute.CHARISMA, this.minLevel) : null,
 
+      new BladeburnerAction(),
       settings.createGang ? new ReduceKarmaAction() : null,
       new MakeMoneyAction(),
     ].filter((v): v is BaseAction => v !== null)
@@ -75,15 +79,15 @@ export class PlayerManager {
   }
 
   async run(ns: NS): Promise<void> {
-    const log = new Logger(ns, LOG_LEVEL, "PlayerManager")
+    const log = new Logger(ns, LogLevel.Debug, "PlayerManager")
 
     // Run background actions first
-    for (const action of this.actions.filter((a) => a.isBackground())) {
+    for (const action of this.actions.filter((a) => a.isBackground(ns))) {
       log.debug(
         "%s shouldPerform=%t isBackground=%t",
         action.toString(),
         action.shouldPerform(ns),
-        action.isBackground(),
+        action.isBackground(ns),
       )
 
       if (!action.shouldPerform(ns)) {
@@ -91,7 +95,7 @@ export class PlayerManager {
       }
 
       const res = await action.perform(ns)
-      log.info("%s result=%t background=%t", action.toString(), res, action.isBackground())
+      log.info("%s result=%t background=%t", action.toString(), res, action.isBackground(ns))
     }
 
     if (this.passiveOnly) {
@@ -99,13 +103,13 @@ export class PlayerManager {
     }
 
     // Run non-background actions
-    for (const action of this.actions.filter((a) => !a.isBackground())) {
+    for (const action of this.actions.filter((a) => !a.isBackground(ns))) {
       log.debug(
         "%s shouldPerform=%t isPerforming=%t isBackground=%t",
         action.toString(),
         action.shouldPerform(ns),
         action.isPerforming(ns),
-        action.isBackground(),
+        action.isBackground(ns),
       )
 
       if (action.shouldPerform(ns)) {
@@ -113,7 +117,7 @@ export class PlayerManager {
           ns.singularity.stopAction()
 
           const res = await action.perform(ns)
-          log.info("%s result=%t background=%t", action.toString(), res, action.isBackground())
+          log.info("%s result=%t background=%t", action.toString(), res, action.isBackground(ns))
         }
 
         break
