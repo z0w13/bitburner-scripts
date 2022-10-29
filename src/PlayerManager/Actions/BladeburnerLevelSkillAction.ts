@@ -13,7 +13,7 @@ const SKILLS_TO_LEVEL: Record<string, number | null> = {
   [Skill.Reaper]: null,
   [Skill.EvasiveSystem]: null,
   [Skill.HandsofMidas]: null,
-  [Skill.Hyperdrive]: null,
+  [Skill.Hyperdrive]: 30,
 }
 
 function getSkillToLevel(ns: NS): string | undefined {
