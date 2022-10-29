@@ -20,10 +20,7 @@ function printStatus(ns: NS): void {
     [],
     ["Stamina", `${formatNum(ns, curStam)}/${formatNum(ns, maxStam)}`],
     ["Skill Points", ns.bladeburner.getSkillPoints()],
-    [
-      "Money Before Ops",
-      formatMoney(ns, getMoneyBeforeOps(ns, getBestContract(ns, ns.bladeburner.getContractNames() as Array<Contract>))),
-    ],
+    ["Money Before Ops", formatMoney(ns, getMoneyBeforeOps(ns))],
     [],
     ["City", city],
     ["Pop", formatNum(ns, ns.bladeburner.getCityEstimatedPopulation(city), "0,0.00a")],

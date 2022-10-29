@@ -1,5 +1,7 @@
 import { BladeburnerCurAction, NS } from "@ns"
 import { ActionType, BladeburnerAction, Contract, GeneralAction, Operation, Skill } from "/data/Bladeburner"
+import { City } from "/data/LocationNames"
+import { sortFunc } from "/lib/util"
 
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
@@ -18,6 +20,7 @@ export function getBestContract(ns: NS, contractNames: Array<Contract>): Contrac
   return contractNames
     .filter((c) => ns.bladeburner.getActionCountRemaining(ActionType.Contract, c) > 100)
     .filter((c) => ns.bladeburner.getActionEstimatedSuccessChance(ActionType.Contract, c)[0] > 0.5)
+    .sort(sortFunc((c) => getContractMoney(ns, c), true))
     .at(-1)
 }
 
@@ -28,7 +31,7 @@ function getBestOperation(ns: NS, operationNames: Array<Operation>): Operation |
     .at(-1)
 }
 
-export function getMoneyBeforeOps(ns: NS, contract: Contract = Contract.Retirement): number {
+function getContractMoney(ns: NS, contract: Contract): number {
   // https://github.com/danielyxie/bitburner/blob/be553f3548b0082794f7aa12c594d6dad8b91336/src/Bladeburner/data/Constants.ts#L55
   const baseMoneyGain = 250_000
   // https://github.com/danielyxie/bitburner/blob/14914eb190945a8a476984d65ec428c9fcb06672/src/Bladeburner/Bladeburner.tsx#L1695
@@ -41,14 +44,29 @@ export function getMoneyBeforeOps(ns: NS, contract: Contract = Contract.Retireme
   const rewardFac = rewardFacs[contract]
   const contractLevel = ns.bladeburner.getActionCurrentLevel(ActionType.Contract, contract)
   const midasLevel = ns.bladeburner.getSkillLevel(Skill.HandsofMidas)
-  const contractsBeforeMet = 20 // How many contracts we want it to take to reach our goal
   const moneyMult = 1 + midasLevel * 0.1
 
   // Adapted from https://github.com/danielyxie/bitburner/blob/68e90b8e6eddd68a6ebf1406b527131056aa7015/src/Bladeburner/Bladeburner.tsx#L1263
   const rewardMultiplier = Math.pow(rewardFac, contractLevel - 1)
-  const moneyGain = baseMoneyGain * rewardMultiplier * moneyMult
+  return baseMoneyGain * rewardMultiplier * moneyMult
+}
 
-  return moneyGain * contractsBeforeMet
+export function getMoneyBeforeOps(ns: NS): number {
+  const highestLevelContract = ns.bladeburner
+    .getContractNames()
+    .sort(sortFunc((c) => ns.bladeburner.getActionCurrentLevel(ActionType.Contract, c), true))
+    .at(0) as Contract | undefined
+
+  if (!highestLevelContract) {
+    throw new Error("highestLevelContract is undefined or false, shouldn't be possible")
+  }
+
+  const contractsBeforeMet = 5 // How many contracts we want it to take to reach our goal
+  return getContractMoney(ns, highestLevelContract) * contractsBeforeMet
+}
+
+function getHighestPopCity(ns: NS): City {
+  return Object.values(City).sort(sortFunc((c) => ns.bladeburner.getCityEstimatedPopulation(c), true))[0]
 }
 
 function getBestAction(ns: NS): BladeburnerAction {
@@ -68,11 +86,17 @@ function getBestAction(ns: NS): BladeburnerAction {
   }
 
   if (staminaPct < 0.5) {
-    return { type: ActionType.General, name: GeneralAction.FieldAnalysis }
+    const estimatedSuccess = ns.bladeburner.getActionEstimatedSuccessChance(ActionType.Contract, Contract.Retirement)
+    const estimatedSuccessDiff = estimatedSuccess[1] - estimatedSuccess[0]
+
+    return {
+      type: ActionType.General,
+      name: estimatedSuccessDiff > 0.4 ? GeneralAction.FieldAnalysis : GeneralAction.HyperbolicRegenerationChamber,
+    }
   }
 
   const bestContract = getBestContract(ns, ns.bladeburner.getContractNames() as Array<Contract>)
-  if (ns.getPlayer().money > getMoneyBeforeOps(ns, bestContract)) {
+  if (ns.getPlayer().money > getMoneyBeforeOps(ns)) {
     const bestOperation = getBestOperation(ns, ns.bladeburner.getOperationNames() as Array<Operation>)
     if (bestOperation) {
       return { type: ActionType.Operation, name: bestOperation }
@@ -100,6 +124,11 @@ export default class BladeburnerPerformAction extends BaseAction {
   }
 
   async perform(ns: NS): Promise<boolean> {
+    if (ns.bladeburner.getCityEstimatedPopulation(ns.bladeburner.getCity()) < 1_000_000) {
+      if (!ns.bladeburner.switchCity(getHighestPopCity(ns))) {
+        return false
+      }
+    }
     const action = getBestAction(ns)
     return ns.bladeburner.startAction(action.type, action.name)
   }
