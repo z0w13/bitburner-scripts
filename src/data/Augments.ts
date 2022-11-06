@@ -60,23 +60,26 @@ export function getAvailableAugs(ns: NS, hackFocus = false): Array<AugmentPurcha
   }
 
   const owned = ns.singularity.getOwnedAugmentations(true)
-  return augs
-    .filter((a) => !owned.includes(a.name) || a.name.includes("NeuroFlux Governor"))
-    .sort(sortFunc((v) => Math.max(...v.factions.map((f) => ns.singularity.getFactionRep(f))) - v.rep, true))
-    .filter(
-      (a) =>
-        !hackFocus ||
-        notNullMoreThanZero(a.stats.hacking_chance) ||
-        notNullMoreThanZero(a.stats.hacking_exp) ||
-        notNullMoreThanZero(a.stats.hacking_grow) ||
-        notNullMoreThanZero(a.stats.hacking_money) ||
-        notNullMoreThanZero(a.stats.hacking) ||
-        notNullMoreThanZero(a.stats.hacking_speed) ||
-        notNullMoreThanZero(a.stats.faction_rep) ||
-        a.name === "CashRoot Starter Kit" ||
-        a.name === "BitRunners Neurolink" ||
-        a.name === "Neuroreceptor Management Implant",
-    )
+  return (
+    augs
+      .filter((a) => !owned.includes(a.name) || a.name.includes("NeuroFlux Governor"))
+      .sort(sortFunc((a) => a.price))
+      //.sort(sortFunc((v) => Math.max(...v.factions.map((f) => ns.singularity.getFactionRep(f))) - v.rep, true))
+      .filter(
+        (a) =>
+          !hackFocus ||
+          notNullMoreThanZero(a.stats.hacking_chance) ||
+          notNullMoreThanZero(a.stats.hacking_exp) ||
+          notNullMoreThanZero(a.stats.hacking_grow) ||
+          notNullMoreThanZero(a.stats.hacking_money) ||
+          notNullMoreThanZero(a.stats.hacking) ||
+          notNullMoreThanZero(a.stats.hacking_speed) ||
+          notNullMoreThanZero(a.stats.faction_rep) ||
+          a.name === "CashRoot Starter Kit" ||
+          a.name === "BitRunners Neurolink" ||
+          a.name === "Neuroreceptor Management Implant",
+      )
+  )
 }
 
 export function getLowestDonateAug(ns: NS, hackFocus = false): AugmentPurchaseInfo | undefined {
