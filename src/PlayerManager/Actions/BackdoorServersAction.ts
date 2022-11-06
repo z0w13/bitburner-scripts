@@ -18,10 +18,6 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
     return this.getBackdoorableServers(ns).length > 0
   }
 
-  isPerforming(_ns: NS): boolean {
-    return false
-  }
-
   async perform(ns: NS): Promise<boolean> {
     const backdoorable = this.getBackdoorableServers(ns)
     const player = ns.getPlayer()
