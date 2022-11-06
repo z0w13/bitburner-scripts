@@ -1,18 +1,24 @@
 import { NS } from "@ns"
-import { Contract } from "/data/Bladeburner"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import setupPolyfill from "/lib/ns-polyfill"
 import { formatMoney, formatNum } from "/lib/util"
-import BladeburnerAction, { getBestContract, getMoneyBeforeOps } from "PlayerManager/Actions/BladeburnerPerformAction"
+import BladeburnerAction, { getCityPops, getMoneyBeforeOps } from "PlayerManager/Actions/BladeburnerPerformAction"
 import BladeburnerLevelSkillAction from "/PlayerManager/Actions/BladeburnerLevelSkillAction"
+import { ActionType, BlackOp } from "/data/Bladeburner"
 
 function printStatus(ns: NS): void {
   const currentAction = ns.bladeburner.getCurrentAction()
   const city = ns.bladeburner.getCity()
   const [curStam, maxStam] = ns.bladeburner.getStamina()
 
+  const totalBlackOps = Object.values(BlackOp).length
+  const finishedBlackOps = Object.values(BlackOp).filter(
+    (b) => ns.bladeburner.getActionCountRemaining(ActionType.BlackOp, b) === 0,
+  ).length
+
   const tableData: RawTableData = [
     ["Rank", formatNum(ns, ns.bladeburner.getRank())],
+    ["BlackOps Progress", `${finishedBlackOps}/${totalBlackOps}`],
     [],
     ["Type", currentAction.type],
     ["Action", currentAction.name],
@@ -29,6 +35,11 @@ function printStatus(ns: NS): void {
 
   ns.clearLog()
   ns.print(renderTable(ns, tableData, false))
+
+  const popData: RawTableData = [["City", "Pop"]]
+  popData.push(...Object.entries(getCityPops(ns)).map(([city, pop]) => [city, formatNum(ns, pop, "0,0.00a")]))
+
+  ns.print(renderTable(ns, popData))
 }
 
 export async function main(ns: NS): Promise<void> {

@@ -1,61 +1,69 @@
-import { BladeburnerCurAction, NS } from "@ns"
-import { ActionType, BladeburnerAction, Contract, GeneralAction, Operation, Skill } from "/data/Bladeburner"
+import { NS } from "@ns"
+import {
+  cityActionIsEqual,
+  ActionType,
+  ACTION_LIST,
+  BladeburnerCityAction,
+  Contract,
+  GeneralAction,
+  newAction,
+  Operation,
+  actionIsEqual,
+  getCurrentAction,
+  getAction,
+  getContractMoney,
+  BlackOp,
+} from "/data/Bladeburner"
 import { City } from "/data/LocationNames"
 import { sortFunc } from "/lib/util"
 
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
-function actionIsEqual(actionA: BladeburnerCurAction, actionB: BladeburnerCurAction): boolean {
-  return (
-    actionA.type.toLowerCase() === actionB.type.toLowerCase() &&
-    actionA.name.toLowerCase() === actionB.name.toLowerCase()
-  )
-}
+const MIN_CITY_POP = 1_000_000
+
+const SAFE_CONTRACTS = [Contract.Tracking]
+const SAFE_OPS = [Operation.Investigation, Operation.UndercoverOperation]
 
 function getStaminaPct(curr: number, max: number): number {
   return curr / max
 }
 
-export function getBestContract(ns: NS, contractNames: Array<Contract>): Contract | undefined {
-  return contractNames
+function getAverageSuccessChange(ns: NS, name: Contract | Operation): number {
+  const action = getAction(name)
+  const [min, max] = ns.bladeburner.getActionEstimatedSuccessChance(action.type, action.name)
+  return min + (max - min) / 2
+}
+
+export function getBestContract(ns: NS): Contract | undefined {
+  return Object.values(Contract)
     .filter((c) => ns.bladeburner.getActionCountRemaining(ActionType.Contract, c) > 100)
-    .filter((c) => ns.bladeburner.getActionEstimatedSuccessChance(ActionType.Contract, c)[0] > 0.5)
+    .filter((c) => getAverageSuccessChange(ns, c) > 0.5)
+    .filter((c) => currentCityPopIsAboveMinimum(ns) || SAFE_CONTRACTS.includes(c))
     .sort(sortFunc((c) => getContractMoney(ns, c), true))
     .at(-1)
 }
 
-function getBestOperation(ns: NS, operationNames: Array<Operation>): Operation | undefined {
-  return operationNames
+function getBestOperation(ns: NS): Operation | undefined {
+  return Object.values(Operation)
     .filter((op) => ns.bladeburner.getActionCountRemaining(ActionType.Operation, op) > 100)
-    .filter((op) => ns.bladeburner.getActionEstimatedSuccessChance(ActionType.Operation, op)[0] > 0.5)
+    .filter((op) => getAverageSuccessChange(ns, op) > 0.5)
+    .filter((op) => currentCityPopIsAboveMinimum(ns) || SAFE_OPS.includes(op))
     .at(-1)
 }
 
-function getContractMoney(ns: NS, contract: Contract): number {
-  // https://github.com/danielyxie/bitburner/blob/be553f3548b0082794f7aa12c594d6dad8b91336/src/Bladeburner/data/Constants.ts#L55
-  const baseMoneyGain = 250_000
-  // https://github.com/danielyxie/bitburner/blob/14914eb190945a8a476984d65ec428c9fcb06672/src/Bladeburner/Bladeburner.tsx#L1695
-  const rewardFacs = {
-    [Contract.Tracking]: 1.041,
-    [Contract.BountyHunter]: 1.085,
-    [Contract.Retirement]: 1.065,
-  }
-
-  const rewardFac = rewardFacs[contract]
-  const contractLevel = ns.bladeburner.getActionCurrentLevel(ActionType.Contract, contract)
-  const midasLevel = ns.bladeburner.getSkillLevel(Skill.HandsofMidas)
-  const moneyMult = 1 + midasLevel * 0.1
-
-  // Adapted from https://github.com/danielyxie/bitburner/blob/68e90b8e6eddd68a6ebf1406b527131056aa7015/src/Bladeburner/Bladeburner.tsx#L1263
-  const rewardMultiplier = Math.pow(rewardFac, contractLevel - 1)
-  return baseMoneyGain * rewardMultiplier * moneyMult
+function getNextBlackOp(ns: NS): BlackOp | undefined {
+  return Object.values(BlackOp).find(
+    (b) =>
+      ns.bladeburner.getActionCountRemaining(ActionType.BlackOp, b) > 0 &&
+      ns.bladeburner.getBlackOpRank(b) <= ns.bladeburner.getRank() &&
+      ns.bladeburner.getActionEstimatedSuccessChance(ActionType.BlackOp, b)[0] > 0.99,
+  )
 }
 
 export function getMoneyBeforeOps(ns: NS): number {
-  const highestLevelContract = ns.bladeburner
-    .getContractNames()
-    .sort(sortFunc((c) => ns.bladeburner.getActionCurrentLevel(ActionType.Contract, c), true))
-    .at(0) as Contract | undefined
+  const highestLevelContract = Object.values(Contract).sort(
+    sortFunc((c) => ns.bladeburner.getActionCurrentLevel(ActionType.Contract, c), true),
+  )[0]
 
   if (!highestLevelContract) {
     throw new Error("highestLevelContract is undefined or false, shouldn't be possible")
@@ -65,49 +73,83 @@ export function getMoneyBeforeOps(ns: NS): number {
   return getContractMoney(ns, highestLevelContract) * contractsBeforeMet
 }
 
-function getHighestPopCity(ns: NS): City {
-  return Object.values(City).sort(sortFunc((c) => ns.bladeburner.getCityEstimatedPopulation(c), true))[0]
+export function getCityPops(ns: NS): Record<City, number> {
+  return Object.fromEntries(
+    Object.values(City).map((c) => [c, ns.bladeburner.getCityEstimatedPopulation(c)]),
+  ) as Record<City, number>
 }
 
-function getBestAction(ns: NS): BladeburnerAction {
-  const currentAction = ns.bladeburner.getCurrentAction() as BladeburnerAction
+function getHighestPopCity(ns: NS): City {
+  const pops = getCityPops(ns)
+  const typedEntries = Object.entries(pops) as Array<[City, number]>
+  return typedEntries.sort(sortFunc(([_city, pop]) => pop, true))[0][0]
+}
 
+function isRecoveringStamina(ns: NS): boolean {
+  const currentAction = getCurrentAction(ns)
+
+  // Both field analysis and regen chamber are considered stamina regen actions
+  return (
+    actionIsEqual(currentAction, ACTION_LIST[GeneralAction.FieldAnalysis]) ||
+    actionIsEqual(currentAction, ACTION_LIST[GeneralAction.HyperbolicRegenerationChamber])
+  )
+}
+
+function getZeroPopCity(ns: NS): City | undefined {
+  const pops = getCityPops(ns)
+  return Object.values(City).find((city) => pops[city] === 0)
+}
+
+function getBestAction(ns: NS): BladeburnerCityAction {
+  const currentAction = getCurrentAction(ns)
+  const city = currentCityPopIsAboveMinimum(ns) ? currentAction.city : getHighestPopCity(ns)
+
+  // Player initiated blackops, do not interrupt
   if (currentAction.type == ActionType.BlackOp) {
-    return { type: currentAction.type, name: currentAction.name }
-  }
-
-  const staminaPct = getStaminaPct(...ns.bladeburner.getStamina())
-  const isRecoveringStamina =
-    actionIsEqual(currentAction, { type: ActionType.General, name: GeneralAction.FieldAnalysis }) ||
-    actionIsEqual(currentAction, { type: ActionType.General, name: GeneralAction.HyperbolicRegenerationChamber })
-
-  if (isRecoveringStamina && staminaPct < 0.9) {
     return currentAction
   }
 
+  const staminaPct = getStaminaPct(...ns.bladeburner.getStamina())
+
+  // Keep recovering stamina if we're not above 90%
+  if (isRecoveringStamina(ns) && staminaPct < 0.9) {
+    return currentAction
+  }
+
+  // Recover stamina if below 50%
   if (staminaPct < 0.5) {
     const estimatedSuccess = ns.bladeburner.getActionEstimatedSuccessChance(ActionType.Contract, Contract.Retirement)
     const estimatedSuccessDiff = estimatedSuccess[1] - estimatedSuccess[0]
 
-    return {
-      type: ActionType.General,
-      name: estimatedSuccessDiff > 0.4 ? GeneralAction.FieldAnalysis : GeneralAction.HyperbolicRegenerationChamber,
-    }
+    // field analysis if success chances have a range of > 40%, otherwise regen chamber
+    return newAction(
+      estimatedSuccessDiff > 0.4 ? GeneralAction.FieldAnalysis : GeneralAction.HyperbolicRegenerationChamber,
+      city,
+    )
   }
 
-  const bestContract = getBestContract(ns, ns.bladeburner.getContractNames() as Array<Contract>)
+  const blackOp = getNextBlackOp(ns)
+  if (blackOp) {
+    return newAction(blackOp, city)
+  }
+
+  const bestContract = getBestContract(ns)
   if (ns.getPlayer().money > getMoneyBeforeOps(ns)) {
-    const bestOperation = getBestOperation(ns, ns.bladeburner.getOperationNames() as Array<Operation>)
+    const bestOperation = getBestOperation(ns)
     if (bestOperation) {
-      return { type: ActionType.Operation, name: bestOperation }
+      return newAction(bestOperation, city)
     }
   }
 
   if (!bestContract) {
-    return { type: ActionType.General, name: GeneralAction.FieldAnalysis }
+    return newAction(GeneralAction.FieldAnalysis, city)
   }
 
-  return { type: ActionType.Contract, name: bestContract }
+  return newAction(bestContract, city)
+}
+
+function currentCityPopIsAboveMinimum(ns: NS): boolean {
+  return ns.bladeburner.getCityEstimatedPopulation(ns.bladeburner.getCity()) > MIN_CITY_POP
 }
 
 export default class BladeburnerPerformAction extends BaseAction {
@@ -120,16 +162,18 @@ export default class BladeburnerPerformAction extends BaseAction {
       return false
     }
 
-    return actionIsEqual(ns.bladeburner.getCurrentAction(), getBestAction(ns))
+    return cityActionIsEqual(getCurrentAction(ns), getBestAction(ns))
   }
 
   async perform(ns: NS): Promise<boolean> {
-    if (ns.bladeburner.getCityEstimatedPopulation(ns.bladeburner.getCity()) < 1_000_000) {
-      if (!ns.bladeburner.switchCity(getHighestPopCity(ns))) {
+    const action = getBestAction(ns)
+
+    if (ns.bladeburner.getCity() !== action.city) {
+      if (!ns.bladeburner.switchCity(action.city)) {
         return false
       }
     }
-    const action = getBestAction(ns)
+
     return ns.bladeburner.startAction(action.type, action.name)
   }
 
