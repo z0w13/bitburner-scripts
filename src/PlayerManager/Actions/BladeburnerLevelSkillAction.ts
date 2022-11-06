@@ -32,7 +32,12 @@ function levelSkill(ns: NS): boolean {
     return false
   }
 
-  return ns.bladeburner.upgradeSkill(skill)
+  const success = ns.bladeburner.upgradeSkill(skill)
+  if (success) {
+    ns.toast(`BB: Upgraded ${skill} to level ${ns.bladeburner.getSkillLevel(skill)}`)
+  }
+
+  return success
 }
 
 export default class BladeburnerLevelSkillAction extends BaseAction {

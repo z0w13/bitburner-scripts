@@ -29,7 +29,14 @@ export default class BuyAugmentAction extends BaseAction {
 
   async perform(ns: NS): Promise<boolean> {
     const aug = getLowestMetRepAug(ns, this.hackFocus)
-    return aug?.meetRepFaction !== undefined && ns.singularity.purchaseAugmentation(aug.meetRepFaction, aug.name)
+    const success =
+      aug?.meetRepFaction !== undefined && ns.singularity.purchaseAugmentation(aug.meetRepFaction, aug.name)
+
+    if (success) {
+      ns.toast(`Bought augment ${aug.name} for ${aug.price}`)
+    }
+
+    return success
   }
 
   isBackground(): boolean {

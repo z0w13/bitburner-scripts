@@ -11,7 +11,15 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
   }
 
   async perform(ns: NS): Promise<boolean> {
-    return ns.singularity.checkFactionInvitations().every((f) => ns.singularity.joinFaction(f))
+    return ns.singularity.checkFactionInvitations().every((f) => {
+      const success = ns.singularity.joinFaction(f)
+
+      if (success) {
+        ns.toast(`Joined faction ${f}`)
+      }
+
+      return success
+    })
   }
 
   isBackground(): boolean {

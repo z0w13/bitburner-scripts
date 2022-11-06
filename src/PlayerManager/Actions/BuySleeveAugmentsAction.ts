@@ -17,7 +17,13 @@ export default class BuySleeveAugmentsAction extends BaseAction {
     const cheapestAug = augs[0]
 
     if (ns.getPlayer().money > cheapestAug.cost) {
-      return ns.sleeve.purchaseSleeveAug(sleeve.index, cheapestAug.name)
+      const success = ns.sleeve.purchaseSleeveAug(sleeve.index, cheapestAug.name)
+
+      if (success) {
+        ns.toast(`Sleeves: bought ${cheapestAug.name} for sleeve ${sleeve.index}`)
+      }
+
+      return success
     }
 
     return true
