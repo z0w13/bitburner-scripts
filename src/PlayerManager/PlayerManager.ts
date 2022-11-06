@@ -26,13 +26,19 @@ import BladeburnerLevelSkillAction from "/PlayerManager/Actions/BladeburnerLevel
 import BladeburnerPerformAction from "/PlayerManager/Actions/BladeburnerPerformAction"
 
 export class PlayerManager {
-  protected minLevel: number
   protected passiveOnly: boolean
+
+  protected log: Logger
+  protected minLevel: number
+  protected ticks: number
   protected actions: Array<BaseAction>
 
   constructor(ns: NS, settings: PlayerSettings) {
-    this.minLevel = 10
     this.passiveOnly = settings.passiveOnly
+
+    this.log = new Logger(ns, LOG_LEVEL, "PlayerManager")
+    this.minLevel = 10
+    this.ticks = 0
     this.actions = [
       settings.autoReset ? new InstallAugmentsAction() : null,
       new BackdoorServersAction(),
@@ -79,12 +85,13 @@ export class PlayerManager {
   }
 
   async run(ns: NS): Promise<void> {
-    const log = new Logger(ns, LogLevel.Debug, "PlayerManager")
+    this.ticks++
 
     // Run background actions first
     for (const action of this.actions.filter((a) => a.isBackground(ns))) {
-      log.debug(
-        "%s shouldPerform=%t isBackground=%t",
+      this.log.debug(
+        "%04u %s shouldPerform=%t isBackground=%t",
+        this.ticks,
         action.toString(),
         action.shouldPerform(ns),
         action.isBackground(ns),
@@ -95,7 +102,7 @@ export class PlayerManager {
       }
 
       const res = await action.perform(ns)
-      log.info("%s result=%t background=%t", action.toString(), res, action.isBackground(ns))
+      this.log.info("%04u %s result=%t background=%t", this.ticks, action.toString(), res, action.isBackground(ns))
     }
 
     if (this.passiveOnly) {
@@ -104,8 +111,9 @@ export class PlayerManager {
 
     // Run non-background actions
     for (const action of this.actions.filter((a) => !a.isBackground(ns))) {
-      log.debug(
-        "%s shouldPerform=%t isPerforming=%t isBackground=%t",
+      this.log.debug(
+        "%04u %s shouldPerform=%t isPerforming=%t isBackground=%t",
+        this.ticks,
         action.toString(),
         action.shouldPerform(ns),
         action.isPerforming(ns),
@@ -117,7 +125,7 @@ export class PlayerManager {
           ns.singularity.stopAction()
 
           const res = await action.perform(ns)
-          log.info("%s result=%t background=%t", action.toString(), res, action.isBackground(ns))
+          this.log.info("%04u %s result=%t background=%t", this.ticks, action.toString(), res, action.isBackground(ns))
         }
 
         break
