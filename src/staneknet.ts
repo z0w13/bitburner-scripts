@@ -6,7 +6,10 @@ import { formatNum } from "/lib/util"
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
-  const usableHosts = getSetupHosts(ns).filter((h) => ns.getServerMaxRam(h) > 7)
+  const usableHosts = getSetupHosts(ns)
+    .filter((h) => ns.getServerMaxRam(h) > 7)
+    .filter((h) => !h.startsWith("hacknet-node-"))
+
   let totalThreads = 0
   for (const host of usableHosts) {
     ns.print(`Setting up ${host}`)
