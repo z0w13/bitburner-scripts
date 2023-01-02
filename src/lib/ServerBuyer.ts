@@ -128,6 +128,10 @@ export default class ServerBuyer {
       this.deleteServer(toBuy.replace)
     }
 
+    while (this.ns.getPlayer().money < toBuy.cost) {
+      await this.ns.asleep(1000)
+    }
+
     return this.buyServer(toBuy.ram)
   }
 
