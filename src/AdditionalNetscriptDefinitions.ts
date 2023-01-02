@@ -29,35 +29,35 @@ export enum ClassType {
 }
 
 export interface Work {
-  type: WorkType,
-  cyclesWorked: number,
+  type: WorkType
+  cyclesWorked: number
 }
 
 export interface CompanyWork extends Work {
-  type: WorkType.COMPANY,
-  companyName: string,
+  type: WorkType.COMPANY
+  companyName: string
 }
 
-export interface ClassWork extends Work{
-  type: WorkType.CLASS,
-  classType: ClassType,
-  location: string,
+export interface ClassWork extends Work {
+  type: WorkType.CLASS
+  classType: ClassType
+  location: string
 }
 
 export interface CreateProgramWork extends Work {
-  type: WorkType.CREATE_PROGRAM,
-  programName: string,
+  type: WorkType.CREATE_PROGRAM
+  programName: string
 }
 
 export interface CrimeWork extends Work {
-  type: WorkType.CRIME,
-  crimeType: string,
+  type: WorkType.CRIME
+  crimeType: string
 }
 
 export interface FactionWork extends Work {
-  type: WorkType.FACTION,
-  factionWorkType: string,
-  factionName: string,
+  type: WorkType.FACTION
+  factionWorkType: string
+  factionName: string
 }
 
 export interface GraftingWork extends Work {
