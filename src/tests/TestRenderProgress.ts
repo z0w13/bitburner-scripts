@@ -1,5 +1,4 @@
 import { NS } from "@ns"
-import setupPolyfill from "/lib/ns-polyfill"
 import { renderProgress, RenderProgressArgs } from "/lib/util"
 
 function assert(ns: NS, actual: unknown, expected: unknown, message?: string): boolean {
@@ -12,8 +11,6 @@ function assert(ns: NS, actual: unknown, expected: unknown, message?: string): b
 }
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
-
   const testCases: Array<{ args: RenderProgressArgs; expected: string; name: string }> = [
     { args: { value: 0 }, expected: "          ", name: "Empty" },
     { args: { value: 100 }, expected: "==========", name: "Full" },

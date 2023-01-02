@@ -1,6 +1,5 @@
 import { NS } from "@ns"
 import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
-import setupPolyfill from "/lib/ns-polyfill"
 import ServerBuyer from "/lib/ServerBuyer"
 
 interface Flags {
@@ -10,8 +9,6 @@ interface Flags {
 }
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
-
   ns.disableLog("ALL")
 
   const flags = ns.flags([

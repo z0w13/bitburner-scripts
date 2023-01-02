@@ -1,6 +1,5 @@
 import { GangMemberInfo, NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
-import setupPolyfill from "/lib/ns-polyfill"
 import { formatNum, sortFunc } from "/lib/util"
 
 type StatType = "hack" | "str" | "dex" | "def" | "agi" | "cha"
@@ -170,8 +169,6 @@ function upgradeMemberEquipment(ns: NS, info: GangMemberInfo): void {
 }
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
-
   ns.disableLog("asleep")
   ns.disableLog("gang.ascendMember")
   ns.disableLog("gang.setMemberTask")

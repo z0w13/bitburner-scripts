@@ -3,7 +3,6 @@ import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 import { DAEMON_SERVER } from "/config"
 import getHostPath from "/lib/func/get-host-path"
 
-import setupPolyfill from "/lib/ns-polyfill"
 import { FlagSchema } from "/lib/objects"
 
 const flagSchema: FlagSchema = [["host", DAEMON_SERVER]]
@@ -13,8 +12,6 @@ interface Flags {
 }
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
-
   const flags = ns.flags(flagSchema) as Flags & ScriptArgs
   const path = getHostPath(ns, flags.host)
   if (!path) {

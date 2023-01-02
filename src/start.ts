@@ -1,7 +1,6 @@
 import { NS } from "@ns"
 import { isScriptRunning } from "/lib/func/is-script-running"
 import waitForPids from "/lib/func/wait-for-pids"
-import setupPolyfill from "/lib/ns-polyfill"
 import getScriptPid from "/lib/func/get-script-pid"
 import { FlagSchema } from "/lib/objects"
 import GlobalStateManager from "/lib/shared/GlobalStateManager"
@@ -50,8 +49,6 @@ async function cron(ns: NS, stateMgr: GlobalStateManager): Promise<void> {
 }
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
-
   ns.disableLog("ALL")
   const flags = ns.flags(flagSchema) as Flags & ScriptArgs
 

@@ -6,7 +6,6 @@ import runCommand from "/lib/func/run-command"
 import waitForPids from "/lib/func/wait-for-pids"
 import HostManager from "/lib/HostManager"
 import { maxMoney, minSecurity } from "/lib/HwgwShared"
-import setupPolyfill from "/lib/ns-polyfill"
 import { FlagSchema } from "/lib/objects"
 import { formatDate, formatMoney, formatNum, formatTime, renderProgress } from "/lib/util"
 import VirtualNetworkState from "/lib/VirtualNetworkState"
@@ -18,7 +17,6 @@ interface Flags {
 }
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
   ns.disableLog("ALL")
   ns.enableLog("exec")
 

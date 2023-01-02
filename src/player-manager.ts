@@ -2,7 +2,6 @@ import { NS } from "@ns"
 import { LOG_LEVEL } from "/config"
 import getPlayerAction from "/lib/func/get-player-action"
 import { getGlobalState } from "/lib/shared/GlobalStateManager"
-import setupPolyfill from "/lib/ns-polyfill"
 import { FlagSchema, LogLevel } from "/lib/objects"
 import { PlayerManager } from "/PlayerManager/PlayerManager"
 import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
@@ -26,8 +25,6 @@ export async function main(ns: NS): Promise<void> {
   playerSettings.enableHacknet = flags.enableHacknet
   playerSettings.focusHacking = flags.focusHacking
   playerSettings.passiveOnly = flags.passiveOnly
-
-  setupPolyfill(ns)
 
   ns.disableLog("ALL")
   ns.enableLog("singularity.joinFaction")

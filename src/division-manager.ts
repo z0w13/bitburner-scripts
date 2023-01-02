@@ -2,7 +2,6 @@ import { NS, Division, CorporationInfo, EmployeeJobs, Warehouse } from "@ns"
 import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 import { CORP_MAIN_CITY } from "/config"
 import renderTable from "/lib/func/render-table"
-import setupPolyfill from "/lib/ns-polyfill"
 import { FlagSchema } from "/lib/objects"
 import { formatMoney, formatNum, sortFunc } from "/lib/util"
 
@@ -455,8 +454,6 @@ function manageAdVert(ns: NS, division: Division): void {
  ******************************/
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
-
   ns.disableLog("asleep")
   let ticks = 0
 

@@ -1,12 +1,9 @@
 import { NS } from "@ns"
 import { DAEMON_SERVER } from "/config"
 import getSetupHosts from "/lib/func/get-setup-hosts"
-import setupPolyfill from "/lib/ns-polyfill"
 import { formatNum } from "/lib/util"
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
-
   ns.disableLog("ALL")
 
   const usableHosts = getSetupHosts(ns).filter((h) => ns.getServerMaxRam(h) > 7)

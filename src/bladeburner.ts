@@ -1,6 +1,5 @@
 import { NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
-import setupPolyfill from "/lib/ns-polyfill"
 import { formatMoney, formatNum } from "/lib/util"
 import BladeburnerAction, { getCityPops, getMoneyBeforeOps } from "PlayerManager/Actions/BladeburnerPerformAction"
 import BladeburnerLevelSkillAction from "/PlayerManager/Actions/BladeburnerLevelSkillAction"
@@ -43,7 +42,6 @@ function printStatus(ns: NS): void {
 }
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
   ns.disableLog("ALL")
 
   const action = new BladeburnerAction()

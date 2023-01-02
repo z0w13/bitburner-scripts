@@ -1,6 +1,5 @@
 import { NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
-import setupPolyfill from "/lib/ns-polyfill"
 import GlobalStateManager, { GlobalState, PlayerSettings } from "/lib/shared/GlobalStateManager"
 import { toBool } from "/lib/util"
 
@@ -54,7 +53,6 @@ function setPlayerSetting(
 }
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
   const stateMgr = new GlobalStateManager(globalThis)
   const state = stateMgr.getState()
 

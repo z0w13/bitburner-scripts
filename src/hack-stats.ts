@@ -1,11 +1,9 @@
 import { NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
-import setupPolyfill from "/lib/ns-polyfill"
 import GlobalStateManager, { BasicHwgwState, BatchHwgwState, HostHackStats } from "/lib/shared/GlobalStateManager"
 import { formatDate, formatMoney, formatTime } from "/lib/util"
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
   ns.disableLog("ALL")
 
   const stateMgr = new GlobalStateManager(globalThis)

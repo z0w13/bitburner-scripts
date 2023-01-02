@@ -1,11 +1,9 @@
 import { NS } from "@ns"
 import { DAEMON_SERVER } from "/config"
 import renderTable, { RawTableData } from "/lib/func/render-table"
-import setupPolyfill from "/lib/ns-polyfill"
 import { formatMoney, formatNum } from "/lib/util"
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
   ns.disableLog("ALL")
 
   while (true) {

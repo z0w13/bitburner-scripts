@@ -1,4 +1,3 @@
-import setupPolyfill from "/lib/ns-polyfill"
 import { NS } from "@ns"
 import { FlagSchema } from "/lib/objects"
 import { isScriptRunning } from "/lib/func/is-script-running"
@@ -25,8 +24,6 @@ interface Flags {
 // TODO(zowie): Hack and setup scripts, maybe periodic script?
 // TODO(zowie): Tests for various classes
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
-
   await waitForPids(ns, [ns.exec("/libexec/static-data.js", DAEMON_SERVER, 1)])
 
   ns.disableLog("ALL")

@@ -1,7 +1,6 @@
 import { NS } from "@ns"
 import { CORP_MAIN_CITY, DAEMON_SERVER } from "/config"
 import renderTable, { RawTableData } from "/lib/func/render-table"
-import setupPolyfill from "/lib/ns-polyfill"
 import { formatMoney } from "/lib/util"
 
 function buyUpgradesToLevel(ns: NS, max: number, upgrades: Array<string>): void {
@@ -58,8 +57,6 @@ function manageUpgrades(ns: NS): void {
 }
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
-
   ns.disableLog("asleep")
 
   if (!ns.getPlayer().hasCorporation) {

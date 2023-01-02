@@ -3,7 +3,6 @@ import { SCRIPT_WEAKEN } from "/constants"
 import { getWeakenCommand } from "/Command/Basic"
 import getThreadsAvailable from "/lib/func/get-threads-available"
 import runCommand from "/lib/func/run-command"
-import setupPolyfill from "/lib/ns-polyfill"
 import Script from "/lib/Script"
 import waitForPids from "/lib/func/wait-for-pids"
 import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
@@ -13,8 +12,6 @@ interface Flags {
 }
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
-
   ns.disableLog("ALL")
 
   const flags = ns.flags([["target", ""]]) as Flags & ScriptArgs

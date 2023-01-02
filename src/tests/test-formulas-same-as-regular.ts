@@ -1,12 +1,9 @@
 import { NS } from "@ns"
-import setupPolyfill from "/lib/ns-polyfill"
 import * as formulas from "/lib/calc-threads-formulas"
 import * as basic from "/lib/calc-threads"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
-
   const testHosts = ["n00dles", "iron-gym", "fulcrumtech"]
   const table: RawTableData = [["Func", "Server", "Regular Calc", "Formula Calc", "Diff"]]
 

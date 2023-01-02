@@ -5,7 +5,6 @@ import { JobType } from "/JobScheduler/JobObjects"
 import getScriptPid from "/lib/func/get-script-pid"
 import getTargets, { getTarget, Target } from "/lib/func/get-targets"
 import renderTable from "/lib/func/render-table"
-import setupPolyfill from "/lib/ns-polyfill"
 import { formatDate, formatMoney, formatNum, formatTime, renderProgress, sortFunc } from "/lib/util"
 
 interface AutobestState {
@@ -55,8 +54,6 @@ function getNextSwitch(state: AutobestState) {
 }
 
 export async function main(ns: NS): Promise<void> {
-  setupPolyfill(ns)
-
   ns.disableLog("ALL")
   ns.enableLog("exec")
 
