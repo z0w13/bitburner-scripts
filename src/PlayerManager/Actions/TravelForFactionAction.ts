@@ -1,9 +1,8 @@
-import { NS } from "@ns"
-import { LocationName } from "/data/LocationNames"
+import { CityName, NS } from "@ns"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class AcceptFactionInvitationsAction extends BaseAction {
-  TIAN_DI_HUI_CITIES: Array<string> = [LocationName.NewTokyo, LocationName.Chongqing, LocationName.Ishima]
+  TIAN_DI_HUI_CITIES: Array<CityName> = [CityName.NewTokyo, CityName.Chongqing, CityName.Ishima]
 
   shouldPerform(ns: NS): boolean {
     const player = ns.getPlayer()
@@ -19,7 +18,7 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
   }
 
   async perform(ns: NS): Promise<boolean> {
-    return ns.singularity.travelToCity(LocationName.NewTokyo)
+    return ns.singularity.travelToCity(CityName.NewTokyo)
   }
 
   isBackground(): boolean {

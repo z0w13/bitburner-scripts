@@ -14,7 +14,6 @@ import {
   getContractMoney,
   BlackOp,
 } from "/data/Bladeburner"
-import { City } from "/data/LocationNames"
 import { sortFunc } from "/lib/util"
 
 import BaseAction from "/PlayerManager/Actions/BaseAction"
@@ -75,8 +74,8 @@ export function getMoneyBeforeOps(ns: NS): number {
 
 export function getCityPops(ns: NS): Record<CityName, number> {
   return Object.fromEntries(
-    Object.values(City).map((c) => [c, ns.bladeburner.getCityEstimatedPopulation(c)]),
-  ) as Record<City, number>
+    Object.values(CityName).map((c) => [c, ns.bladeburner.getCityEstimatedPopulation(c)]),
+  ) as Record<CityName, number>
 }
 
 function getHighestPopCity(ns: NS): CityName {
