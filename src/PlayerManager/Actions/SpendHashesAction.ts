@@ -22,7 +22,7 @@ export default class SpendHashesAction extends BaseAction {
       })
     }
 
-    if (ns.getPlayer().hasCorporation) {
+    if (ns.corporation.hasCorporation()) {
       //if (ns.corporation.getCorporation().funds < 50_000_000_000) {
       //  upgrades.push({ name: "Sell for Corporation Funds", cost: ns.hacknet.hashCost("Sell for Corporation Funds") })
       //}

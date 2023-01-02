@@ -1,22 +1,23 @@
-import { City, LocationName } from "/data/LocationNames"
+import { CityName } from "@ns"
+import { LocationName } from "/data/LocationNames"
 import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
 import { Attribute, CityLocationMap } from "/lib/objects"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 const UNI_MAP: CityLocationMap = {
-  [City.Sector12]: LocationName.Sector12RothmanUniversity,
-  [City.Volhaven]: LocationName.VolhavenZBInstituteOfTechnology,
-  [City.Aevum]: LocationName.AevumSummitUniversity,
+  [CityName.Sector12]: LocationName.Sector12RothmanUniversity,
+  [CityName.Volhaven]: LocationName.VolhavenZBInstituteOfTechnology,
+  [CityName.Aevum]: LocationName.AevumSummitUniversity,
 }
 
 const GYM_MAP: CityLocationMap = {
-  [City.Sector12]: LocationName.Sector12PowerhouseGym,
-  [City.Volhaven]: LocationName.VolhavenMilleniumFitnessGym,
-  [City.Aevum]: LocationName.AevumSnapFitnessGym,
+  [CityName.Sector12]: LocationName.Sector12PowerhouseGym,
+  [CityName.Volhaven]: LocationName.VolhavenMilleniumFitnessGym,
+  [CityName.Aevum]: LocationName.AevumSnapFitnessGym,
 }
 
-const BEST_UNI_CITY = City.Volhaven
-const BEST_GYM_CITY = City.Sector12
+const BEST_UNI_CITY = CityName.Volhaven
+const BEST_GYM_CITY = CityName.Sector12
 
 function getExpPerSec(attr: Attribute): number {
   switch (attr) {
@@ -53,16 +54,12 @@ function getTrainingCity(ns: NS, attr: Attribute): LocationName | undefined {
   switch (attr) {
     case Attribute.CHARISMA:
     case Attribute.HACKING:
-      return player.city !== BEST_UNI_CITY && player.money < 200_000
-        ? UNI_MAP[player.city as City]
-        : UNI_MAP[BEST_UNI_CITY]
+      return player.city !== BEST_UNI_CITY && player.money < 200_000 ? UNI_MAP[player.city] : UNI_MAP[BEST_UNI_CITY]
     case Attribute.STRENGTH:
     case Attribute.DEFENSE:
     case Attribute.AGILITY:
     case Attribute.DEXTERITY:
-      return player.city !== BEST_GYM_CITY && player.money < 200_000
-        ? GYM_MAP[player.city as City]
-        : GYM_MAP[BEST_GYM_CITY]
+      return player.city !== BEST_GYM_CITY && player.money < 200_000 ? GYM_MAP[player.city] : GYM_MAP[BEST_GYM_CITY]
   }
 }
 
@@ -101,7 +98,7 @@ export async function train(ns: NS, attr: Attribute): Promise<boolean> {
     case Attribute.HACKING: {
       const uniName =
         player.city !== BEST_UNI_CITY && !ns.singularity.travelToCity(BEST_UNI_CITY)
-          ? UNI_MAP[player.city as City]
+          ? UNI_MAP[player.city]
           : UNI_MAP[BEST_UNI_CITY]
 
       if (!uniName) {
@@ -116,7 +113,7 @@ export async function train(ns: NS, attr: Attribute): Promise<boolean> {
     case Attribute.DEXTERITY: {
       const gymName =
         player.city !== BEST_GYM_CITY && !ns.singularity.travelToCity(BEST_GYM_CITY)
-          ? GYM_MAP[player.city as City]
+          ? GYM_MAP[player.city]
           : GYM_MAP[BEST_GYM_CITY]
 
       if (!gymName) {

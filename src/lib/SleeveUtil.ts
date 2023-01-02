@@ -1,4 +1,4 @@
-import { NS, SleeveInformation, SleeveSkills } from "@ns"
+import { NS, SleevePerson } from "@ns"
 
 export enum SleeveTaskType {
   Crime = "CRIME",
@@ -23,8 +23,7 @@ export interface SleeveTask {
 
 export interface SleeveData {
   index: number
-  info: SleeveInformation
-  skill: SleeveSkills
+  info: SleevePerson
   task: SleeveTask
 }
 
@@ -41,8 +40,7 @@ function sleeveTaskCoerce(task: unknown): SleeveTask {
 export function getSleeves(ns: NS): Array<SleeveData> {
   return [...Array(ns.sleeve.getNumSleeves())].map((_val, idx) => ({
     index: idx,
-    info: ns.sleeve.getInformation(idx),
-    skill: ns.sleeve.getSleeveStats(idx),
+    info: ns.sleeve.getSleeve(idx),
     task: sleeveTaskCoerce(ns.sleeve.getTask(idx)),
   }))
 }

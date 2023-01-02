@@ -15,7 +15,7 @@ export async function main(ns: NS): Promise<void> {
     ns.print(`Setting up ${host}`)
 
     if (!ns.fileExists("stanek.js", host)) {
-      await ns.scp(["stanek.js"], host, DAEMON_SERVER)
+      ns.scp(["stanek.js"], host, DAEMON_SERVER)
     }
 
     if (!ns.getRunningScript("stanek.js", host)) {

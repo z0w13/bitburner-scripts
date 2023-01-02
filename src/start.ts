@@ -40,7 +40,7 @@ async function cron(ns: NS, stateMgr: GlobalStateManager): Promise<void> {
     stateMgr.processResults()
 
     if (ticks % 10) {
-      await ns.write(GLOBAL_STATE_FILE, JSON.stringify(stateMgr.getState()), "w")
+      ns.write(GLOBAL_STATE_FILE, JSON.stringify(stateMgr.getState()), "w")
     }
 
     await ns.asleep(1_000)
@@ -58,7 +58,7 @@ export async function main(ns: NS): Promise<void> {
   const stateMgr = new GlobalStateManager(globalThis)
   if (ns.fileExists(GLOBAL_STATE_FILE)) {
     try {
-      stateMgr.restore(JSON.parse(await ns.read(GLOBAL_STATE_FILE).toString()))
+      stateMgr.restore(JSON.parse(ns.read(GLOBAL_STATE_FILE).toString()))
     } catch (e) {
       ns.tprint(e)
     }

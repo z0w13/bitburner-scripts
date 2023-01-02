@@ -19,5 +19,5 @@ export async function main(ns: NS): Promise<void> {
     return
   }
 
-  await ns.write(flags.filename, flags.content, flags.mode)
+  ns.write(flags.filename, flags.content, flags.mode)
 }

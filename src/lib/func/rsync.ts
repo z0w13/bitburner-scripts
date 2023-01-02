@@ -14,5 +14,5 @@ export default async function rsync(
     return true
   }
 
-  return await ns.scp(copyFiles, target, source)
+  return ns.scp(copyFiles, target, source)
 }

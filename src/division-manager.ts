@@ -1,4 +1,4 @@
-import { NS, Division, CorporationInfo, EmployeeJobs, Warehouse } from "@ns"
+import { NS, Division, CorporationInfo, Warehouse, CityName, CorpEmployeePosition, CorpIndustryName } from "@ns"
 import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 import { CORP_MAIN_CITY } from "/config"
 import renderTable from "/lib/func/render-table"
@@ -12,7 +12,7 @@ const flagSchema: FlagSchema = [
 
 interface Flags {
   division: string
-  industry: string
+  industry: CorpIndustryName
 }
 
 const nonProductMap: Record<string, Array<string>> = {
@@ -247,7 +247,7 @@ function buyResearch(ns: NS, division: Division) {
   }
 }
 
-function upgradeOffice(ns: NS, division: string, city: string, limit: number): void {
+function upgradeOffice(ns: NS, division: string, city: CityName, limit: number): void {
   if (!ns.corporation.hasUnlockUpgrade("Office API")) {
     return
   }
@@ -301,8 +301,7 @@ async function manageOffices(ns: NS, division: Division): Promise<void> {
     }
 
     while (
-      ns.corporation.getOffice(division.name, city).employees.length <
-      ns.corporation.getOffice(division.name, city).size
+      ns.corporation.getOffice(division.name, city).employees < ns.corporation.getOffice(division.name, city).size
     ) {
       ns.corporation.hireEmployee(division.name, city)
     }
@@ -310,8 +309,8 @@ async function manageOffices(ns: NS, division: Division): Promise<void> {
   }
 }
 
-async function redistributeEmployees(ns: NS, division: string, city: string): Promise<void> {
-  const ratio: Record<keyof EmployeeJobs, number> = {
+async function redistributeEmployees(ns: NS, division: string, city: CityName): Promise<void> {
+  const ratio: Record<CorpEmployeePosition, number> = {
     Business: 0.166,
     Engineer: 0.066,
     Management: 0.25,
@@ -321,20 +320,21 @@ async function redistributeEmployees(ns: NS, division: string, city: string): Pr
     Unassigned: 0,
   }
 
-  const employeeJobs = getEmployeeJobs(ns, division, city)
+  const employeeJobs = ns.corporation.getOffice(division, city).employeeJobs
 
   if (employeeJobs.Unassigned > 0 || employeeJobs.Training > 0) {
     //for (const pos of Object.keys(ratio)) {
     //  await ns.corporation.setAutoJobAssignment(division, city, pos, 0)
     //}
 
-    for (const [pos, posRatio] of Object.entries(ratio)) {
+    for (const pos in ratio) {
+      const posRatio = ratio[pos as CorpEmployeePosition]
       const newEmployees = Math.floor(posRatio * ns.corporation.getOffice(division, city).size)
-      if (newEmployees === employeeJobs[pos as keyof EmployeeJobs]) {
+      if (newEmployees === employeeJobs[pos as CorpEmployeePosition]) {
         continue
       }
 
-      await ns.corporation.setAutoJobAssignment(
+      ns.corporation.setAutoJobAssignment(
         division,
         city,
         pos,
@@ -345,30 +345,11 @@ async function redistributeEmployees(ns: NS, division: string, city: string): Pr
     const jobs = ns.corporation.getOffice(division, city).employeeJobs
     const researchCount = jobs.Unassigned + jobs.Training + jobs["Research & Development"]
 
-    await ns.corporation.setAutoJobAssignment(division, city, "Research & Development", researchCount)
+    ns.corporation.setAutoJobAssignment(division, city, "Research & Development", researchCount)
 
-    const newEmployeeJobs = getEmployeeJobs(ns, division, city)
+    const newEmployeeJobs = ns.corporation.getOffice(division, city).employeeJobs
     ns.print(`${division}/${city} reassigned employees `, newEmployeeJobs)
   }
-}
-
-function getEmployeeJobs(ns: NS, division: string, city: string): EmployeeJobs {
-  const employeeJobs: EmployeeJobs = {
-    Business: 0,
-    Engineer: 0,
-    Management: 0,
-    Operations: 0,
-    "Research & Development": 0,
-    Training: 0,
-    Unassigned: 0,
-  }
-
-  for (const employee of ns.corporation.getOffice(division, city).employees) {
-    const pos = ns.corporation.getEmployee(division, city, employee).pos as keyof EmployeeJobs
-    employeeJobs[pos]++
-  }
-
-  return employeeJobs
 }
 
 function getWarehouses(ns: NS, division: string): Array<Warehouse> {
@@ -383,7 +364,7 @@ function manageWarehouses(ns: NS, division: Division): void {
 
   for (const city of division.cities) {
     if (!ns.corporation.hasWarehouse(division.name, city)) {
-      if (ns.corporation.getPurchaseWarehouseCost() > ns.corporation.getCorporation().funds) {
+      if (ns.corporation.getUpgradeWarehouseCost(division.name, city) > ns.corporation.getCorporation().funds) {
         continue
       }
 
@@ -463,8 +444,8 @@ export async function main(ns: NS): Promise<void> {
     await ns.asleep(1000)
 
     const corp = ns.corporation.getCorporation()
-    if (!corp.divisions.map((d) => d.type).includes(flags.industry)) {
-      if (ns.corporation.getExpandIndustryCost(flags.industry) > corp.funds / 2) {
+    if (!corp.divisions.map((d) => d).includes(flags.industry)) {
+      if (ns.corporation.getIndustryData(flags.industry).startingCost > corp.funds / 2) {
         continue
       }
 
@@ -479,12 +460,12 @@ export async function main(ns: NS): Promise<void> {
     if (ticks % 10 === 0) {
       ns.print("# Manage Expansions")
       if (division.cities.length < 6) {
-        for (const city of ["Volhaven", "Sector-12", "Aevum", "Ishima", "New Tokyo", "Chongqing"]) {
+        for (const city of Object.values(CityName)) {
           if (division.cities.includes(city)) {
             continue
           }
 
-          if (ns.corporation.getCorporation().funds / 2 < ns.corporation.getExpandCityCost()) {
+          if (ns.corporation.getCorporation().funds / 2 < ns.corporation.getConstants().officeInitialCost) {
             break
           }
 

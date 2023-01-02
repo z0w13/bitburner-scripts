@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import { CityName, NS } from "@ns"
 import {
   cityActionIsEqual,
   ActionType,
@@ -73,15 +73,15 @@ export function getMoneyBeforeOps(ns: NS): number {
   return getContractMoney(ns, highestLevelContract) * contractsBeforeMet
 }
 
-export function getCityPops(ns: NS): Record<City, number> {
+export function getCityPops(ns: NS): Record<CityName, number> {
   return Object.fromEntries(
     Object.values(City).map((c) => [c, ns.bladeburner.getCityEstimatedPopulation(c)]),
   ) as Record<City, number>
 }
 
-function getHighestPopCity(ns: NS): City {
+function getHighestPopCity(ns: NS): CityName {
   const pops = getCityPops(ns)
-  const typedEntries = Object.entries(pops) as Array<[City, number]>
+  const typedEntries = Object.entries(pops) as Array<[CityName, number]>
   return typedEntries.sort(sortFunc(([_city, pop]) => pop, true))[0][0]
 }
 
@@ -93,11 +93,6 @@ function isRecoveringStamina(ns: NS): boolean {
     actionIsEqual(currentAction, ACTION_LIST[GeneralAction.FieldAnalysis]) ||
     actionIsEqual(currentAction, ACTION_LIST[GeneralAction.HyperbolicRegenerationChamber])
   )
-}
-
-function getZeroPopCity(ns: NS): City | undefined {
-  const pops = getCityPops(ns)
-  return Object.values(City).find((city) => pops[city] === 0)
 }
 
 function getBestAction(ns: NS): BladeburnerCityAction {

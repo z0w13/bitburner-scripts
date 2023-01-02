@@ -1,5 +1,5 @@
-import { BitNodeMultipliers, CrimeStats } from "@ns"
-import { City, LocationName } from "/data/LocationNames"
+import { BitNodeMultipliers, CityName, CrimeStats } from "@ns"
+import { LocationName } from "/data/LocationNames"
 
 export interface PreppedTargetInfo {
   hostname: string
@@ -67,4 +67,4 @@ export enum Attribute {
   CHARISMA = "charisma",
 }
 
-export type CityLocationMap = Partial<Record<City, LocationName>>
+export type CityLocationMap = Partial<Record<CityName, LocationName>>

@@ -43,7 +43,7 @@ export default class BuyUpgradesAction extends BaseAction {
 
       switch (upgrade.type) {
         case UpgradeType.TOR:
-          if (player.tor) {
+          if (ns.hasTorRouter()) {
             continue
           }
 

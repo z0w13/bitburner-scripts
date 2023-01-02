@@ -1,5 +1,5 @@
-import { NS } from "@ns"
-import { AugmentPurchaseInfo, getAvailableAugs, getLowestRepAug } from "/data/Augments"
+import { FactionWorkType, NS } from "@ns"
+import { AugmentPurchaseInfo, getAvailableAugs } from "/data/Augments"
 import { getHighestFavorFaction } from "/data/Factions"
 import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
 import { sortFunc } from "/lib/util"
@@ -13,11 +13,9 @@ function setDifference<T>(setA: Set<T>, setB: Set<T>): Set<T> {
 
 export default class WorkForFactionAction extends BaseAction {
   private hackFocus: boolean
-  private factionWorkMap: Record<string, Set<string>>
+  private factionWorkMap: Record<string, Set<FactionWorkType>>
   private joinedFactions: Set<string>
   private unworkableFactions: Set<string>
-
-  workTypes = ["hacking", "field", "security"]
 
   private isWorkableFaction = (faction: string): boolean => !this.unworkableFactions.has(faction)
 
@@ -43,7 +41,7 @@ export default class WorkForFactionAction extends BaseAction {
     // Loop over new factions and update each factions work map
     for (const faction of newFactions) {
       this.factionWorkMap[faction] = new Set()
-      for (const workType of this.workTypes) {
+      for (const workType of Object.values(FactionWorkType)) {
         if (ns.singularity.workForFaction(faction, workType, shouldFocus)) {
           this.factionWorkMap[faction].add(workType)
         }

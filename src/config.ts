@@ -1,3 +1,4 @@
+import { CityName } from "@ns"
 import { LogLevel } from "/lib/objects"
 
 export const DAEMON_SERVER = "home" // Server to run daemon, etc. on
@@ -24,7 +25,7 @@ export const BATCH_GROW_MULTIPLIER = 2.5 // How much to mutliply grow threads wi
 export const SECURITY_WIGGLE = 0.05 // Allow security to be % off target security
 export const MONEY_WIGGLE = 0.1 // Allow money to be % off target money
 
-export const CORP_MAIN_CITY = "Sector-12"
+export const CORP_MAIN_CITY: CityName = CityName.Sector12
 
 export const LOG_LEVEL = LogLevel.Info
 

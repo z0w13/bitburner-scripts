@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import { CrimeType, NS } from "@ns"
 import { getSleeves, SleeveData, SleeveTaskType } from "/lib/SleeveUtil"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
@@ -8,18 +8,18 @@ export default class ManageSleevesAction extends BaseAction {
   }
 
   async manageSleeve(ns: NS, sleeve: SleeveData): Promise<boolean> {
-    if (sleeve.skill.shock > 0) {
+    if (sleeve.info.shock > 0) {
       ns.print("ERROR: Shock > 0, please implement shock recovery")
       return false
     }
 
-    if (sleeve.skill.sync < 100) {
+    if (sleeve.info.sync < 100) {
       ns.print("ERROR: Sync < 100, please implement syncing")
       return false
     }
 
     if (sleeve.task.type === SleeveTaskType.Idle) {
-      return ns.sleeve.setToCommitCrime(sleeve.index, "LARCENY")
+      return ns.sleeve.setToCommitCrime(sleeve.index, CrimeType.larceny)
     }
 
     return true

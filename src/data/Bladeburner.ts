@@ -1,5 +1,4 @@
-import { NS } from "@ns"
-import { City } from "/data/LocationNames"
+import { CityName, NS } from "@ns"
 
 function normalizeEnumName(name: string): string {
   return name.replace(/[^a-z0-9]/gi, "")
@@ -68,18 +67,18 @@ export interface BladeburnerAction {
 }
 
 export interface BladeburnerCityAction extends BladeburnerAction {
-  city: City
+  city: CityName
 }
 
 export function getCurrentAction(ns: NS): BladeburnerCityAction {
   return {
-    city: ns.bladeburner.getCity() as City,
+    city: ns.bladeburner.getCity(),
 
     ...(ns.bladeburner.getCurrentAction() as BladeburnerAction),
   }
 }
 
-export function actionForCity(action: Action, city: City): BladeburnerCityAction {
+export function actionForCity(action: Action, city: CityName): BladeburnerCityAction {
   return {
     ...ACTION_LIST[action],
 
@@ -98,7 +97,7 @@ export function actionIsEqual(actionA: BladeburnerAction, actionB: BladeburnerAc
   )
 }
 
-export function newAction(name: Action, city: City): BladeburnerCityAction {
+export function newAction(name: Action, city: CityName): BladeburnerCityAction {
   return {
     ...ACTION_LIST[name],
 

@@ -464,6 +464,6 @@ export default class JobScheduler {
     }
 
     //getGlobalState().daemonState = serialized
-    await this.ns.write("jobs.json", JSON.stringify(serialized), "w")
+    this.ns.write("jobs.json", JSON.stringify(serialized), "w")
   }
 }

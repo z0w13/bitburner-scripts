@@ -1,5 +1,4 @@
-import { NS } from "@ns"
-import getStaticData from "/lib/func/get-static-data"
+import { CrimeType, NS } from "@ns"
 import { sortFunc } from "/lib/util"
 
 export enum Crimes {
@@ -7,24 +6,19 @@ export enum Crimes {
 }
 
 export interface Crime {
-  name: string
+  name: CrimeType
   chance: number
   profitPerSec: number
 }
 
 export function getCrimes(ns: NS): Array<Crime> {
-  const crimeStats = getStaticData(ns)?.crimes
-  if (!crimeStats) {
-    return []
-  }
-
-  return crimeStats.map((crime) => {
-    const name = crime.name
-    const chance = ns.singularity.getCrimeChance(crime.name)
+  return Object.values(CrimeType).map((name) => {
+    const crime = ns.singularity.getCrimeStats(name)
+    const chance = ns.singularity.getCrimeChance(name)
     const profitPerSec = (crime.money / (crime.time / 1000)) * chance
 
     return {
-      name,
+      name: name,
       chance,
       profitPerSec,
     }

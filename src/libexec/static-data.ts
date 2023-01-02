@@ -1,5 +1,5 @@
-import { NS } from "@ns"
-import { CrimeType, STATIC_DATA } from "/constants"
+import { NS, CrimeType } from "@ns"
+import { STATIC_DATA } from "/constants"
 import { getBitNodeMultipliers } from "/lib/func/get-bitnode-multipliers"
 import { StaticData } from "/lib/objects"
 
@@ -15,5 +15,5 @@ export async function main(ns: NS): Promise<void> {
     },
   }
 
-  await ns.write(STATIC_DATA, JSON.stringify(staticData), "w")
+  ns.write(STATIC_DATA, JSON.stringify(staticData), "w")
 }

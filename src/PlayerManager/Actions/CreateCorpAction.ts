@@ -11,8 +11,7 @@ export default class CreateCorpAction extends BaseAction {
     this.name = name
   }
   shouldPerform(ns: NS): boolean {
-    const player = ns.getPlayer()
-    return player.money > 25_000_000_000 && !player.hasCorporation
+    return ns.getPlayer().money > 25_000_000_000 && !ns.corporation.hasCorporation()
   }
   isPerforming(_ns: NS): boolean {
     return false

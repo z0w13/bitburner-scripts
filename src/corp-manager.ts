@@ -59,7 +59,7 @@ function manageUpgrades(ns: NS): void {
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")
 
-  if (!ns.getPlayer().hasCorporation) {
+  if (!ns.corporation.hasCorporation()) {
     ns.tprint("Exited, player does not own a corp.")
     return
   }
@@ -73,19 +73,21 @@ export async function main(ns: NS): Promise<void> {
     unlockUpgrade(ns, "Warehouse API")
     unlockUpgrade(ns, "Smart Supply")
 
-    for (const division of corp.divisions) {
+    for (const divisionName of corp.divisions) {
+      const division = ns.corporation.getDivision(divisionName)
       const args = ["--industry", division.type, "--division", division.name]
       if (!ns.isRunning("division-manager.js", DAEMON_SERVER, ...args)) {
         ns.exec("division-manager.js", DAEMON_SERVER, 1, ...args)
       }
     }
 
-    if (corp.divisions.length > 1 && ns.corporation.getOffice(corp.divisions[0].name, CORP_MAIN_CITY).size >= 15) {
+    if (corp.divisions.length > 1 && ns.corporation.getOffice(corp.divisions[0], CORP_MAIN_CITY).size >= 15) {
       manageUpgrades(ns)
     }
 
     const tableData: RawTableData = [["Division", "Income", "Expense", "Net"]]
-    for (const division of corp.divisions) {
+    for (const divisionName of corp.divisions) {
+      const division = ns.corporation.getDivision(divisionName)
       tableData.push([
         division.name,
         formatMoney(ns, division.thisCycleRevenue),
