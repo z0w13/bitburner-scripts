@@ -23,7 +23,7 @@
     ],
     "bitburner.fileWatcher.enable": true,
     "bitburner.showFileWatcherEnabledNotification": true,
-    "bitburner.showPushSuccessNotification": true,
+    "bitburner.showPushSuccessNotification": false,
     "eslint.packageManager": "yarn",
     "javascript.format.semicolons": "remove",
     "typescript.format.semicolons": "remove",
