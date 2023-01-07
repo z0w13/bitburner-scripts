@@ -12,7 +12,6 @@ import {
 import { SCRIPT_HACK } from "/constants"
 import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads-formulas"
 import getThreadsAvailable from "/lib/func/get-threads-available"
-import { getGlobalState } from "/lib/shared/GlobalStateManager"
 import { ServerSnapshot } from "/lib/objects"
 import Script from "/lib/Script"
 import { sum } from "/lib/util"
@@ -84,7 +83,7 @@ export default class ServerWrapper {
   }
 
   isDraining(): boolean {
-    return getGlobalState().drainingServers.has(this.hostname)
+    return false // TODO
   }
 
   isDrained(): boolean {
@@ -98,7 +97,7 @@ export default class ServerWrapper {
   }
 
   drain(): void {
-    getGlobalState().drainingServers.add(this.hostname)
+    // TODO
   }
 
   isRooted(): boolean {

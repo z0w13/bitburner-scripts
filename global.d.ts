@@ -1,5 +1,4 @@
 import * as bitburner from "./NetscriptDefinitions";
-import { GlobalState } from "/lib/shared/GlobalStateManager";
 
 export { };
 
@@ -14,9 +13,4 @@ declare global {
         scripts: string[],
         flags: (config: AutocompleteConfig) => any
     }
-}
-
-
-declare global {
-  var __globalState: GlobalState | undefined
 }

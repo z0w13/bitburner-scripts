@@ -8,7 +8,6 @@ import runCommand from "/lib/func/run-command"
 import getThreadsAvailable from "/lib/func/get-threads-available"
 import ServerBuyer from "/lib/ServerBuyer"
 import { CommandBatch } from "/Command/Objects"
-import { getGlobalState } from "/lib/shared/GlobalStateManager"
 import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 
 const flagSchema: FlagSchema = [["target", "n00dles"]]
@@ -95,13 +94,6 @@ export async function main(ns: NS): Promise<void> {
       ),
     )
 
-    getGlobalState().batchHwgwState[flags.target] = {
-      target: flags.target,
-      batches,
-      stage: "batch",
-      doneAt: batchEnd,
-    }
-
     await waitForPids(ns, pids.flat(1))
 
     const script = ns.getRunningScript()
@@ -123,12 +115,6 @@ export async function main(ns: NS): Promise<void> {
 
     // Recalculate batch if player skill changes
     if (!isMaxMoney(ns, flags.target) || !isMinSecurity(ns, flags.target)) {
-      getGlobalState().batchHwgwState[flags.target] = {
-        target: flags.target,
-        batches: 0,
-        stage: "prep",
-        doneAt: 0,
-      }
       batch = await calcBatch(ns, flags.target)
     }
 

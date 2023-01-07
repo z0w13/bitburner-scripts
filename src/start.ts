@@ -3,9 +3,7 @@ import { isScriptRunning } from "/lib/func/is-script-running"
 import waitForPids from "/lib/func/wait-for-pids"
 import getScriptPid from "/lib/func/get-script-pid"
 import { FlagSchema } from "/lib/objects"
-import GlobalStateManager from "/lib/shared/GlobalStateManager"
 import { DAEMON_SERVER } from "/config"
-import { GLOBAL_STATE_FILE } from "/constants"
 import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 
 interface ScriptToRun {
@@ -33,36 +31,11 @@ function getAvailRam(ns: NS): number {
   return ns.getServerMaxRam(DAEMON_SERVER) - ns.getServerUsedRam(DAEMON_SERVER)
 }
 
-async function cron(ns: NS, stateMgr: GlobalStateManager): Promise<void> {
-  let ticks = 0
-
-  while (true) {
-    stateMgr.processResults()
-
-    if (ticks % 10) {
-      ns.write(GLOBAL_STATE_FILE, JSON.stringify(stateMgr.getState()), "w")
-    }
-
-    await ns.asleep(1_000)
-    ticks++
-  }
-}
-
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
   const flags = ns.flags(flagSchema) as Flags & ScriptArgs
 
   await waitForPids(ns, [ns.exec("/libexec/static-data.js", DAEMON_SERVER, 1)])
-
-  // Make sure to initialise globals
-  const stateMgr = new GlobalStateManager(globalThis)
-  if (ns.fileExists(GLOBAL_STATE_FILE)) {
-    try {
-      stateMgr.restore(JSON.parse(ns.read(GLOBAL_STATE_FILE).toString()))
-    } catch (e) {
-      ns.tprint(e)
-    }
-  }
 
   for (const script of scriptsToRun) {
     if (getAvailRam(ns) > ns.getScriptRam(script.name, DAEMON_SERVER)) {
@@ -79,6 +52,4 @@ export async function main(ns: NS): Promise<void> {
       }
     }
   }
-
-  await cron(ns, stateMgr)
 }

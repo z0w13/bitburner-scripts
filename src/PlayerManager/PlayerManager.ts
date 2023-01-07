@@ -15,7 +15,6 @@ import TravelForFactionAction from "/PlayerManager/Actions/TravelForFactionActio
 import BackdoorServersAction from "/PlayerManager/Actions/BackdoorServersAction"
 import DonateToFactionAction from "/PlayerManager/Actions/DonateToFactionAction"
 import UpgradeHacknetAction from "/PlayerManager/Actions/UpgradeHacknetAction"
-import { PlayerSettings } from "/lib/shared/GlobalStateManager"
 import SpendHashesAction from "/PlayerManager/Actions/SpendHashesAction"
 import Logger from "/lib/Logger"
 import { LOG_LEVEL } from "/config"
@@ -33,10 +32,17 @@ export class PlayerManager {
   protected ticks: number
   protected actions: Array<BaseAction>
 
-  constructor(ns: NS, settings: PlayerSettings) {
+  constructor(ns: NS, logLevel: LogLevel = LOG_LEVEL) {
+    const settings = {
+      passiveOnly: false,
+      autoReset: false,
+      enableHacknet: true,
+      focusHacking: false,
+      createGang: false,
+    }
     this.passiveOnly = settings.passiveOnly
 
-    this.log = new Logger(ns, LOG_LEVEL, "PlayerManager")
+    this.log = new Logger(ns, logLevel, "PlayerManager")
     this.minLevel = 10
     this.ticks = 0
     this.actions = [
@@ -54,7 +60,7 @@ export class PlayerManager {
       new BuyUpgradesAction(),
       new TravelForFactionAction(),
       new BuyAugmentAction(settings.focusHacking),
-      new BuyServerAction(ns, false, 8),
+      //new BuyServerAction(ns, false, 8),
       settings.enableHacknet ? new UpgradeHacknetAction() : null,
 
       new DonateToFactionAction(settings.focusHacking),

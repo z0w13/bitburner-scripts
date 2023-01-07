@@ -21,7 +21,6 @@ import { sortFunc } from "/lib/util"
 import VirtualNetworkState from "/lib/VirtualNetworkState"
 import ServerBuyer from "/lib/ServerBuyer"
 import { PreppedTargetInfo } from "/lib/objects"
-import { getGlobalState } from "/lib/shared/GlobalStateManager"
 
 // TODO(zowie): Move draining stuff to JobManager
 export default class JobScheduler {
