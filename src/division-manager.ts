@@ -1,4 +1,5 @@
-import { NS, Division, CorporationInfo, Warehouse, CityName, CorpEmployeePosition, CorpIndustryName } from "@ns"
+import { NS, Division, CorporationInfo, Warehouse, CorpEmployeePosition, CorpIndustryName } from "@ns"
+import { CityName } from "/data/StaticDefs"
 import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
 import { CORP_MAIN_CITY } from "/config"
 import renderTable from "/lib/func/render-table"

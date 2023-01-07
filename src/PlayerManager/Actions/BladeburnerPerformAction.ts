@@ -1,4 +1,5 @@
-import { CityName, NS } from "@ns"
+import { NS } from "@ns"
+import { CityName } from "/data/StaticDefs"
 import {
   cityActionIsEqual,
   ActionType,

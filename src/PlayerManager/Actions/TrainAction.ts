@@ -1,5 +1,4 @@
-import { CityName } from "@ns"
-import { LocationName } from "/data/LocationNames"
+import { CityName, LocationName } from "/data/StaticDefs"
 import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
 import { Attribute, CityLocationMap } from "/lib/objects"
 import BaseAction from "/PlayerManager/Actions/BaseAction"

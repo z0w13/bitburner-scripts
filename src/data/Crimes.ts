@@ -1,5 +1,6 @@
-import { CrimeType, NS } from "@ns"
+import { NS } from "@ns"
 import { sortFunc } from "/lib/util"
+import { CrimeType } from "/data/StaticDefs"
 
 export enum Crimes {
   Homicide = "Homicide",

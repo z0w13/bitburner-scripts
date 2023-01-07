@@ -1,4 +1,4 @@
-import { CityName } from "@ns"
+import { CityName } from "/data/StaticDefs"
 import { LogLevel } from "/lib/objects"
 
 export const DAEMON_SERVER = "home" // Server to run daemon, etc. on

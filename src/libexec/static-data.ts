@@ -1,4 +1,5 @@
-import { NS, CrimeType } from "@ns"
+import { NS } from "@ns"
+import { CrimeType } from "/data/StaticDefs"
 import { STATIC_DATA } from "/constants"
 import { getBitNodeMultipliers } from "/lib/func/get-bitnode-multipliers"
 import { StaticData } from "/lib/objects"

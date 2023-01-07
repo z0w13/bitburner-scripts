@@ -1,6 +1,6 @@
 import * as posNames from "/data/CompanyPositionNames"
 
-import { LocationName } from "/data/LocationNames"
+import { LocationName } from "/data/StaticDefs"
 
 // Create Objects containing Company Positions by category
 // Will help in metadata construction later

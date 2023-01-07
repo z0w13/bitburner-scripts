@@ -1,8 +1,34 @@
-/**
- * Names of all locations
- */
+export enum FactionWorkType {
+  hacking = "hacking",
+  field = "field",
+  security = "security",
+}
+
+export enum CrimeType {
+  shoplift = "Shoplift",
+  robStore = "Rob Store",
+  mug = "Mug",
+  larceny = "Larceny",
+  dealDrugs = "Deal Drugs",
+  bondForgery = "Bond Forgery",
+  traffickArms = "Traffick Arms",
+  homicide = "Homicide",
+  grandTheftAuto = "Grand Theft Auto",
+  kidnap = "Kidnap",
+  assassination = "Assassination",
+  heist = "Heist",
+}
+
+export enum CityName {
+  Aevum = "Aevum",
+  Chongqing = "Chongqing",
+  Sector12 = "Sector-12",
+  NewTokyo = "New Tokyo",
+  Ishima = "Ishima",
+  Volhaven = "Volhaven",
+}
+
 export enum LocationName {
-  // Aevum Locations
   AevumAeroCorp = "AeroCorp",
   AevumBachmanAndAssociates = "Bachman & Associates",
   AevumClarkeIncorporated = "Clarke Incorporated",
@@ -18,12 +44,10 @@ export enum LocationName {
   AevumWatchdogSecurity = "Watchdog Security",
   AevumCasino = "Iker Molina Casino",
 
-  // Chongqing locations
   ChongqingKuaiGongInternational = "KuaiGong International",
   ChongqingSolarisSpaceSystems = "Solaris Space Systems",
   ChongqingChurchOfTheMachineGod = "Church of the Machine God",
 
-  // Sector 12
   Sector12AlphaEnterprises = "Alpha Enterprises",
   Sector12BladeIndustries = "Blade Industries",
   Sector12CIA = "Central Intelligence Agency",
@@ -41,19 +65,17 @@ export enum LocationName {
   Sector12RothmanUniversity = "Rothman University",
   Sector12UniversalEnergy = "Universal Energy",
 
-  // New Tokyo
   NewTokyoDefComm = "DefComm",
   NewTokyoGlobalPharmaceuticals = "Global Pharmaceuticals",
   NewTokyoNoodleBar = "Noodle Bar",
   NewTokyoVitaLife = "VitaLife",
+  NewTokyoArcade = "Arcade",
 
-  // Ishima
   IshimaNovaMedical = "Nova Medical",
   IshimaOmegaSoftware = "Omega Software",
   IshimaStormTechnologies = "Storm Technologies",
   IshimaGlitch = "0x6C1",
 
-  // Volhaven
   VolhavenCompuTek = "CompuTek",
   VolhavenHeliosLabs = "Helios Labs",
   VolhavenLexoCorp = "LexoCorp",
@@ -64,12 +86,10 @@ export enum LocationName {
   VolhavenSysCoreSecurities = "SysCore Securities",
   VolhavenZBInstituteOfTechnology = "ZB Institute of Technology",
 
-  // Generic locations
   Hospital = "Hospital",
   Slums = "The Slums",
   TravelAgency = "Travel Agency",
   WorldStockExchange = "World Stock Exchange",
 
-  // Default name for Location objects
   Void = "The Void",
 }

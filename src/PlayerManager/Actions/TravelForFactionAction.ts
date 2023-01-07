@@ -1,4 +1,5 @@
-import { CityName, NS } from "@ns"
+import { CityName } from "/data/StaticDefs"
+import { NS } from "@ns"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class AcceptFactionInvitationsAction extends BaseAction {

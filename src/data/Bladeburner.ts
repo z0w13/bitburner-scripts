@@ -1,4 +1,5 @@
-import { CityName, NS } from "@ns"
+import { NS } from "@ns"
+import { CityName } from "/data/StaticDefs"
 
 function normalizeEnumName(name: string): string {
   return name.replace(/[^a-z0-9]/gi, "")

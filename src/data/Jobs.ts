@@ -1,6 +1,6 @@
 import { CompaniesMetadata } from "/data/CompanyMetadata"
 import { companyPositionMetadata, CompanyPositionMetadata } from "/data/CompanyPositionsMetadata"
-import { LocationName } from "/data/LocationNames"
+import { LocationName } from "/data/StaticDefs"
 import { CONSTANTS } from "/game-constants"
 import { Attribute } from "/lib/objects"
 import { sortFunc } from "/lib/util"
