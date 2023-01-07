@@ -25,7 +25,9 @@ export default class CrimeAction extends BaseAction {
       return false
     }
 
-    ns.singularity.commitCrime(crime.name)
+    const shouldFocus = !ns.singularity.getOwnedAugmentations().includes("Neuroreceptor Management Implant")
+
+    ns.singularity.commitCrime(crime.name, shouldFocus)
     return true
   }
 }
