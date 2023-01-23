@@ -1,10 +1,12 @@
-import { NS, Division, CorporationInfo, Warehouse, CorpEmployeePosition, CorpIndustryName } from "@ns"
+import { NS, Division, CorporationInfo, Warehouse, CorpEmployeePosition, CorpIndustryName, CorpMaterialName } from "@ns"
 import { CityName } from "/data/StaticDefs"
 import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
-import { CORP_MAIN_CITY } from "/config"
+import { CORP_MAIN_CITY, LOG_LEVEL } from "/config"
 import renderTable from "/lib/func/render-table"
 import { FlagSchema } from "/lib/objects"
 import { formatMoney, formatNum, sortFunc } from "/lib/util"
+import Logger from "/lib/Logger"
+import RingBuffer from "/lib/RingBuffer"
 
 const flagSchema: FlagSchema = [
   ["division", "ZSmokes"],
@@ -29,28 +31,14 @@ const nonProductMap: Record<string, Array<string>> = {
   Robotics: ["Robots"],
 }
 
-// From https://github.com/danielyxie/bitburner/blob/cb6dfd1656a7483b7098d160f1401ee2ae925425/src/Corporation/MaterialSizes.ts
-export const MaterialSizes: Record<string, number> = {
-  Water: 0.05,
-  Energy: 0.01,
-  Food: 0.03,
-  Plants: 0.05,
-  Metal: 0.1,
-  Hardware: 0.06,
-  Chemicals: 0.05,
-  Drugs: 0.02,
-  Robots: 0.5,
-  AICores: 0.1,
-  RealEstate: 0.005,
-  "Real Estate": 0.005,
-  "AI Cores": 0.1,
-}
-
 // Constants
-const MULTIPLIER_MATERIALS = ["Robots", "Hardware", "AI Cores", "Real Estate"]
+const PROD_MULTI_MATERIALS: Array<CorpMaterialName> = ["Robots", "Hardware", "AI Cores", "Real Estate"]
 
 // Config
-const MAX_MULTIPLIER = 100
+const MAX_MP_MULTIPLIER = 100 // Maximum multiplier above market price for products to be adjusted to
+
+// History of product stocks, used to adjust prices when we don't yet have Market-TA.II
+const stockHistory: Record<string, Record<string, RingBuffer<number>>> = {}
 
 function getProductLimit(ns: NS, division: string): number {
   if (!ns.corporation.hasUnlockUpgrade("Office API")) {
@@ -68,31 +56,58 @@ function getProductLimit(ns: NS, division: string): number {
   return 3
 }
 
+function getFinishedProducts(ns: NS, division: Division): Array<string> {
+  return division.products.filter(
+    (product) => ns.corporation.getProduct(division.name, product).developmentProgress === 100,
+  )
+}
+
 function buyMaterials(ns: NS, corp: CorporationInfo, division: Division): void {
   for (const city of division.cities) {
     if (!ns.corporation.hasWarehouse(division.name, city)) {
       continue
     }
+    const hasBulkBuy = ns.corporation.hasResearched(division.name, "Bulk Purchasing")
     const warehouseSize = ns.corporation.getWarehouse(division.name, city).size
-    const sizePerMaterial = Math.floor((warehouseSize * 0.8) / 4)
+    // TODO: Use material size/required for warehouse space
 
-    for (const material of MULTIPLIER_MATERIALS) {
-      const qty = ns.corporation.getMaterial(division.name, city, material).qty
-      const weight = qty * MaterialSizes[material]
+    // TODO: Check factors for materials to optimise space for more effective ones
 
-      if (weight < sizePerMaterial) {
-        const sizePerSec = (sizePerMaterial - weight) / 10
-        const toBuyPerSec = sizePerSec / MaterialSizes[material]
+    // TODO: Base off of actual cycle times
+    const materialDivider = ns.corporation.getBonusTime() > 0 ? 100 : 10
+    const spaceForMaterials = warehouseSize * 0.8 - 100 // 80% to have growing space left, -100 to always have some space
+    const spacePerMaterial = Math.floor(spaceForMaterials / PROD_MULTI_MATERIALS.length)
 
-        ns.corporation.buyMaterial(division.name, city, material, toBuyPerSec)
-        ns.corporation.sellMaterial(division.name, city, material, "0", "")
-      } else if (weight > sizePerMaterial + 40) {
-        const sizePerSec = (weight - sizePerMaterial) / 10
-        const toSellPerSec = sizePerSec / MaterialSizes[material]
+    for (const material of PROD_MULTI_MATERIALS) {
+      const materialSize = ns.corporation.getMaterialData(material).size
+      const storedMaterialQty = ns.corporation.getMaterial(division.name, city, material).qty
+      const storedMaterialSize = storedMaterialQty * materialSize
+
+      if (storedMaterialSize < spacePerMaterial) {
+        // Not enough of material
+        if (hasBulkBuy) {
+          ns.corporation.buyMaterial(division.name, city, material, 0)
+          ns.corporation.sellMaterial(division.name, city, material, "0", "")
+
+          const targetQty = spacePerMaterial / materialSize
+          const buyAmount = targetQty - storedMaterialQty
+          ns.corporation.bulkPurchase(division.name, city, material, buyAmount)
+        } else {
+          const sizePerSec = (spacePerMaterial - storedMaterialSize) / materialDivider
+          const toBuyPerSec = sizePerSec / materialSize
+
+          ns.corporation.buyMaterial(division.name, city, material, toBuyPerSec)
+          ns.corporation.sellMaterial(division.name, city, material, "0", "")
+        }
+      } else if (storedMaterialSize > spacePerMaterial + 40) {
+        // Too much of material
+        const sizePerSec = (storedMaterialSize - spacePerMaterial) / materialDivider
+        const toSellPerSec = sizePerSec / materialSize
 
         ns.corporation.buyMaterial(division.name, city, material, 0)
-        ns.corporation.sellMaterial(division.name, city, material, toSellPerSec.toString(), "MP*0.8")
+        ns.corporation.sellMaterial(division.name, city, material, toSellPerSec.toString(), "MP*0.1")
       } else {
+        // Correct amount
         ns.corporation.buyMaterial(division.name, city, material, 0)
         ns.corporation.sellMaterial(division.name, city, material, "0", "")
       }
@@ -100,26 +115,28 @@ function buyMaterials(ns: NS, corp: CorporationInfo, division: Division): void {
   }
 }
 
+function isDevelopingProduct(ns: NS, division: Division): boolean {
+  return (
+    division.products.map((p) => ns.corporation.getProduct(division.name, p)).filter((p) => p.developmentProgress < 100)
+      .length > 0
+  )
+}
+
 function developAndDiscontinue(ns: NS, division: Division, ticks: number): void {
   if (ns.corporation.getCorporation().funds < 0) {
     return
   }
 
-  const isDeveloping =
-    division.products.map((p) => ns.corporation.getProduct(division.name, p)).filter((p) => p.developmentProgress < 100)
-      .length > 0
-
-  if (isDeveloping) {
-    ns.print(`${division.name} is currently developing a new product`)
+  if (isDevelopingProduct(ns, division)) {
     return
   }
 
+  // If we are at the product limit remove one with lowest quality
   if (division.products.length >= getProductLimit(ns, division.name)) {
-    // TODO(zowie): not sure how to figure out quality, for now just remove oldest product
-    //const lowestQual = division.products
-    //  .map((p) => ns.corporation.getMaterial(division.name, CORP_MAIN_CITY, p))
-    //  .sort(sortFunc((m) => m.qlt))[0]
-    const lowestQual = division.products[0]
+    const lowestQual = division.products
+      .map((p) => ns.corporation.getProduct(division.name, p))
+      .sort(sortFunc((m) => m.rat))[0].name
+
     ns.corporation.discontinueProduct(division.name, lowestQual)
     ns.print(`${division.name} discontinued ${lowestQual}`)
   }
@@ -140,8 +157,6 @@ function parseMultiplier(multi: string): number {
   return roundedMultiNum
 }
 
-const stockHistory: Record<string, Record<string, Array<number>>> = {}
-
 function adjustPrices(ns: NS, division: Division): void {
   const hasOfficeAPI = ns.corporation.hasUnlockUpgrade("Office API")
   const hasTAII = hasOfficeAPI && ns.corporation.hasResearched(division.name, "Market-TA.II")
@@ -156,34 +171,43 @@ function adjustPrices(ns: NS, division: Division): void {
     }
   }
 
+  // Adjust material prices for industries that produce non-products
   if (division.type in nonProductMap) {
     for (const materialName of nonProductMap[division.type]) {
-      const mat = ns.corporation.getMaterial(division.name, CORP_MAIN_CITY, materialName)
-      const qty = mat.qty
-
-      const price = getNewPrice(ns, division, mat.name, qty, 100, mat.sCost)
       for (const city of division.cities) {
         if (hasTAII) {
-          ns.corporation.sellMaterial(division.name, city, mat.name, "MAX", "MP")
-          ns.corporation.setMaterialMarketTA2(division.name, city, mat.name, true)
-        } else if (price !== mat.sCost) {
-          ns.corporation.sellMaterial(division.name, city, mat.name, "MAX", price)
+          ns.corporation.sellMaterial(division.name, city, materialName, "MAX", "MP")
+          ns.corporation.setMaterialMarketTA2(division.name, city, materialName, true)
+        } else {
+          // Adjust price based on historical stock + current price
+          const mat = ns.corporation.getMaterial(division.name, CORP_MAIN_CITY, materialName)
+          const qty = mat.qty
+          const price = getNewPrice(ns, division, mat.name, qty, 100, mat.sCost)
+
+          // Only update if price changed
+          if (price !== mat.sCost) {
+            ns.corporation.sellMaterial(division.name, city, mat.name, "MAX", price)
+          }
         }
       }
     }
   }
 
-  for (const productName of division.products) {
-    const product = ns.corporation.getProduct(division.name, productName)
-    const [qty] = product.cityData[CORP_MAIN_CITY]
-
-    const price = getNewPrice(ns, division, product.name, qty, product.developmentProgress, product.sCost)
-
+  // Adjust prices of products
+  for (const productName of getFinishedProducts(ns, division)) {
     if (hasTAII) {
-      ns.corporation.sellProduct(division.name, CORP_MAIN_CITY, product.name, "MAX", "MP", true)
-      ns.corporation.setProductMarketTA2(division.name, product.name, true)
-    } else if (price !== product.sCost) {
-      ns.corporation.sellProduct(division.name, CORP_MAIN_CITY, product.name, "MAX", price, true)
+      ns.corporation.sellProduct(division.name, CORP_MAIN_CITY, productName, "MAX", "MP", true)
+      ns.corporation.setProductMarketTA2(division.name, productName, true)
+    } else {
+      // Adjust price based on historical stock + current price
+      const product = ns.corporation.getProduct(division.name, productName)
+      const [qty] = product.cityData[CORP_MAIN_CITY]
+      const price = getNewPrice(ns, division, product.name, qty, product.developmentProgress, product.sCost)
+
+      // Only update if price changed
+      if (price !== product.sCost) {
+        ns.corporation.sellProduct(division.name, CORP_MAIN_CITY, product.name, "MAX", price, true)
+      }
     }
   }
 }
@@ -200,51 +224,46 @@ function getNewPrice(
     stockHistory[division.name] = {}
   }
   if (!(name in stockHistory[division.name])) {
-    stockHistory[division.name][name] = []
+    stockHistory[division.name][name] = new RingBuffer<number>(5)
   }
   stockHistory[division.name][name].push(qty)
-
-  while (stockHistory[division.name][name].length > 5) {
-    stockHistory[division.name][name].shift()
-  }
 
   if (devProgress < 100) {
     return "MP*1.0"
   }
 
   const currMulti = parseMultiplier(currentPrice.toString())
-  if (stockHistory[division.name][name].length !== 5) {
-    let newMulti = currMulti
 
-    if (Math.min(...stockHistory[division.name][name]) > 0 && currMulti >= 1.1) {
-      newMulti = currMulti - 0.1
-    } else if (currMulti < MAX_MULTIPLIER) {
-      newMulti = currMulti + 0.05
-    } else if (currMulti > MAX_MULTIPLIER) {
-      newMulti = MAX_MULTIPLIER
-    }
+  let newMulti = currMulti
 
-    return "MP*" + formatNum(ns, newMulti)
+  if (Math.min(...stockHistory[division.name][name].getNonEmpty()) > 0 && currMulti >= 1.1) {
+    newMulti = currMulti - 0.1
+  } else if (currMulti < MAX_MP_MULTIPLIER) {
+    newMulti = currMulti + 0.05
+  } else if (currMulti > MAX_MP_MULTIPLIER) {
+    newMulti = MAX_MP_MULTIPLIER
   }
 
-  return currentPrice.toString()
+  return "MP*" + formatNum(ns, newMulti)
 }
 
+// TODO: Rework to prioritise certain researches (maybe even prioritise having points over researching certain things?)
 function buyResearch(ns: NS, division: Division) {
   if (!ns.corporation.hasUnlockUpgrade("Office API")) {
     return
   }
 
-  if (division.research > 10_000 && !ns.corporation.hasResearched(division.name, "Hi-Tech R&D Laboratory")) {
-    ns.corporation.research(division.name, "Hi-Tech R&D Laboratory")
-  }
+  const toResearch = ["Hi-Tech R&D Laboratory", "Market-TA.I", "Market-TA.II", "AutoBrew", "AutoPartyManager"]
+  for (const research of toResearch) {
+    if (ns.corporation.hasResearched(division.name, research)) {
+      continue
+    }
 
-  if (division.research > 20_000 && !ns.corporation.hasResearched(division.name, "Market-TA.I")) {
-    ns.corporation.research(division.name, "Market-TA.I")
-  }
-
-  if (division.research > 50_000 && !ns.corporation.hasResearched(division.name, "Market-TA.II")) {
-    ns.corporation.research(division.name, "Market-TA.II")
+    if (division.research > ns.corporation.getResearchCost(division.name, research)) {
+      ns.corporation.research(division.name, research)
+    } else {
+      break
+    }
   }
 }
 
@@ -267,12 +286,6 @@ function upgradeOffice(ns: NS, division: string, city: CityName, limit: number):
       }
       cost = ns.corporation.getOfficeSizeUpgradeCost(division, city, upgradeSize)
     }
-
-    //ns.print(
-    //  `${division}/${city} Size: ${office.size} upgrade to ${
-    //    office.size + upgradeSize
-    //  } (+${upgradeSize}) cost ${formatMoney(ns, cost)}`,
-    //)
 
     ns.corporation.upgradeOfficeSize(division, city, upgradeSize)
     ns.print(
@@ -324,10 +337,6 @@ async function redistributeEmployees(ns: NS, division: string, city: CityName): 
   const employeeJobs = ns.corporation.getOffice(division, city).employeeJobs
 
   if (employeeJobs.Unassigned > 0 || employeeJobs.Training > 0) {
-    //for (const pos of Object.keys(ratio)) {
-    //  await ns.corporation.setAutoJobAssignment(division, city, pos, 0)
-    //}
-
     for (const pos in ratio) {
       const posRatio = ratio[pos as CorpEmployeePosition]
       const newEmployees = Math.floor(posRatio * ns.corporation.getOffice(division, city).size)
@@ -365,7 +374,7 @@ function manageWarehouses(ns: NS, division: Division): void {
 
   for (const city of division.cities) {
     if (!ns.corporation.hasWarehouse(division.name, city)) {
-      if (ns.corporation.getUpgradeWarehouseCost(division.name, city) > ns.corporation.getCorporation().funds) {
+      if (ns.corporation.getConstants().warehouseInitialCost > ns.corporation.getCorporation().funds) {
         continue
       }
 
@@ -426,6 +435,13 @@ function manageAdVert(ns: NS, division: Division): void {
   }
 }
 
+function hasIndustry(ns: NS, industry: CorpIndustryName): boolean {
+  return ns.corporation
+    .getCorporation()
+    .divisions.map((d) => ns.corporation.getDivision(d).type)
+    .includes(industry)
+}
+
 /*****************************************
  *            DECISION TREE
  * 1. If we don't have them buy Office & Warehouse API, and Smart Supply
@@ -437,29 +453,30 @@ function manageAdVert(ns: NS, division: Division): void {
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")
-  let ticks = 0
-
+  const logger = new Logger(ns, LOG_LEVEL, "DivisionManager")
   const flags = ns.flags(flagSchema) as Flags & ScriptArgs
+
+  let ticks = 0
 
   while (true) {
     await ns.asleep(1000)
 
     const corp = ns.corporation.getCorporation()
-    if (!corp.divisions.map((d) => d).includes(flags.industry)) {
-      if (ns.corporation.getIndustryData(flags.industry).startingCost > corp.funds / 2) {
+    if (!hasIndustry(ns, flags.industry)) {
+      if (ns.corporation.getIndustryData(flags.industry).startingCost > corp.funds) {
         continue
       }
 
-      ns.corporation.expandIndustry(flags.industry, "Z" + flags.division)
+      ns.corporation.expandIndustry(flags.industry, flags.division)
     }
 
     const division = ns.corporation.getDivision(flags.division)
 
-    ns.print("# Manage Materials")
+    logger.info("Manage Materials")
     buyMaterials(ns, corp, division)
 
     if (ticks % 10 === 0) {
-      ns.print("# Manage Expansions")
+      logger.info("Manage Expansions")
       if (division.cities.length < 6) {
         for (const city of Object.values(CityName)) {
           if (division.cities.includes(city)) {
@@ -471,33 +488,35 @@ export async function main(ns: NS): Promise<void> {
           }
 
           ns.corporation.expandCity(division.name, city)
-          ns.print("Expanded to: " + city)
+          logger.info("Expanded to: " + city)
         }
       }
 
-      ns.print("# Manage Offices")
+      logger.info("Manage Offices")
       await manageOffices(ns, division)
 
-      ns.print("# Manage Warehouses")
+      logger.info("Manage Warehouses")
       manageWarehouses(ns, division)
 
       if (ns.corporation.getOffice(division.name, CORP_MAIN_CITY).size >= 15) {
-        ns.print("# Expand Warehouses")
+        logger.info("Expand Warehouses")
         expandWarehouses(ns, division)
 
-        ns.print("# Manage Adverts")
+        logger.info("Manage Adverts")
         manageAdVert(ns, division)
       }
 
-      ns.print("# Adjust Prices")
+      logger.info("Adjust Prices")
       if (division.name in stockHistory) {
         const tableData = Object.entries(stockHistory[division.name]).map(([prod, val]) => [
           prod,
-          ...val.map((v) => formatNum(ns, v)),
+          ...val.getNonEmpty().map((v) => formatNum(ns, v)),
         ])
         tableData.unshift(["Product", "Stock", "Stock -1", "Stock -2", "Stock -3", "Stock -4"])
         if (tableData.length > 0) {
-          ns.print(renderTable(ns, tableData))
+          renderTable(ns, tableData)
+            .split("\n")
+            .forEach((row) => logger.info(row))
         }
       }
 
@@ -505,16 +524,16 @@ export async function main(ns: NS): Promise<void> {
         adjustPrices(ns, division)
 
         if (division.makesProducts) {
-          ns.print("# Manage Products")
+          logger.info("Manage Products")
           developAndDiscontinue(ns, division, ticks)
         }
       }
 
-      ns.print("# Manage Research")
+      logger.info("Manage Research")
       buyResearch(ns, division)
     }
 
-    await ns.asleep(1000)
     ticks++
+    await ns.asleep(1000)
   }
 }
