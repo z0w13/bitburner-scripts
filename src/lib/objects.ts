@@ -1,5 +1,5 @@
-import { BitNodeMultipliers, CrimeStats } from "@ns"
-import { CityName, LocationName } from "/data/StaticDefs"
+import { BitNodeMultipliers, LocationName, CrimeStats } from "@ns"
+import { CityName } from "/data/StaticDefs"
 
 export interface PreppedTargetInfo {
   hostname: string
