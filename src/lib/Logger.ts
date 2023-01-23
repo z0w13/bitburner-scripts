@@ -2,13 +2,22 @@ import { NS } from "@ns"
 import { LOG_LEVELS } from "/config"
 import { LogLevel } from "/lib/objects"
 
+type LogFunc = (message: string) => void
+
 export default class Logger {
   ns: NS
   level: LogLevel
   prefix: string
   fmt: string
+  logFunc: LogFunc
 
-  constructor(ns: NS, level: LogLevel = LogLevel.Warning, name = "main", fmt = "%s [%s] %s: %s") {
+  constructor(
+    ns: NS,
+    level: LogLevel = LogLevel.Warning,
+    name = "main",
+    logFunc: LogFunc = ns.print,
+    fmt = "%s [%s] %s: %s",
+  ) {
     this.ns = ns
     // Override log level if specified in LOG_LEVELS
     if (name in LOG_LEVELS) {
@@ -17,6 +26,7 @@ export default class Logger {
       this.level = level
     }
     this.prefix = name
+    this.logFunc = logFunc
     this.fmt = fmt
   }
 
@@ -80,6 +90,6 @@ export default class Logger {
 
   log(level: LogLevel, fmt: string, ...args: Array<unknown>): void {
     const formatString = this.ns.sprintf(this.fmt, this.getTime(), this.prefix, this.levelToString(level), fmt)
-    this.ns.print(this.ns.vsprintf(formatString, args))
+    this.logFunc(this.ns.vsprintf(formatString, args))
   }
 }
