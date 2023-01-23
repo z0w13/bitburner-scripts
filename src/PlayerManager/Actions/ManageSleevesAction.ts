@@ -1,4 +1,5 @@
-import { CrimeType, NS } from "@ns"
+import { NS } from "@ns"
+import { CrimeType } from "/data/StaticDefs"
 import { getSleeves, SleeveData, SleeveTaskType } from "/lib/SleeveUtil"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
