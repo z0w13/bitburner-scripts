@@ -3,7 +3,7 @@ import { LOG_LEVEL } from "/config"
 import getPlayerAction from "/lib/func/get-player-action"
 import { FlagSchema, LogLevel } from "/lib/objects"
 import { PlayerManager } from "/PlayerManager/PlayerManager"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 
 const flagSchema: FlagSchema = [["logLevel", LOG_LEVEL]]
 
@@ -12,7 +12,7 @@ interface Flags {
 }
 
 export async function main(ns: NS): Promise<void> {
-  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
+  const flags = parseFlags<Flags>(ns, flagSchema)
 
   ns.disableLog("ALL")
 

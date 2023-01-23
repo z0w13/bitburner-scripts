@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 import { DAEMON_SERVER } from "/config"
 import getHostTree, { TreeNode } from "/lib/func/get-host-tree"
 import { FlagSchema } from "/lib/objects"
@@ -19,7 +19,7 @@ interface Flags {
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
-  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
+  const flags = parseFlags<Flags>(ns, flagSchema)
 
   const hosts = getHostTree(ns, flags.host, flags.all)
   printTreeNode(ns, hosts, 0)

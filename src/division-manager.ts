@@ -1,6 +1,6 @@
 import { NS, Division, CorporationInfo, Warehouse, CorpEmployeePosition, CorpIndustryName, CorpMaterialName } from "@ns"
 import { CityName } from "/data/StaticDefs"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 import { CORP_MAIN_CITY, LOG_LEVEL } from "/config"
 import renderTable from "/lib/func/render-table"
 import { FlagSchema } from "/lib/objects"
@@ -454,7 +454,7 @@ function hasIndustry(ns: NS, industry: CorpIndustryName): boolean {
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")
   const logger = new Logger(ns, LOG_LEVEL, "DivisionManager")
-  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
+  const flags = parseFlags<Flags>(ns, flagSchema)
 
   let ticks = 0
 

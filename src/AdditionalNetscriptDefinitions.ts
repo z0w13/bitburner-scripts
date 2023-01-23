@@ -1,7 +1,3 @@
-import { ScriptArg } from "@ns"
-
-export type ScriptArgs = { [key: string]: ScriptArg }
-
 // From https://github.com/danielyxie/bitburner/blob/a8bef50ef519f34e4387f5826e4b8f3998a764bb/src/Work/Work.ts#L21
 export enum WorkType {
   CRIME = "CRIME",

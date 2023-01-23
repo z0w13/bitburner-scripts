@@ -5,7 +5,7 @@ import isHostSetup from "/lib/func/is-host-setup"
 import { COPY_SCRIPTS } from "/constants"
 import { DAEMON_SERVER } from "/config"
 import rsync from "/lib/func/rsync"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 
 interface Flags {
   interval: number
@@ -16,11 +16,11 @@ interface Flags {
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
-  const flags = ns.flags([
+  const flags = parseFlags<Flags>(ns, [
     ["interval", 1000],
     ["host", DAEMON_SERVER],
     ["scripts", COPY_SCRIPTS], // Scripts to install
-  ]) as Flags & ScriptArgs
+  ])
 
   while (true) {
     const hosts = getHosts(ns)

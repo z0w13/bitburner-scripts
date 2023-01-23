@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 import { getBatchJob } from "/lib/func/get-batch-job"
 import renderTable from "/lib/func/render-table"
 import runCommand from "/lib/func/run-command"
@@ -20,7 +20,7 @@ export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
   ns.enableLog("exec")
 
-  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
+  const flags = parseFlags<Flags>(ns, flagSchema)
 
   while (true) {
     const hostMgr = new HostManager(ns)

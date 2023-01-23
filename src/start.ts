@@ -4,7 +4,7 @@ import waitForPids from "/lib/func/wait-for-pids"
 import getScriptPid from "/lib/func/get-script-pid"
 import { FlagSchema } from "/lib/objects"
 import { DAEMON_SERVER } from "/config"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 
 interface ScriptToRun {
   name: string
@@ -33,7 +33,7 @@ function getAvailRam(ns: NS): number {
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
-  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
+  const flags = parseFlags<Flags>(ns, flagSchema)
 
   await waitForPids(ns, [ns.exec("/libexec/static-data.js", DAEMON_SERVER, 1)])
 

@@ -1,14 +1,14 @@
 import { NS } from "@ns"
 import { getBestCrime } from "/data/Crimes"
 import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 
 interface Flags {
   karmawhore: boolean
 }
 
 export async function main(ns: NS): Promise<void> {
-  const flags = ns.flags([["karmawhore", false]]) as Flags & ScriptArgs
+  const flags = parseFlags<Flags>(ns, [["karmawhore", false]])
 
   ns.disableLog("ALL")
   ns.enableLog("commitCrime")

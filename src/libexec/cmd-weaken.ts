@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 
 interface Flags {
   target: string
@@ -10,13 +10,13 @@ interface Flags {
 }
 
 export async function main(ns: NS): Promise<void> {
-  const flags = ns.flags([
+  const flags = parseFlags<Flags>(ns, [
     ["target", ""],
     ["threads", 1],
     ["delay", 0],
     ["endTime", 0],
     ["commandTime", 0],
-  ]) as Flags & ScriptArgs
+  ])
 
   if (flags.target.length === 0) {
     ns.tprintf("ERROR: %s - %s No target specified", ns.getHostname(), ns.getScriptName())

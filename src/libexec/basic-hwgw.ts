@@ -1,7 +1,7 @@
 import { NS } from "@ns"
 import { FlagSchema } from "/lib/objects"
 import { hack, maxMoney, minSecurity } from "/lib/HwgwShared"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 
 const flagSchema: FlagSchema = [["target", "n00dles"]]
 
@@ -14,7 +14,7 @@ export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
   ns.enableLog("exec")
 
-  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
+  const flags = parseFlags<Flags>(ns, flagSchema)
 
   while (true) {
     await maxMoney(ns, flags.target)

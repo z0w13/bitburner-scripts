@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 import { DAEMON_SERVER } from "/config"
 import getHostPath from "/lib/func/get-host-path"
 
@@ -12,7 +12,7 @@ interface Flags {
 }
 
 export async function main(ns: NS): Promise<void> {
-  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
+  const flags = parseFlags<Flags>(ns, flagSchema)
   const path = getHostPath(ns, flags.host)
   if (!path) {
     ns.tprint(`ERROR: No path to ${flags.host}`)

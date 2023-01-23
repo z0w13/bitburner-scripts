@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 
 interface Flags {
   filename: string
@@ -8,11 +8,11 @@ interface Flags {
 }
 
 export async function main(ns: NS): Promise<void> {
-  const flags = ns.flags([
+  const flags = parseFlags<Flags>(ns, [
     ["filename", ""],
     ["content", ""],
     ["mode", "w"],
-  ]) as Flags & ScriptArgs
+  ])
 
   if (flags.filename.length === 0) {
     ns.print("Error: no filename specified")

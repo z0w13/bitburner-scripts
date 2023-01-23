@@ -8,7 +8,7 @@ import runCommand from "/lib/func/run-command"
 import getThreadsAvailable from "/lib/func/get-threads-available"
 import ServerBuyer from "/lib/ServerBuyer"
 import { CommandBatch } from "/Command/Objects"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 
 const flagSchema: FlagSchema = [["target", "n00dles"]]
 
@@ -51,7 +51,7 @@ async function calcBatch(ns: NS, target: string): Promise<CommandBatch> {
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
-  const flags = ns.flags(flagSchema) as Flags & ScriptArgs
+  const flags = parseFlags<Flags>(ns, flagSchema)
 
   let batch = await calcBatch(ns, flags.target)
   const serverBuyer = new ServerBuyer(ns, 8)

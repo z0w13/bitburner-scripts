@@ -5,7 +5,7 @@ import getThreadsAvailable from "/lib/func/get-threads-available"
 import runCommand from "/lib/func/run-command"
 import Script from "/lib/Script"
 import waitForPids from "/lib/func/wait-for-pids"
-import { ScriptArgs } from "/AdditionalNetscriptDefinitions"
+import parseFlags from "/lib/parseFlags"
 
 interface Flags {
   target: string
@@ -14,7 +14,7 @@ interface Flags {
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
-  const flags = ns.flags([["target", ""]]) as Flags & ScriptArgs
+  const flags = parseFlags<Flags>(ns, [["target", ""]])
 
   while (true) {
     const command = getWeakenCommand(ns, flags.target)
