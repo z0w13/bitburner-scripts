@@ -1,7 +1,8 @@
-import { NS } from "@ns"
+import { CorpIndustryName, CorporationInfo, NS } from "@ns"
 import { CORP_MAIN_CITY, DAEMON_SERVER } from "/config"
-import renderTable, { RawTableData } from "/lib/func/render-table"
-import { formatMoney } from "/lib/util"
+import { SCRIPT_DIVISION_MANAGER } from "/constants"
+import renderTable from "/lib/func/render-table"
+import { formatMoney, formatNum, formatTime } from "/lib/util"
 
 function buyUpgradesToLevel(ns: NS, max: number, upgrades: Array<string>): void {
   for (const upgrade of upgrades) {
@@ -56,6 +57,46 @@ function manageUpgrades(ns: NS): void {
   buyUpgradesToLevel(ns, 1000, ["Wilson Analytics"])
 }
 
+function printDivisionInfo(ns: NS, corp: CorporationInfo): void {
+  for (const divisionName of corp.divisions) {
+    const division = ns.corporation.getDivision(divisionName)
+    const revenue = Math.max(division.lastCycleRevenue, division.thisCycleRevenue)
+    const expenses = Math.max(division.lastCycleExpenses, division.thisCycleExpenses)
+    const devProgress =
+      division.products.length > 0
+        ? ns.corporation.getProduct(division.name, division.products.at(-1) as string).developmentProgress
+        : 0
+
+    ns.printf(
+      "%s | Revenue: %s | Expenses: %s | Profit: %s | Products: %d | Develop: %s%%",
+      division.name,
+      formatMoney(ns, revenue),
+      formatMoney(ns, expenses),
+      formatMoney(ns, revenue - expenses),
+      division.products.length,
+      formatNum(ns, devProgress, "0.00"),
+    )
+
+    ns.getScriptLogs(SCRIPT_DIVISION_MANAGER, DAEMON_SERVER, ...getDivisionManagerArgs(division.name, division.type))
+      .slice(-5)
+      .forEach((line) => ns.print(line))
+  }
+}
+
+function getDivisionManagerArgs(name: string, type: CorpIndustryName): Array<string> {
+  return ["--industry", type, "--division", name]
+}
+
+function isDivisionMangerRunning(ns: NS, name: string, type: CorpIndustryName): boolean {
+  return ns.isRunning(SCRIPT_DIVISION_MANAGER, DAEMON_SERVER, ...getDivisionManagerArgs(name, type))
+}
+
+function ensureDivisionManagerRunning(ns: NS, name: string, type: CorpIndustryName): void {
+  if (!isDivisionMangerRunning(ns, name, type)) {
+    ns.exec(SCRIPT_DIVISION_MANAGER, DAEMON_SERVER, 1, ...getDivisionManagerArgs(name, type))
+  }
+}
+
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")
 
@@ -65,37 +106,41 @@ export async function main(ns: NS): Promise<void> {
   }
 
   while (true) {
-    await ns.asleep(1000)
-
     const corp = ns.corporation.getCorporation()
+
+    if (corp.divisions.length === 0) {
+      ensureDivisionManagerRunning(ns, "ZSmonks", "Tobacco")
+    }
 
     unlockUpgrade(ns, "Office API")
     unlockUpgrade(ns, "Warehouse API")
     unlockUpgrade(ns, "Smart Supply")
 
+    // Launch (unstarted) division managers
     for (const divisionName of corp.divisions) {
       const division = ns.corporation.getDivision(divisionName)
-      const args = ["--industry", division.type, "--division", division.name]
-      if (!ns.isRunning("division-manager.js", DAEMON_SERVER, ...args)) {
-        ns.exec("division-manager.js", DAEMON_SERVER, 1, ...args)
-      }
+      ensureDivisionManagerRunning(ns, division.name, division.type)
     }
 
-    if (corp.divisions.length > 1 && ns.corporation.getOffice(corp.divisions[0], CORP_MAIN_CITY).size >= 15) {
+    if (corp.divisions.length >= 1 && ns.corporation.getOffice(corp.divisions[0], CORP_MAIN_CITY).size >= 15) {
       manageUpgrades(ns)
     }
 
-    const tableData: RawTableData = [["Division", "Income", "Expense", "Net"]]
-    for (const divisionName of corp.divisions) {
-      const division = ns.corporation.getDivision(divisionName)
-      tableData.push([
-        division.name,
-        formatMoney(ns, division.thisCycleRevenue),
-        formatMoney(ns, division.thisCycleExpenses),
-        formatMoney(ns, division.thisCycleRevenue - division.thisCycleExpenses),
-      ])
-    }
-
-    ns.print(renderTable(ns, tableData, true))
+    ns.clearLog()
+    ns.print(
+      renderTable(
+        ns,
+        [
+          ["Funds", formatMoney(ns, corp.funds)],
+          ["Revenue", formatMoney(ns, corp.revenue)],
+          ["Expenses", formatMoney(ns, corp.expenses)],
+          ["Profit", formatMoney(ns, corp.revenue - corp.expenses)],
+          ["Bonus Time", formatTime(ns.corporation.getBonusTime())],
+        ],
+        false,
+      ),
+    )
+    printDivisionInfo(ns, corp)
+    await ns.asleep(1000)
   }
 }

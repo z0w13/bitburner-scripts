@@ -11,6 +11,8 @@ export const SCRIPT_WGWH_STATUS = "wgwh-status.js"
 export const SCRIPT_SERVER_STATUS = "server-status.js"
 export const SCRIPT_LIST_TARGETS = "list-targets.js"
 
+export const SCRIPT_DIVISION_MANAGER = "division-manager.js"
+
 // from src/Constants.ts
 export const SERVER_WEAKEN_AMOUNT = 0.05
 
