@@ -1,5 +1,4 @@
 import { NS } from "@ns"
-import { CrimeType } from "/data/StaticDefs"
 import { getSleeves, SleeveData, SleeveTaskType } from "/lib/SleeveUtil"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
@@ -20,7 +19,7 @@ export default class ManageSleevesAction extends BaseAction {
     }
 
     if (sleeve.task.type === SleeveTaskType.Idle) {
-      return ns.sleeve.setToCommitCrime(sleeve.index, CrimeType.larceny)
+      return ns.sleeve.setToCommitCrime(sleeve.index, "Larceny")
     }
 
     return true
