@@ -1,4 +1,5 @@
 import type { NS } from "@ns"
+import RingBuffer from "/lib/RingBuffer"
 import { sum } from "/lib/util"
 
 // Things to spend money on
@@ -18,32 +19,6 @@ import { sum } from "/lib/util"
 // - Prioritising certain things over others, augs should come first for example
 // - Money/second to decide whether we should wait before buying something
 
-class RingBuffer<T> {
-  private elems: Array<T>
-  private size: number
-
-  public get length(): number {
-    return this.elems.length
-  }
-
-  public constructor(size: number) {
-    this.elems = new Array<T>(size)
-    this.size = size
-  }
-
-  public push(elem: T) {
-    if (this.elems.length >= this.size) {
-      this.elems.shift()
-    }
-
-    this.elems.push(elem)
-  }
-
-  public toArray(): Array<T> {
-    return [...this.elems]
-  }
-}
-
 class MoneyTracker {
   private moneyHistory: RingBuffer<number>
 
@@ -56,7 +31,7 @@ class MoneyTracker {
   }
 
   public getMoneyPerSecond(): number {
-    return sum(this.moneyHistory.toArray()) / this.moneyHistory.length
+    return sum(this.moneyHistory.getNonEmpty()) / this.moneyHistory.length
   }
 
   public track(ns: NS): void {
@@ -64,7 +39,7 @@ class MoneyTracker {
   }
 }
 
-class MoneySpender {
+export class MoneySpender {
   private moneyTracker: MoneyTracker
 
   public constructor() {
