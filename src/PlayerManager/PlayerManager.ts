@@ -60,7 +60,7 @@ export class PlayerManager {
       new BuyUpgradesAction(),
       new TravelForFactionAction(),
       new BuyAugmentAction(settings.focusHacking),
-      //new BuyServerAction(ns, false, 8),
+      new BuyServerAction(ns, false, 8),
       settings.enableHacknet ? new UpgradeHacknetAction() : null,
 
       new DonateToFactionAction(settings.focusHacking),

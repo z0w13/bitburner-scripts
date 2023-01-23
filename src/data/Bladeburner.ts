@@ -5,6 +5,7 @@ function normalizeEnumName(name: string): string {
   return name.replace(/[^a-z0-9]/gi, "")
 }
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 function generateEnums(ns: NS) {
   const resultLines = []
   resultLines.push("export enum Contract {")

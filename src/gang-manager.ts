@@ -72,6 +72,7 @@ function getNewAscensionMults(ns: NS, info: GangMemberInfo): Stats {
   }
 }
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 function getAscensionMultIncrease(ns: NS, info: GangMemberInfo): Stats {
   const newAscMults = getNewAscensionMults(ns, info)
   return {
