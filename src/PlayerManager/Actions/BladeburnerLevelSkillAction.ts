@@ -4,14 +4,14 @@ import { sortFunc } from "/lib/util"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 const SKILLS_TO_LEVEL: Record<string, number | null> = {
-  [Skill.BladesIntuition]: null,
+  [Skill.BladesIntuition]: 5000,
   [Skill.Cloak]: 30,
   [Skill.ShortCircuit]: 30,
-  [Skill.DigitalObserver]: null,
+  [Skill.DigitalObserver]: 5000,
   [Skill.Tracer]: 30,
   [Skill.Overclock]: 90,
-  [Skill.Reaper]: null,
-  [Skill.EvasiveSystem]: null,
+  [Skill.Reaper]: 5000,
+  [Skill.EvasiveSystem]: 5000,
   [Skill.HandsofMidas]: null,
   [Skill.Hyperdrive]: 30,
 }
@@ -32,7 +32,14 @@ function levelSkill(ns: NS): boolean {
     return false
   }
 
-  const success = ns.bladeburner.upgradeSkill(skill)
+  let upgradeCount = 1
+  while (ns.bladeburner.getSkillUpgradeCost(skill, upgradeCount) < ns.bladeburner.getSkillPoints()) {
+    upgradeCount += 1
+  }
+  upgradeCount -= 1
+
+  const success = ns.bladeburner.upgradeSkill(skill, upgradeCount)
+
   if (success) {
     ns.toast(`BB: Upgraded ${skill} to level ${ns.bladeburner.getSkillLevel(skill)}`)
   }
