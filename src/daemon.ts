@@ -1,5 +1,4 @@
-import { NS } from "@ns"
-import { FlagSchema } from "/lib/objects"
+import type { NS } from "@ns"
 import { isScriptRunning } from "/lib/func/is-script-running"
 import HostManager from "/lib/HostManager"
 import JobManager from "/JobScheduler/JobManager"
@@ -8,16 +7,6 @@ import ServerBuyer from "/lib/ServerBuyer"
 import { DAEMON_SERVER, LOAD_BUY_THRESHOLD } from "/config"
 import waitForPids from "/lib/func/wait-for-pids"
 import parseFlags from "/lib/parseFlags"
-
-const flagSchema: FlagSchema = [
-  ["once", false],
-  ["prep", false],
-]
-
-interface Flags {
-  once: boolean
-  prep: boolean
-}
 
 // TODO(zowie): Elegantly handle upgrading servers?
 // TODO(zowie): Figure out how to semi-accurately calculate stuff without Formulas.exe
@@ -28,7 +17,10 @@ export async function main(ns: NS): Promise<void> {
 
   ns.disableLog("ALL")
 
-  const flags = parseFlags<Flags>(ns, flagSchema)
+  const flags = parseFlags(ns, {
+    once: false,
+    prep: false,
+  })
 
   const hostMgr = new HostManager(ns)
   const jobMgr = new JobManager(ns, hostMgr)

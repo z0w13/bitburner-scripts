@@ -7,14 +7,10 @@ import Script from "/lib/Script"
 import waitForPids from "/lib/func/wait-for-pids"
 import parseFlags from "/lib/parseFlags"
 
-interface Flags {
-  target: string
-}
-
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
-  const flags = parseFlags<Flags>(ns, [["target", ""]])
+  const flags = parseFlags(ns, { target: "" })
 
   while (true) {
     const command = getWeakenCommand(ns, flags.target)

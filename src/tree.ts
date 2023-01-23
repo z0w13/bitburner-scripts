@@ -1,25 +1,18 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import parseFlags from "/lib/parseFlags"
 import { DAEMON_SERVER } from "/config"
-import getHostTree, { TreeNode } from "/lib/func/get-host-tree"
-import { FlagSchema } from "/lib/objects"
+import type { TreeNode } from "/lib/func/get-host-tree"
+import getHostTree from "/lib/func/get-host-tree"
 
 const IMPORTANT_HOSTS = new Set(["The-Cave", "I.I.I.I", "run4theh111z", "CSEC", "avmnite-02h"])
-
-const flagSchema: FlagSchema = [
-  ["all", false],
-  ["host", DAEMON_SERVER],
-]
-
-interface Flags {
-  all: boolean
-  host: string
-}
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
-  const flags = parseFlags<Flags>(ns, flagSchema)
+  const flags = parseFlags(ns, {
+    all: false,
+    host: DAEMON_SERVER,
+  })
 
   const hosts = getHostTree(ns, flags.host, flags.all)
   printTreeNode(ns, hosts, 0)

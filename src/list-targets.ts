@@ -2,23 +2,15 @@ import { NS } from "@ns"
 import { SCRIPT_HACK } from "/constants"
 import renderTable from "/lib/func/render-table"
 import getThreadsAvailable from "/lib/func/get-threads-available"
-import { FlagSchema } from "/lib/objects"
 import Script from "/lib/Script"
 import { formatMoney, formatNum, formatTime } from "/lib/util"
 import getTargets from "/lib/func/get-targets"
 import parseFlags from "/lib/parseFlags"
 
-const flagSchema: FlagSchema = [["all", false]]
-
-interface Flags {
-  all: boolean
-}
-
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
-  const flags = parseFlags<Flags>(ns, flagSchema)
-
+  const flags = parseFlags(ns, { all: false })
   const servers = getTargets(ns, flags.all)
 
   const table: Array<Array<unknown>> = [

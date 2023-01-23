@@ -5,20 +5,14 @@ import { DAEMON_SERVER } from "/config"
 import rsync from "/lib/func/rsync"
 import parseFlags from "/lib/parseFlags"
 
-interface Flags {
-  host: string
-  scripts: Array<string>
-  overwrite: boolean
-}
-
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("scan")
 
-  const flags = parseFlags<Flags>(ns, [
-    ["host", DAEMON_SERVER],
-    ["scripts", COPY_SCRIPTS], // Scripts to install
-    ["overwrite", false],
-  ])
+  const flags = parseFlags(ns, {
+    host: DAEMON_SERVER,
+    scripts: COPY_SCRIPTS, // Scripts to install
+    overwrite: false,
+  })
 
   const hosts = getHosts(ns)
   for (const hostname of hosts) {

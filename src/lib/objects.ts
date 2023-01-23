@@ -6,8 +6,6 @@ export interface PreppedTargetInfo {
   profitPerSecond: number
 }
 
-export type FlagSchema = Array<[string, string | number | boolean | string[]]>
-
 export interface ServerSnapshot {
   hostname: string
 

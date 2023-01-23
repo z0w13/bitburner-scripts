@@ -1,18 +1,10 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import parseFlags from "/lib/parseFlags"
 import { DAEMON_SERVER } from "/config"
 import getHostPath from "/lib/func/get-host-path"
 
-import { FlagSchema } from "/lib/objects"
-
-const flagSchema: FlagSchema = [["host", DAEMON_SERVER]]
-
-interface Flags {
-  host: string
-}
-
 export async function main(ns: NS): Promise<void> {
-  const flags = parseFlags<Flags>(ns, flagSchema)
+  const flags = parseFlags(ns, { host: DAEMON_SERVER })
   const path = getHostPath(ns, flags.host)
   if (!path) {
     ns.tprint(`ERROR: No path to ${flags.host}`)

@@ -1,17 +1,16 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { isScriptRunning } from "/lib/func/is-script-running"
 import waitForPids from "/lib/func/wait-for-pids"
 import getScriptPid from "/lib/func/get-script-pid"
-import { FlagSchema } from "/lib/objects"
 import { DAEMON_SERVER } from "/config"
-import parseFlags from "/lib/parseFlags"
+import parseFlags, { ScriptArgs } from "/lib/parseFlags"
 
 interface ScriptToRun {
   name: string
   host?: string
   tail?: boolean
   args?: Array<string | number | boolean>
-  argsCallback?: (flags: Flags) => Array<string>
+  argsCallback?: (flags: ScriptArgs) => Array<string>
 }
 
 const scriptsToRun: Array<ScriptToRun> = [
@@ -22,18 +21,13 @@ const scriptsToRun: Array<ScriptToRun> = [
   { name: "server-status.js", tail: true },
 ]
 
-const flagSchema: FlagSchema = [["hack", false]]
-interface Flags {
-  hack: boolean
-}
-
 function getAvailRam(ns: NS): number {
   return ns.getServerMaxRam(DAEMON_SERVER) - ns.getServerUsedRam(DAEMON_SERVER)
 }
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
-  const flags = parseFlags<Flags>(ns, flagSchema)
+  const flags = parseFlags(ns, { hack: false })
 
   await waitForPids(ns, [ns.exec("/libexec/static-data.js", DAEMON_SERVER, 1)])
 

@@ -1,7 +1,6 @@
 import { NS } from "@ns"
 import * as basic from "/Command/Basic"
 import * as formulas from "/Command/Formulas"
-import { FlagSchema } from "/lib/objects"
 import { BATCH_INTERVAL, MONEY_WIGGLE, SECURITY_WIGGLE } from "/config"
 import waitForPids from "/lib/func/wait-for-pids"
 import runCommand from "/lib/func/run-command"
@@ -9,12 +8,6 @@ import getThreadsAvailable from "/lib/func/get-threads-available"
 import ServerBuyer from "/lib/ServerBuyer"
 import { CommandBatch } from "/Command/Objects"
 import parseFlags from "/lib/parseFlags"
-
-const flagSchema: FlagSchema = [["target", "n00dles"]]
-
-interface Flags {
-  target: string
-}
 
 function isMaxMoney(ns: NS, target: string): boolean {
   return ns.getServerMoneyAvailable(target) >= ns.getServerMaxMoney(target) * (1 - MONEY_WIGGLE)
@@ -51,7 +44,7 @@ async function calcBatch(ns: NS, target: string): Promise<CommandBatch> {
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
-  const flags = parseFlags<Flags>(ns, flagSchema)
+  const flags = parseFlags(ns, { target: "n00dles" })
 
   let batch = await calcBatch(ns, flags.target)
   const serverBuyer = new ServerBuyer(ns, 8)

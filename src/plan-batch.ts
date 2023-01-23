@@ -6,21 +6,14 @@ import runCommand from "/lib/func/run-command"
 import waitForPids from "/lib/func/wait-for-pids"
 import HostManager from "/lib/HostManager"
 import { maxMoney, minSecurity } from "/lib/HwgwShared"
-import { FlagSchema } from "/lib/objects"
 import { formatDate, formatMoney, formatNum, formatTime, renderProgress } from "/lib/util"
 import VirtualNetworkState from "/lib/VirtualNetworkState"
-
-const flagSchema: FlagSchema = [["target", "n00dles"]]
-
-interface Flags {
-  target: string
-}
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
   ns.enableLog("exec")
 
-  const flags = parseFlags<Flags>(ns, flagSchema)
+  const flags = parseFlags(ns, { target: "n00dles" })
 
   while (true) {
     const hostMgr = new HostManager(ns)

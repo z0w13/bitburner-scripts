@@ -1,22 +1,19 @@
-import { NS, Division, CorporationInfo, Warehouse, CorpEmployeePosition, CorpIndustryName, CorpMaterialName } from "@ns"
+import type {
+  NS,
+  Division,
+  CorporationInfo,
+  Warehouse,
+  CorpEmployeePosition,
+  CorpIndustryName,
+  CorpMaterialName,
+} from "@ns"
 import { CityName } from "/data/StaticDefs"
 import parseFlags from "/lib/parseFlags"
 import { CORP_MAIN_CITY, LOG_LEVEL } from "/config"
 import renderTable from "/lib/func/render-table"
-import { FlagSchema } from "/lib/objects"
 import { formatMoney, formatNum, sortFunc } from "/lib/util"
 import Logger from "/lib/Logger"
 import RingBuffer from "/lib/RingBuffer"
-
-const flagSchema: FlagSchema = [
-  ["division", "ZSmokes"],
-  ["industry", "Tobacco"],
-]
-
-interface Flags {
-  division: string
-  industry: CorpIndustryName
-}
 
 const nonProductMap: Record<string, Array<string>> = {
   Mining: ["Metal"],
@@ -454,7 +451,10 @@ function hasIndustry(ns: NS, industry: CorpIndustryName): boolean {
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")
   const logger = new Logger(ns, LOG_LEVEL, "DivisionManager")
-  const flags = parseFlags<Flags>(ns, flagSchema)
+  const flags = parseFlags(ns, {
+    division: "ZSmokes",
+    industry: "Tobacco" as CorpIndustryName,
+  })
 
   let ticks = 0
 

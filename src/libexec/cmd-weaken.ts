@@ -1,5 +1,4 @@
-import { NS } from "@ns"
-import parseFlags from "/lib/parseFlags"
+import { NS, ScriptArg } from "@ns"
 
 interface Flags {
   target: string
@@ -10,13 +9,13 @@ interface Flags {
 }
 
 export async function main(ns: NS): Promise<void> {
-  const flags = parseFlags<Flags>(ns, [
+  const flags = ns.flags([
     ["target", ""],
     ["threads", 1],
     ["delay", 0],
     ["endTime", 0],
     ["commandTime", 0],
-  ])
+  ]) as Flags & { [key: string]: ScriptArg | string[] }
 
   if (flags.target.length === 0) {
     ns.tprintf("ERROR: %s - %s No target specified", ns.getHostname(), ns.getScriptName())

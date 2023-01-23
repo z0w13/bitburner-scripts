@@ -3,12 +3,8 @@ import { getBestCrime } from "/data/Crimes"
 import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
 import parseFlags from "/lib/parseFlags"
 
-interface Flags {
-  karmawhore: boolean
-}
-
 export async function main(ns: NS): Promise<void> {
-  const flags = parseFlags<Flags>(ns, [["karmawhore", false]])
+  const flags = parseFlags(ns, { karmawhore: false })
 
   ns.disableLog("ALL")
   ns.enableLog("commitCrime")

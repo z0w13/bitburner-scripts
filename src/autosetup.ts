@@ -7,20 +7,14 @@ import { DAEMON_SERVER } from "/config"
 import rsync from "/lib/func/rsync"
 import parseFlags from "/lib/parseFlags"
 
-interface Flags {
-  interval: number
-  host: string
-  scripts: Array<string>
-}
-
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
 
-  const flags = parseFlags<Flags>(ns, [
-    ["interval", 1000],
-    ["host", DAEMON_SERVER],
-    ["scripts", COPY_SCRIPTS], // Scripts to install
-  ])
+  const flags = parseFlags(ns, {
+    interval: 1000,
+    host: DAEMON_SERVER,
+    scripts: COPY_SCRIPTS, // Scripts to install
+  })
 
   while (true) {
     const hosts = getHosts(ns)
