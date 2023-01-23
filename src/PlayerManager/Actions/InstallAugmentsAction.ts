@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 export default class InstallAugmentsAction extends BaseAction {

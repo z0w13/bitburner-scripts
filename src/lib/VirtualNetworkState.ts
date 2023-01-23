@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { LOG_LEVEL, MAX_LOAD, MAX_PREP_LOAD } from "/config"
 import { Command } from "/Command/Objects"
 import { Job, JobType } from "/JobScheduler/JobObjects"

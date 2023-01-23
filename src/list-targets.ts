@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { SCRIPT_HACK } from "/constants"
 import renderTable from "/lib/func/render-table"
 import getThreadsAvailable from "/lib/func/get-threads-available"

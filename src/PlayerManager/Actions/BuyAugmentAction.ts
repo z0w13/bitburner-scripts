@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { getLowestMetRepAug } from "/data/Augments"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 

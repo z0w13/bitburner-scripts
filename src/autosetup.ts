@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import getHosts from "/lib/func/get-hosts"
 import hackHost from "/lib/func/hack-host"
 import isHostSetup from "/lib/func/is-host-setup"

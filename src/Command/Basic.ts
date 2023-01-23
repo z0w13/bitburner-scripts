@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { BATCH_GROW_MULTIPLIER, BATCH_INTERVAL, BATCH_WEAKEN_MULTIPLIER, PERCENTAGE_TO_HACK } from "/config"
 import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
 import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads"

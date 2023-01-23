@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { SERVER_WEAKEN_AMOUNT } from "/constants"
 
 export function getGrowThreads(ns: NS, hostname: string): number {

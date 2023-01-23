@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { CityName } from "/data/StaticDefs"
 
 function normalizeEnumName(name: string): string {

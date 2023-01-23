@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { LOG_LEVELS } from "/config"
 import { LogLevel } from "/lib/objects"
 

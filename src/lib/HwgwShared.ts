@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { getGrowCommand, getHackCommand, getWeakenCommand } from "/Command/Formulas"
 import { MONEY_WIGGLE, SECURITY_WIGGLE } from "/config"
 import runCommand from "/lib/func/run-command"

@@ -1,4 +1,4 @@
-import { NS, ProcessInfo, Server } from "@ns"
+import type { NS, ProcessInfo, Server } from "@ns"
 import { getBatch } from "/Command/Formulas"
 import {
   PERCENTAGE_TO_HACK,

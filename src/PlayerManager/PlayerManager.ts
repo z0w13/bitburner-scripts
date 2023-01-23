@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { Attribute, LogLevel } from "/lib/objects"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 import TrainAction from "/PlayerManager/Actions/TrainAction"

@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { PERCENTAGE_TO_HACK } from "/config"
 import { JobType } from "/JobScheduler/JobObjects"
 import { getBatchJob } from "/lib/func/get-batch-job"

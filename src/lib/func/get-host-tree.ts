@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { DAEMON_SERVER, SERVER_PREFIX } from "/config"
 import { sum } from "/lib/util"
 

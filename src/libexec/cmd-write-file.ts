@@ -1,4 +1,4 @@
-import { NS, ScriptArg } from "@ns"
+import type { NS, ScriptArg } from "@ns"
 
 interface Flags {
   filename: string

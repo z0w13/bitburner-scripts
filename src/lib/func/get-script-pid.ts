@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 
 export default function getScriptPid(ns: NS, file: string, host: string, args?: Array<string>): number {
   return args

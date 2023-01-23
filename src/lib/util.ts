@@ -1,4 +1,4 @@
-import { Server } from "@ns"
+import type { Server } from "@ns"
 import { PERCENTAGE_TO_HACK } from "/config"
 import { CONSTANTS } from "/game-constants"
 

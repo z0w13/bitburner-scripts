@@ -1,4 +1,4 @@
-import { Fragment, NS } from "@ns"
+import type { Fragment, NS } from "@ns"
 
 export async function main(ns: NS): Promise<void> {
   const fragmentMap: Record<number, Fragment> = {}

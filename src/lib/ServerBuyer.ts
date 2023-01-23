@@ -1,4 +1,4 @@
-import { NS, Server } from "@ns"
+import type { NS, Server } from "@ns"
 import { LOG_LEVEL } from "/config"
 import { getMoneyToReserve } from "/lib/func/get-money-to-reserve"
 import Logger from "/lib/Logger"

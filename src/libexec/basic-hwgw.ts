@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { hack, maxMoney, minSecurity } from "/lib/HwgwShared"
 import parseFlags from "/lib/parseFlags"
 

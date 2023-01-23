@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { DAEMON_SERVER } from "/config"
 
 export async function main(ns: NS): Promise<void> {

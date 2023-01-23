@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { DAEMON_SERVER } from "/config"
 import getHostPath from "/lib/func/get-host-path"
 import BaseAction from "/PlayerManager/Actions/BaseAction"

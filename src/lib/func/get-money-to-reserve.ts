@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 
 export function getMoneyToReserve(ns: NS): number {
   if (!ns.fileExists("BruteSSH.exe")) {

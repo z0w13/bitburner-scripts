@@ -1,4 +1,4 @@
-import { GangMemberInfo, NS } from "@ns"
+import type { GangMemberInfo, NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import { formatNum, sortFunc } from "/lib/util"
 

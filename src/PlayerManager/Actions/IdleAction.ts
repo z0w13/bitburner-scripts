@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 

@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { DAEMON_SERVER } from "/config"
 import { STATIC_DATA } from "/constants"
 import { StaticData } from "/lib/objects"

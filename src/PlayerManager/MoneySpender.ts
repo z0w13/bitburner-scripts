@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { sum } from "/lib/util"
 
 // Things to spend money on

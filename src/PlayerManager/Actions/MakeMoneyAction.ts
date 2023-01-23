@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { getBestCrime } from "/data/Crimes"
 import { getBestJob } from "/data/Jobs"
 import BaseAction from "/PlayerManager/Actions/BaseAction"

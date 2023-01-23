@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import parseFlags from "/lib/parseFlags"
 import { getBatchJob } from "/lib/func/get-batch-job"
 import renderTable from "/lib/func/render-table"

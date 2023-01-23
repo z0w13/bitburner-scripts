@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import getSetupHosts from "/lib/func/get-setup-hosts"
 import renderTable from "/lib/func/render-table"
 import { formatGiB, SEGMENT_FULL } from "/lib/util"

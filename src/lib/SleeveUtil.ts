@@ -1,4 +1,4 @@
-import { NS, SleevePerson } from "@ns"
+import type { NS, SleevePerson } from "@ns"
 
 export enum SleeveTaskType {
   Crime = "CRIME",

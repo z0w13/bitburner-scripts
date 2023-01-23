@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 
 export default abstract class BaseAction {
   abstract shouldPerform(ns: NS): boolean

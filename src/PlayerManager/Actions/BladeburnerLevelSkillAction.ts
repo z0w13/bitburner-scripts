@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { Skill } from "/data/Bladeburner"
 import { sortFunc } from "/lib/util"
 import BaseAction from "/PlayerManager/Actions/BaseAction"

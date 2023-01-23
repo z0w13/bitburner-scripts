@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 
 export default async function waitForPids(
   ns: NS,

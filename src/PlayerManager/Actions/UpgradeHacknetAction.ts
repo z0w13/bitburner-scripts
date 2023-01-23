@@ -1,4 +1,4 @@
-import { NodeStats, NS } from "@ns"
+import type { NodeStats, NS } from "@ns"
 import { sortFunc } from "/lib/util"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 

@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import ServerWrapper from "/lib/ServerWrapper"
 import getHosts from "/lib/func/get-hosts"
 import Script from "/lib/Script"

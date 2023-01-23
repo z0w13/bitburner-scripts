@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { Command } from "/Command/Objects"
 import runCommandRaw from "/lib/func/run-command-raw"
 

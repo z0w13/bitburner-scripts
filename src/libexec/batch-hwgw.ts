@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import * as basic from "/Command/Basic"
 import * as formulas from "/Command/Formulas"
 import { BATCH_INTERVAL, MONEY_WIGGLE, SECURITY_WIGGLE } from "/config"

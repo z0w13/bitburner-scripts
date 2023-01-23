@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { DAEMON_SERVER } from "/config"
 import getSetupHosts from "/lib/func/get-setup-hosts"
 import { formatNum } from "/lib/util"

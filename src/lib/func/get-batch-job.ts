@@ -1,4 +1,4 @@
-import { NS, Player, Server } from "@ns"
+import type { NS, Player, Server } from "@ns"
 import { getBatch } from "/Command/Formulas"
 import { BATCH_INTERVAL } from "/config"
 import VirtualNetworkState from "/lib/VirtualNetworkState"

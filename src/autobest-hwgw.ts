@@ -1,4 +1,4 @@
-import { NS, Server } from "@ns"
+import type { NS, Server } from "@ns"
 import { tail } from "/lib/util"
 import { DAEMON_SERVER } from "/config"
 import { JobType } from "/JobScheduler/JobObjects"

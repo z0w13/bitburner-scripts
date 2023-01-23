@@ -1,4 +1,4 @@
-import { LocationName } from "@ns"
+import type { LocationName } from "@ns"
 import { CompaniesMetadata } from "/data/CompanyMetadata"
 import { companyPositionMetadata, CompanyPositionMetadata } from "/data/CompanyPositionsMetadata"
 import { CONSTANTS } from "/game-constants"

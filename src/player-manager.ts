@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { LOG_LEVEL } from "/config"
 import getPlayerAction from "/lib/func/get-player-action"
 import { LogLevel } from "/lib/objects"

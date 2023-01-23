@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { DAEMON_SERVER } from "/config"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import { formatMoney, formatNum } from "/lib/util"

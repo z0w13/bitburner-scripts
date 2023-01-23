@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { BATCH_INTERVAL } from "/config"
 import renderTable from "/lib/func/render-table"
 import Script from "/lib/Script"

@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { getSleeves, SleeveData, SleeveTaskType } from "/lib/SleeveUtil"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 

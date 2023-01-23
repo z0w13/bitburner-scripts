@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { SCRIPT_WEAKEN } from "/constants"
 import { getWeakenCommand } from "/Command/Basic"
 import getThreadsAvailable from "/lib/func/get-threads-available"

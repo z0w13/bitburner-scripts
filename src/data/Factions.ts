@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { sortFunc } from "/lib/util"
 
 export function getFactionsSortedByFavour(ns: NS, factions: Array<string>): Array<{ name: string; favor: number }> {

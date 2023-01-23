@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { JobType, SerializedJob } from "/JobScheduler/JobObjects"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import ServerWrapper from "/lib/ServerWrapper"

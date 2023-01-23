@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import ServerBuyer from "/lib/ServerBuyer"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 

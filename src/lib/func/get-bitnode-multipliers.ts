@@ -1,5 +1,5 @@
-import { NS } from "@ns"
-import { BitNodeMultipliers } from "@ns"
+import type { NS } from "@ns"
+import type { BitNodeMultipliers } from "@ns"
 
 export function getBitNodeMultipliers(ns: NS): BitNodeMultipliers {
   const hasSourceFile5 =

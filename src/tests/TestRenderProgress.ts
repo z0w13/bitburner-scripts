@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { renderProgress, RenderProgressArgs } from "/lib/util"
 
 function assert(ns: NS, actual: unknown, expected: unknown, message?: string): boolean {

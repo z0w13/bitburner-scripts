@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import * as formulas from "/lib/calc-threads-formulas"
 import * as basic from "/lib/calc-threads"
 import renderTable, { RawTableData } from "/lib/func/render-table"

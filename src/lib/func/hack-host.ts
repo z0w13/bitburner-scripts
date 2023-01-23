@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 
 /**
  * @returns boolean Whether we got admin access on the server

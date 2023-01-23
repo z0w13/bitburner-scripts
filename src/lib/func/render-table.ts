@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 
 type TableRow = Array<unknown>
 type TableData = Array<Array<string>>

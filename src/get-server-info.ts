@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import renderTable from "/lib/func/render-table"
 import ServerWrapper from "/lib/ServerWrapper"
 import { DAEMON_SERVER } from "/config"

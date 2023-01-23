@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { DAEMON_SERVER } from "/config"
 import getHostTree, { TreeNode } from "/lib/func/get-host-tree"
 

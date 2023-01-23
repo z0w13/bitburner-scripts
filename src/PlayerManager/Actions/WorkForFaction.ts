@@ -1,4 +1,4 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { FactionWorkType } from "/data/StaticDefs"
 import { AugmentPurchaseInfo, getAvailableAugs } from "/data/Augments"
 import { getHighestFavorFaction } from "/data/Factions"

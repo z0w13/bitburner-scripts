@@ -1,4 +1,4 @@
-import { CorpIndustryName, CorporationInfo, NS } from "@ns"
+import type { CorpIndustryName, CorporationInfo, NS } from "@ns"
 import { CORP_MAIN_CITY, DAEMON_SERVER } from "/config"
 import { SCRIPT_DIVISION_MANAGER } from "/constants"
 import renderTable from "/lib/func/render-table"

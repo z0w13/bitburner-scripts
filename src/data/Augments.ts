@@ -1,4 +1,4 @@
-import { Multipliers, NS } from "@ns"
+import type { Multipliers, NS } from "@ns"
 import { getMoneyToReserve } from "/lib/func/get-money-to-reserve"
 import { notNullMoreThanZero, sortFunc } from "/lib/util"
 
