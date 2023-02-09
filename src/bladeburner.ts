@@ -15,13 +15,18 @@ function printStatus(ns: NS): void {
     (b) => ns.bladeburner.getActionCountRemaining(ActionType.BlackOp, b) === 0,
   ).length
 
+  const actionLevel =
+    currentAction.type !== ActionType.Idle
+      ? ns.bladeburner.getActionCurrentLevel(currentAction.type, currentAction.name)
+      : "N/A"
+
   const tableData: RawTableData = [
     ["Rank", formatNum(ns, ns.bladeburner.getRank())],
     ["BlackOps Progress", `${finishedBlackOps}/${totalBlackOps}`],
     [],
     ["Type", currentAction.type],
     ["Action", currentAction.name],
-    ["Action Level", ns.bladeburner.getActionCurrentLevel(currentAction.type, currentAction.name)],
+    ["Action Level", actionLevel],
     [],
     ["Stamina", `${formatNum(ns, curStam)}/${formatNum(ns, maxStam)}`],
     ["Skill Points", ns.bladeburner.getSkillPoints()],

@@ -55,8 +55,7 @@ function getNextBlackOp(ns: NS): BlackOp | undefined {
   return Object.values(BlackOp).find(
     (b) =>
       ns.bladeburner.getActionCountRemaining(ActionType.BlackOp, b) > 0 &&
-      ns.bladeburner.getBlackOpRank(b) <= ns.bladeburner.getRank() &&
-      ns.bladeburner.getActionEstimatedSuccessChance(ActionType.BlackOp, b)[0] > 0.99,
+      ns.bladeburner.getBlackOpRank(b) <= ns.bladeburner.getRank(),
   )
 }
 
@@ -124,7 +123,7 @@ function getBestAction(ns: NS): BladeburnerCityAction {
   }
 
   const blackOp = getNextBlackOp(ns)
-  if (blackOp) {
+  if (blackOp && ns.bladeburner.getActionEstimatedSuccessChance(ActionType.BlackOp, blackOp)[0] > 0.99) {
     return newAction(blackOp, city)
   }
 
