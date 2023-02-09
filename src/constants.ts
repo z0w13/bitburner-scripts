@@ -15,20 +15,3 @@ export const SCRIPT_DIVISION_MANAGER = "division-manager.js"
 
 // from src/Constants.ts
 export const SERVER_WEAKEN_AMOUNT = 0.05
-
-// From https://github.com/danielyxie/bitburner/blob/a8bef50ef519f34e4387f5826e4b8f3998a764bb/src/utils/WorkType.ts
-export enum CrimeType {
-  None = "",
-  SHOPLIFT = "SHOPLIFT", //"shoplift",
-  ROB_STORE = "ROBSTORE", //"rob a store",
-  MUG = "MUG", //"mug someone",
-  LARCENY = "LARCENY", //"commit larceny",
-  DRUGS = "DRUGS", //"deal drugs",
-  BOND_FORGERY = "BONDFORGERY", //"forge corporate bonds",
-  TRAFFIC_ARMS = "TRAFFICKARMS", //"traffick illegal arms",
-  HOMICIDE = "HOMICIDE", //"commit homicide",
-  GRAND_THEFT_AUTO = "GRANDTHEFTAUTO", //"commit grand theft auto",
-  KIDNAP = "KIDNAP", //"kidnap someone for ransom",
-  ASSASSINATION = "ASSASSINATION", //"assassinate a high-profile target",
-  HEIST = "HEIST", //"pull off the ultimate heist",
-}
