@@ -26,4 +26,9 @@ export default class Script {
   static fromFile(ns: NS, file: string, args: Array<ScriptArg> = [], flags: Record<string, ScriptArg> = {}) {
     return new Script(file, ns.getScriptRam(file, DAEMON_SERVER), args, flags)
   }
+
+  static runOrReturnPid(ns: NS, script: Script, host: string): number {
+    const running = ns.getRunningScript(script.file, host, ...script.getScriptArgs())
+    return running !== null ? running.pid : ns.exec(script.file, host, 1, ...script.getScriptArgs())
+  }
 }

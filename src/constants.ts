@@ -13,5 +13,10 @@ export const SCRIPT_LIST_TARGETS = "list-targets.js"
 
 export const SCRIPT_DIVISION_MANAGER = "division-manager.js"
 
+export const SCRIPT_AUTOBEST_HWGW = "autobest-hwgw.js"
+export const SCRIPT_AUTOSETUP = "autosetup.js"
+export const SCRIPT_AUTOBUY = "autobuy.js"
+export const SCRIPT_BLADEBURNER = "bladeburner.js"
+
 // from src/Constants.ts
 export const SERVER_WEAKEN_AMOUNT = 0.05
