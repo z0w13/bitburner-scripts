@@ -1,7 +1,10 @@
+import { GymType, Skills as AllSkills, UniversityClassType } from "@ns"
 import { CityName, LocationName } from "/data/StaticDefs"
 import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
-import { Attribute, CityLocationMap } from "/lib/objects"
+import { CityLocationMap } from "/lib/objects"
 import BaseAction from "/PlayerManager/Actions/BaseAction"
+
+type Skills = keyof Omit<AllSkills, "intelligence">
 
 const UNI_MAP: CityLocationMap = {
   [CityName.Sector12]: LocationName.Sector12RothmanUniversity,
@@ -18,51 +21,54 @@ const GYM_MAP: CityLocationMap = {
 const BEST_UNI_CITY = CityName.Volhaven
 const BEST_GYM_CITY = CityName.Sector12
 
-function getExpPerSec(attr: Attribute): number {
+function getExpPerSec(attr: Skills): number {
   switch (attr) {
-    case Attribute.CHARISMA:
-    case Attribute.HACKING:
+    case "charisma":
+    case "hacking":
       return 8
-    case Attribute.STRENGTH:
-    case Attribute.DEFENSE:
-    case Attribute.AGILITY:
-    case Attribute.DEXTERITY:
+    case "strength":
+    case "defense":
+    case "agility":
+    case "dexterity":
       return 7.5
   }
 }
 
-function getCourseName(attr: Attribute): string {
+function getCourseName(attr: Skills): GymType | UniversityClassType {
   switch (attr) {
     case "strength":
+      return "str" as GymType
     case "defense":
+      return "def" as GymType
     case "dexterity":
+      return "dex" as GymType
     case "agility":
-      return attr
+      return "agi" as GymType
     case "charisma":
-      return "Leadership"
+      return "Leadership" as UniversityClassType
     case "hacking":
-      return "Algorithms"
+      return "Algorithms" as UniversityClassType
     default:
       throw new Error("Unknown attribute: " + attr)
   }
 }
 
-function getTrainingCity(ns: NS, attr: Attribute): LocationName | undefined {
+function getTrainingCity(ns: NS, attr: Skills): LocationName | undefined {
   const player = ns.getPlayer()
 
   switch (attr) {
-    case Attribute.CHARISMA:
-    case Attribute.HACKING:
+    case "charisma":
+    case "hacking":
       return player.city !== BEST_UNI_CITY && player.money < 200_000 ? UNI_MAP[player.city] : UNI_MAP[BEST_UNI_CITY]
-    case Attribute.STRENGTH:
-    case Attribute.DEFENSE:
-    case Attribute.AGILITY:
-    case Attribute.DEXTERITY:
+    case "strength":
+    case "defense":
+    case "agility":
+    case "dexterity":
       return player.city !== BEST_GYM_CITY && player.money < 200_000 ? GYM_MAP[player.city] : GYM_MAP[BEST_GYM_CITY]
   }
 }
 
-export function shouldTrain(ns: NS, attr: Attribute, targetLevel: number): boolean {
+export function shouldTrain(ns: NS, attr: Skills, targetLevel: number): boolean {
   const player = ns.getPlayer()
   const nextLevelExp = ns.formulas.skills.calculateExp(player.skills[attr], player.mults[attr])
   const nextLevelExpRemaining = nextLevelExp - player.exp[attr]
@@ -71,30 +77,30 @@ export function shouldTrain(ns: NS, attr: Attribute, targetLevel: number): boole
   return player.skills[attr] < targetLevel && timeForLevel < 60 && !!getTrainingCity(ns, attr)
 }
 
-export function isTraining(ns: NS, attr: Attribute): boolean {
+export function isTraining(ns: NS, attr: Skills): boolean {
   const action = getPlayerAction(ns)
   const course = getCourseName(attr)
 
   switch (attr) {
-    case Attribute.CHARISMA:
-    case Attribute.HACKING:
+    case "charisma":
+    case "hacking":
       return action.type === PlayerActionType.Study && action.course.toUpperCase().includes(course.toUpperCase())
-    case Attribute.STRENGTH:
-    case Attribute.DEFENSE:
-    case Attribute.AGILITY:
-    case Attribute.DEXTERITY:
+    case "strength":
+    case "defense":
+    case "agility":
+    case "dexterity":
       return action.type === PlayerActionType.Exercise && action.exercise.toUpperCase().includes(course.toUpperCase())
   }
 }
 
-export async function train(ns: NS, attr: Attribute): Promise<boolean> {
+export async function train(ns: NS, attr: Skills): Promise<boolean> {
   const player = ns.getPlayer()
 
   const shouldFocus = !ns.singularity.getOwnedAugmentations().includes("Neuroreceptor Management Implant")
 
   switch (attr) {
-    case Attribute.CHARISMA:
-    case Attribute.HACKING: {
+    case "charisma":
+    case "hacking": {
       const uniName =
         player.city !== BEST_UNI_CITY && !ns.singularity.travelToCity(BEST_UNI_CITY)
           ? UNI_MAP[player.city]
@@ -106,10 +112,10 @@ export async function train(ns: NS, attr: Attribute): Promise<boolean> {
 
       return ns.singularity.universityCourse(uniName, getCourseName(attr), shouldFocus)
     }
-    case Attribute.STRENGTH:
-    case Attribute.DEFENSE:
-    case Attribute.AGILITY:
-    case Attribute.DEXTERITY: {
+    case "strength":
+    case "defense":
+    case "agility":
+    case "dexterity": {
       const gymName =
         player.city !== BEST_GYM_CITY && !ns.singularity.travelToCity(BEST_GYM_CITY)
           ? GYM_MAP[player.city]
@@ -125,10 +131,10 @@ export async function train(ns: NS, attr: Attribute): Promise<boolean> {
 }
 
 export default class TrainAction extends BaseAction {
-  protected attribute: Attribute
+  protected attribute: Skills
   protected minLevel: number
 
-  constructor(attribute: Attribute, minLevel = 10) {
+  constructor(attribute: Skills, minLevel = 10) {
     super()
 
     this.attribute = attribute
@@ -139,7 +145,7 @@ export default class TrainAction extends BaseAction {
     this.minLevel = lvl
   }
 
-  getAttribute(): Attribute {
+  getAttribute(): Skills {
     return this.attribute
   }
 
