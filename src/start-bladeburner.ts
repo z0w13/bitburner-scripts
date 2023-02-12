@@ -1,12 +1,45 @@
-import { NS } from "@ns"
+import type { NS } from "@ns"
 import { DAEMON_SERVER } from "/config"
 import { SCRIPT_AUTOBEST_HWGW, SCRIPT_AUTOBUY, SCRIPT_AUTOSETUP, SCRIPT_BLADEBURNER } from "/constants"
-import { GeneralAction } from "/data/Bladeburner"
 import { Attribute } from "/lib/objects"
 import Script from "/lib/Script"
 import TrainAction from "/PlayerManager/Actions/TrainAction"
 
-export async function main(ns: NS): Promise<void> {
+async function trainCombat(ns: NS, targetLevel = 100): Promise<void> {
+  const agilityTrainAction = new TrainAction(Attribute.AGILITY, targetLevel)
+  while (agilityTrainAction.shouldPerform(ns)) {
+    if (!agilityTrainAction.isPerforming(ns)) {
+      await agilityTrainAction.perform(ns)
+    }
+    await ns.asleep(1000)
+  }
+
+  const strengthTrainAction = new TrainAction(Attribute.STRENGTH, targetLevel)
+  while (strengthTrainAction.shouldPerform(ns)) {
+    if (!strengthTrainAction.isPerforming(ns)) {
+      await strengthTrainAction.perform(ns)
+    }
+    await ns.asleep(1000)
+  }
+
+  const defenseTrainAction = new TrainAction(Attribute.DEFENSE, targetLevel)
+  while (defenseTrainAction.shouldPerform(ns)) {
+    if (!defenseTrainAction.isPerforming(ns)) {
+      await defenseTrainAction.perform(ns)
+    }
+    await ns.asleep(1000)
+  }
+
+  const dexterityTrainAction = new TrainAction(Attribute.DEXTERITY, targetLevel)
+  while (dexterityTrainAction.shouldPerform(ns)) {
+    if (!dexterityTrainAction.isPerforming(ns)) {
+      await dexterityTrainAction.perform(ns)
+    }
+    await ns.asleep(1000)
+  }
+}
+
+function startScripts(ns: NS): void {
   if (Script.runOrReturnPid(ns, Script.fromFile(ns, SCRIPT_AUTOSETUP), DAEMON_SERVER) === 0) {
     ns.tprint(`Failed to start ${SCRIPT_AUTOSETUP}`)
   }
@@ -18,48 +51,6 @@ export async function main(ns: NS): Promise<void> {
     ns.tprint(`Failed to start ${SCRIPT_AUTOBEST_HWGW}`)
   }
 
-  if (!ns.bladeburner.inBladeburner()) {
-    const agilityTrainAction = new TrainAction(Attribute.AGILITY, 100)
-    while (agilityTrainAction.shouldPerform(ns)) {
-      if (!agilityTrainAction.isPerforming(ns)) {
-        await agilityTrainAction.perform(ns)
-      }
-      await ns.asleep(1000)
-    }
-
-    const strengthTrainAction = new TrainAction(Attribute.STRENGTH, 100)
-    while (strengthTrainAction.shouldPerform(ns)) {
-      if (!strengthTrainAction.isPerforming(ns)) {
-        await strengthTrainAction.perform(ns)
-      }
-      await ns.asleep(1000)
-    }
-
-    const defenseTrainAction = new TrainAction(Attribute.DEFENSE, 100)
-    while (defenseTrainAction.shouldPerform(ns)) {
-      if (!defenseTrainAction.isPerforming(ns)) {
-        await defenseTrainAction.perform(ns)
-      }
-      await ns.asleep(1000)
-    }
-
-    const dexterityTrainAction = new TrainAction(Attribute.DEXTERITY, 100)
-    while (dexterityTrainAction.shouldPerform(ns)) {
-      if (!dexterityTrainAction.isPerforming(ns)) {
-        await dexterityTrainAction.perform(ns)
-      }
-      await ns.asleep(1000)
-    }
-
-    if (!ns.bladeburner.joinBladeburnerDivision()) {
-      return
-    }
-
-    if (!ns.bladeburner.joinBladeburnerFaction()) {
-      return
-    }
-  }
-
   const bladeburnerPid = Script.runOrReturnPid(ns, Script.fromFile(ns, SCRIPT_BLADEBURNER), DAEMON_SERVER)
   if (bladeburnerPid === 0) {
     ns.tprint(`Failed to start ${SCRIPT_BLADEBURNER}`)
@@ -67,7 +58,9 @@ export async function main(ns: NS): Promise<void> {
 
   ns.tail(hwgwPid)
   ns.tail(bladeburnerPid)
+}
 
+function assignSleeves(ns: NS): void {
   // Initially configure sleeves for bladeburner
   const totalSleeves = ns.sleeve.getNumSleeves()
   if (totalSleeves === 0) {
@@ -75,15 +68,22 @@ export async function main(ns: NS): Promise<void> {
   }
 
   if (totalSleeves >= 1) {
-    ns.sleeve.setToBladeburnerAction(0, GeneralAction.FieldAnalysis)
+    ns.sleeve.setToBladeburnerAction(0, "Field analysis")
   }
 
   if (totalSleeves >= 2) {
-    ns.sleeve.setToBladeburnerAction(1, GeneralAction.Diplomacy)
+    ns.sleeve.setToBladeburnerAction(1, "Diplomacy")
   }
 
   // Remainder will generate contracts/ops
   for (let i = 2; i < totalSleeves; i++) {
     ns.sleeve.setToBladeburnerAction(i, "Infiltrate synthoids")
   }
+}
+
+export async function main(ns: NS): Promise<void> {
+  await trainCombat(ns, 100)
+  ns.bladeburner.joinBladeburnerDivision()
+  startScripts(ns)
+  assignSleeves(ns)
 }
