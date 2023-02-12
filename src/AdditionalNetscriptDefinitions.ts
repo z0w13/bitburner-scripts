@@ -1,3 +1,5 @@
+import { CrimeType, FactionWorkType, GymType, LocationName, UniversityClassType } from "@ns"
+
 // From https://github.com/danielyxie/bitburner/blob/a8bef50ef519f34e4387f5826e4b8f3998a764bb/src/Work/Work.ts#L21
 export enum WorkType {
   CRIME = "CRIME",
@@ -8,55 +10,41 @@ export enum WorkType {
   COMPANY = "COMPANY",
 }
 
-// From https://github.com/danielyxie/bitburner/blob/a8bef50ef519f34e4387f5826e4b8f3998a764bb/src/Work/ClassWork.tsx#L14
-export enum ClassType {
-  StudyComputerScience = "STUDYCOMPUTERSCIENCE",
-  DataStructures = "DATASTRUCTURES",
-  Networks = "NETWORKS",
-  Algorithms = "ALGORITHMS",
-
-  Management = "MANAGEMENT",
-  Leadership = "LEADERSHIP",
-
-  GymStrength = "GYMSTRENGTH",
-  GymDefense = "GYMDEFENSE",
-  GymDexterity = "GYMDEXTERITY",
-  GymAgility = "GYMAGILITY",
-}
-
-export interface Work {
+interface BaseWork {
   type: WorkType
   cyclesWorked: number
 }
 
-export interface CompanyWork extends Work {
+export interface CompanyWork extends BaseWork {
   type: WorkType.COMPANY
   companyName: string
 }
 
-export interface ClassWork extends Work {
+export interface ClassWork extends BaseWork {
   type: WorkType.CLASS
-  classType: ClassType
-  location: string
+  classType: UniversityClassType | GymType
+  location: LocationName
 }
 
-export interface CreateProgramWork extends Work {
+export interface CreateProgramWork extends BaseWork {
   type: WorkType.CREATE_PROGRAM
   programName: string
 }
 
-export interface CrimeWork extends Work {
+export interface CrimeWork extends BaseWork {
   type: WorkType.CRIME
-  crimeType: string
+  crimeType: CrimeType
 }
 
-export interface FactionWork extends Work {
+export interface FactionWork extends BaseWork {
   type: WorkType.FACTION
-  factionWorkType: string
+  factionWorkType: FactionWorkType
   factionName: string
 }
 
-export interface GraftingWork extends Work {
+export interface GraftingWork extends BaseWork {
   type: WorkType.GRAFTING
   augmentation: string
 }
+
+export type Work = CompanyWork | ClassWork | CreateProgramWork | CrimeWork | FactionWork | GraftingWork

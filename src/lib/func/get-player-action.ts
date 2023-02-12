@@ -1,13 +1,5 @@
-import type { NS } from "@ns"
-import {
-  ClassWork,
-  CompanyWork,
-  CreateProgramWork,
-  CrimeWork,
-  FactionWork,
-  Work,
-  WorkType,
-} from "/AdditionalNetscriptDefinitions"
+import type { CrimeType, FactionWorkType, GymType, NS, UniversityClassType } from "@ns"
+import { WorkType, Work } from "/AdditionalNetscriptDefinitions"
 
 export enum PlayerActionType {
   Idle = "Idle",
@@ -17,9 +9,10 @@ export enum PlayerActionType {
   Exercise = "Exercise",
   CreateProgram = "CreateProgram",
   Crime = "Crime",
+  Grafting = "Grafting",
 }
 
-export interface BasePlayerAction {
+interface BasePlayerAction {
   type: PlayerActionType
   focus: boolean
 }
@@ -33,52 +26,37 @@ export interface PlayerCreateProgramAction extends BasePlayerAction {
   program: string
 }
 
-export function isCreateProgramAction(action: BasePlayerAction): action is PlayerCreateProgramAction {
-  return action.type === PlayerActionType.CreateProgram
-}
-
 export interface PlayerWorkForCompanyAction extends BasePlayerAction {
   type: PlayerActionType.WorkForCompany
   company: string
 }
 
-export function isWorkForCompanyAction(action: BasePlayerAction): action is PlayerWorkForCompanyAction {
-  return action.type === PlayerActionType.WorkForCompany
-}
-
 export interface PlayerWorkForFactionAction extends BasePlayerAction {
   type: PlayerActionType.WorkForFaction
   faction: string
-  workType: string
-}
-
-export function isWorkForFactionAction(action: BasePlayerAction): action is PlayerWorkForFactionAction {
-  return action.type === PlayerActionType.WorkForFaction
+  workType: FactionWorkType
 }
 
 export interface PlayerCrimeAction extends BasePlayerAction {
   type: PlayerActionType.Crime
-  crime: string
-}
-
-export function isCrimeAction(action: BasePlayerAction): action is PlayerCrimeAction {
-  return action.type === PlayerActionType.Crime
+  crime: CrimeType
 }
 
 export interface PlayerStudyAction extends BasePlayerAction {
   type: PlayerActionType.Study
   uni: string
-  course: string
-}
-
-export function isStudyAction(action: BasePlayerAction): action is PlayerStudyAction {
-  return action.type === PlayerActionType.Study
+  course: UniversityClassType
 }
 
 export interface PlayerExerciseAction extends BasePlayerAction {
   type: PlayerActionType.Exercise
   gym: string
-  exercise: string
+  exercise: GymType
+}
+
+export interface PlayerGraftingAction extends BasePlayerAction {
+  type: PlayerActionType.Grafting
+  augmentation: string
 }
 
 export type PlayerAction =
@@ -89,15 +67,11 @@ export type PlayerAction =
   | PlayerCrimeAction
   | PlayerStudyAction
   | PlayerExerciseAction
-
-export function isExerciseAction(action: BasePlayerAction): action is PlayerExerciseAction {
-  return action.type === PlayerActionType.Exercise
-}
+  | PlayerGraftingAction
 
 export default function getPlayerAction(ns: NS): PlayerAction {
   const work = ns.singularity.getCurrentWork() as Work
   const focus = ns.singularity.isFocused()
-  const player = ns.getPlayer()
 
   if (!work) {
     return {
@@ -107,51 +81,57 @@ export default function getPlayerAction(ns: NS): PlayerAction {
   }
 
   switch (work.type) {
-    case WorkType.COMPANY:
-      return {
-        type: PlayerActionType.WorkForCompany,
-        company: (work as CompanyWork).companyName,
-        focus,
-      } as PlayerWorkForCompanyAction
-    case WorkType.FACTION:
-      return {
-        type: PlayerActionType.WorkForFaction,
-        workType: (work as FactionWork).factionWorkType,
-        faction: (work as FactionWork).factionName,
-        focus,
-      } as PlayerWorkForFactionAction
-    case WorkType.CREATE_PROGRAM:
-      return {
-        type: PlayerActionType.CreateProgram,
-        program: (work as CreateProgramWork).programName,
-        focus,
-      } as PlayerCreateProgramAction
-    case WorkType.CRIME:
-      return {
-        type: PlayerActionType.Crime,
-        crime: (work as CrimeWork).crimeType,
-        focus,
-      } as PlayerCrimeAction
     case WorkType.CLASS:
-      if (player.location.includes("Gym")) {
+      if (work.location.includes("Gym")) {
         return {
           type: PlayerActionType.Exercise,
-          gym: (work as ClassWork).location,
-          exercise: (work as ClassWork).classType,
+          gym: work.location,
+          exercise: work.classType,
           focus,
         } as PlayerExerciseAction
       } else {
         return {
           type: PlayerActionType.Study,
-          uni: (work as ClassWork).location,
-          course: (work as ClassWork).classType,
+          uni: work.location,
+          course: work.classType,
           focus,
         } as PlayerStudyAction
       }
+      break
+    case WorkType.COMPANY:
+      return {
+        type: PlayerActionType.WorkForCompany,
+        company: work.companyName,
+        focus,
+      } as PlayerWorkForCompanyAction
+      break
+    case WorkType.CREATE_PROGRAM:
+      return {
+        type: PlayerActionType.CreateProgram,
+        program: work.programName,
+        focus,
+      } as PlayerCreateProgramAction
+      break
+    case WorkType.CRIME:
+      return {
+        type: PlayerActionType.Crime,
+        crime: work.crimeType,
+        focus,
+      } as PlayerCrimeAction
+      break
+    case WorkType.FACTION:
+      return {
+        type: PlayerActionType.WorkForFaction,
+        workType: work.factionWorkType,
+        faction: work.factionName,
+        focus,
+      } as PlayerWorkForFactionAction
+      break
+    case WorkType.GRAFTING:
+      return {
+        type: PlayerActionType.Grafting,
+        augmentation: work.augmentation,
+        focus,
+      } as PlayerGraftingAction
   }
-
-  return {
-    type: PlayerActionType.Idle,
-    focus: false,
-  } as PlayerIdleAction
 }
