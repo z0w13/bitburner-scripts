@@ -10,7 +10,18 @@ build: node_modules defs
 
 .PHONY: watch
 watch: node_modules defs
+	make -j2 _watch
+
+.PHONY: _watch
+_watch: typescript-watch filesync
+
+.PHONY: typescript-watch
+typescript-watch:
 	pnpm watch
+
+.PHONY: filesync
+filesync:
+	npx bitburner-filesync
 
 .PHONY: eslint
 eslint: node_modules defs
