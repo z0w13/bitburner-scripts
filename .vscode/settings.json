@@ -14,6 +14,9 @@
     // Autosave Settings
     "files.autoSave": "off",
 
+    // EOL Settings
+    "files.eol": "\n",
+
     // Autosnippet settings
     "autoSnippet.snippets": [
         {
