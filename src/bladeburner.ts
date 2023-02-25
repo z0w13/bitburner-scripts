@@ -1,47 +1,78 @@
 import type { NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
-import { formatMoney, formatNum } from "/lib/util"
-import BladeburnerAction, { getCityPops, getMoneyBeforeOps } from "PlayerManager/Actions/BladeburnerPerformAction"
+import { formatTime } from "/lib/util"
+import BladeburnerAction, {
+  getCityPops,
+  getFinishedBlackOps,
+  getTotalBlackOps,
+  getTotalContractSuccesses,
+  getTotalOpSuccesses,
+} from "PlayerManager/Actions/BladeburnerPerformAction"
 import BladeburnerLevelSkillAction from "/PlayerManager/Actions/BladeburnerLevelSkillAction"
-import { ActionType, BlackOp } from "/data/Bladeburner"
+import { ActionType } from "/data/Bladeburner"
+
+function abbreviateAction(actionName: string): string {
+  switch (actionName) {
+    case "Stealth Retirement Operation":
+      return "Stealth Retirement"
+    case "Hyperbolic Regeneration Chamber":
+      return "Regen Chamber"
+    default:
+      return actionName
+  }
+}
+
+function formatSuccess(ns: NS, success: [number, number]): string {
+  if (success[0] === success[1]) {
+    return ns.formatPercent(success[0], 1)
+  }
+
+  return `${ns.formatPercent(success[0], 1)}% - ${ns.formatPercent(success[1], 1)}%`
+}
 
 function printStatus(ns: NS): void {
   const currentAction = ns.bladeburner.getCurrentAction()
   const city = ns.bladeburner.getCity()
   const [curStam, maxStam] = ns.bladeburner.getStamina()
 
-  const totalBlackOps = Object.values(BlackOp).length
-  const finishedBlackOps = Object.values(BlackOp).filter(
-    (b) => ns.bladeburner.getActionCountRemaining(ActionType.BlackOp, b) === 0,
-  ).length
-
   const actionLevel =
     currentAction.type !== ActionType.Idle
       ? ns.bladeburner.getActionCurrentLevel(currentAction.type, currentAction.name)
-      : "N/A"
+      : null
+
+  const successChance =
+    currentAction.type !== ActionType.Idle
+      ? ns.bladeburner.getActionEstimatedSuccessChance(currentAction.type, currentAction.name)
+      : ([100, 100] as [number, number])
 
   const tableData: RawTableData = [
-    ["Rank", formatNum(ns, ns.bladeburner.getRank())],
-    ["BlackOps Progress", `${finishedBlackOps}/${totalBlackOps}`],
+    ["Rank", ns.formatNumber(ns.bladeburner.getRank(), 0)],
+    ["BlackOps", `${getFinishedBlackOps(ns)}/${getTotalBlackOps()}`],
     [],
     ["Type", currentAction.type],
-    ["Action", currentAction.name],
-    ["Action Level", actionLevel],
+    [
+      "Action",
+      abbreviateAction(currentAction.name) + (currentAction.type !== ActionType.General ? ` Lv. ${actionLevel}` : ""),
+    ],
+    ["Success %", formatSuccess(ns, successChance)],
+    ["Time", formatTime(ns.bladeburner.getActionTime(currentAction.type, currentAction.name))],
     [],
-    ["Stamina", `${formatNum(ns, curStam)}/${formatNum(ns, maxStam)}`],
-    ["Skill Points", ns.bladeburner.getSkillPoints()],
-    ["Money Before Ops", formatMoney(ns, getMoneyBeforeOps(ns))],
+    ["Contract ✓", ns.formatNumber(getTotalContractSuccesses(ns), 0)],
+    ["Op ✓", ns.formatNumber(getTotalOpSuccesses(ns), 0)],
+    [],
+    ["Stamina", ns.formatPercent(curStam / maxStam, 1)],
+    ["Skill Points", ns.formatNumber(ns.bladeburner.getSkillPoints(), 0)],
     [],
     ["City", city],
-    ["Pop", formatNum(ns, ns.bladeburner.getCityEstimatedPopulation(city), "0,0.00a")],
-    ["Chaos", formatNum(ns, ns.bladeburner.getCityChaos(city))],
+    ["Pop", ns.formatNumber(ns.bladeburner.getCityEstimatedPopulation(city), 2)],
+    ["Chaos", ns.formatNumber(ns.bladeburner.getCityChaos(city))],
   ]
 
   ns.clearLog()
   ns.print(renderTable(ns, tableData, false))
 
   const popData: RawTableData = [["City", "Pop"]]
-  popData.push(...Object.entries(getCityPops(ns)).map(([city, pop]) => [city, formatNum(ns, pop, "0,0.00a")]))
+  popData.push(...Object.entries(getCityPops(ns)).map(([city, pop]) => [city, ns.formatNumber(pop, 2)]))
 
   ns.print(renderTable(ns, popData))
 }
@@ -62,6 +93,6 @@ export async function main(ns: NS): Promise<void> {
     }
 
     printStatus(ns)
-    await ns.asleep(5000)
+    await ns.asleep(1000)
   }
 }

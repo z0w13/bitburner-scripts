@@ -15,7 +15,7 @@ import {
   getContractMoney,
   BlackOp,
 } from "/data/Bladeburner"
-import { sortFunc } from "/lib/util"
+import { sortFunc, sum } from "/lib/util"
 
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
@@ -23,6 +23,19 @@ const MIN_CITY_POP = 1_000_000
 
 const SAFE_CONTRACTS = [Contract.Tracking]
 const SAFE_OPS = [Operation.Investigation, Operation.UndercoverOperation]
+
+export function getTotalBlackOps(): number {
+  return Object.values(BlackOp).length
+}
+
+export function getFinishedBlackOps(ns: NS): number {
+  return Object.values(BlackOp).filter((b) => ns.bladeburner.getActionCountRemaining(ActionType.BlackOp, b) === 0)
+    .length
+}
+
+function areAllBlackOpsFinished(ns: NS): boolean {
+  return getTotalBlackOps() === getFinishedBlackOps(ns)
+}
 
 function getStaminaPct(curr: number, max: number): number {
   return curr / max
@@ -51,25 +64,31 @@ function getBestOperation(ns: NS): Operation | undefined {
     .at(-1)
 }
 
+export function getLongestContractTime(ns: NS): number {
+  return Math.max(...Object.values(Contract).map((c) => ns.bladeburner.getActionTime(ActionType.Contract, c)))
+}
+export function getLongestOperationTime(ns: NS): number {
+  return Math.max(...Object.values(Operation).map((op) => ns.bladeburner.getActionTime(ActionType.Operation, op)))
+}
+
+export function getLongestContractOrOperationTime(ns: NS): number {
+  return Math.max(getLongestContractTime(ns), getLongestOperationTime(ns))
+}
+
+export function getTotalContractSuccesses(ns: NS): number {
+  return sum(Object.values(Contract).map((c) => ns.bladeburner.getActionSuccesses(ActionType.Contract, c)))
+}
+
+export function getTotalOpSuccesses(ns: NS): number {
+  return sum(Object.values(Operation).map((o) => ns.bladeburner.getActionSuccesses(ActionType.Operation, o)))
+}
+
 function getNextBlackOp(ns: NS): BlackOp | undefined {
   return Object.values(BlackOp).find(
     (b) =>
       ns.bladeburner.getActionCountRemaining(ActionType.BlackOp, b) > 0 &&
       ns.bladeburner.getBlackOpRank(b) <= ns.bladeburner.getRank(),
   )
-}
-
-export function getMoneyBeforeOps(ns: NS): number {
-  const highestLevelContract = Object.values(Contract).sort(
-    sortFunc((c) => ns.bladeburner.getActionCurrentLevel(ActionType.Contract, c), true),
-  )[0]
-
-  if (!highestLevelContract) {
-    throw new Error("highestLevelContract is undefined or false, shouldn't be possible")
-  }
-
-  const contractsBeforeMet = 5 // How many contracts we want it to take to reach our goal
-  return getContractMoney(ns, highestLevelContract) * contractsBeforeMet
 }
 
 export function getCityPops(ns: NS): Record<CityName, number> {
@@ -128,11 +147,10 @@ function getBestAction(ns: NS): BladeburnerCityAction {
   }
 
   const bestContract = getBestContract(ns)
-  if (ns.getPlayer().money > getMoneyBeforeOps(ns)) {
-    const bestOperation = getBestOperation(ns)
-    if (bestOperation) {
-      return newAction(bestOperation, city)
-    }
+  const bestOperation = getBestOperation(ns)
+
+  if (bestOperation && getTotalOpSuccesses(ns) < getTotalContractSuccesses(ns)) {
+    return newAction(bestOperation, city)
   }
 
   if (!bestContract) {
