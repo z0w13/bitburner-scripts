@@ -82,6 +82,7 @@ function assignSleeves(ns: NS): void {
 }
 
 export async function main(ns: NS): Promise<void> {
+  ns.disableLog("asleep")
   await trainCombat(ns, 100)
   ns.bladeburner.joinBladeburnerDivision()
   startScripts(ns)
