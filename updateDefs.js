@@ -1,9 +1,10 @@
 const https = require("https")
 const fs = require("fs")
 
-const url = 'https://raw.githubusercontent.com/bitburner-official/bitburner-src/dev/src/ScriptEditor/NetscriptDefinitions.d.ts'
+const bitburnerVersion = 'v2.2.2'
+const url = `https://raw.githubusercontent.com/bitburner-official/bitburner-src/${bitburnerVersion}/src/ScriptEditor/NetscriptDefinitions.d.ts`
 const path = './NetscriptDefinitions.d.ts'
-const constantsUrl = 'https://raw.githubusercontent.com/bitburner-official/bitburner-src/dev/src/Constants.ts'
+const constantsUrl = `https://raw.githubusercontent.com/bitburner-official/bitburner-src/${bitburnerVersion}/src/Constants.ts`
 const constantsPath = 'src/game-constants.ts'
 
 https.get(url, (res) => {
