@@ -11,7 +11,7 @@ import { CityName } from "/data/StaticDefs"
 import parseFlags from "/lib/parseFlags"
 import { CORP_MAIN_CITY, LOG_LEVEL } from "/config"
 import renderTable from "/lib/func/render-table"
-import { formatMoney, formatNum, sortFunc } from "/lib/util"
+import { formatMoney, sortFunc } from "/lib/util"
 import Logger from "/lib/Logger"
 import RingBuffer from "/lib/RingBuffer"
 
@@ -154,7 +154,30 @@ function parseMultiplier(multi: string): number {
   return roundedMultiNum
 }
 
-function adjustPrices(ns: NS, division: Division): void {
+function adjustPricesSimple(ns: NS, division: Division): void {
+  const hasOfficeAPI = ns.corporation.hasUnlockUpgrade("Office API")
+  const hasTAII = hasOfficeAPI && ns.corporation.hasResearched(division.name, "Market-TA.II")
+
+  if (division.type in nonProductMap) {
+    for (const materialName of nonProductMap[division.type]) {
+      for (const city of division.cities) {
+        ns.corporation.sellMaterial(division.name, city, materialName, "MAX", "MP")
+        if (hasTAII) {
+          ns.corporation.setMaterialMarketTA2(division.name, city, materialName, true)
+        }
+      }
+    }
+  }
+
+  for (const productName of getFinishedProducts(ns, division)) {
+    ns.corporation.sellProduct(division.name, CORP_MAIN_CITY, productName, "MAX", "MP", true)
+    if (hasTAII) {
+      ns.corporation.setProductMarketTA2(division.name, productName, true)
+    }
+  }
+}
+
+function adjustPricesDynamic(ns: NS, division: Division): void {
   const hasOfficeAPI = ns.corporation.hasUnlockUpgrade("Office API")
   const hasTAII = hasOfficeAPI && ns.corporation.hasResearched(division.name, "Market-TA.II")
 
@@ -520,7 +543,7 @@ export async function main(ns: NS): Promise<void> {
       }
 
       if (division.cities.includes(CORP_MAIN_CITY)) {
-        adjustPrices(ns, division)
+        adjustPricesSimple(ns, division)
 
         if (division.makesProducts) {
           logger.info("Manage Products")
