@@ -32,8 +32,14 @@ function levelSkill(ns: NS): boolean {
     return false
   }
 
+  const maxLevel = SKILLS_TO_LEVEL[skill]
+  const currentLevel = ns.bladeburner.getSkillLevel(skill)
+
   let upgradeCount = 1
-  while (ns.bladeburner.getSkillUpgradeCost(skill, upgradeCount) < ns.bladeburner.getSkillPoints()) {
+  while (
+    ns.bladeburner.getSkillUpgradeCost(skill, upgradeCount) < ns.bladeburner.getSkillPoints() &&
+    (!maxLevel || currentLevel + upgradeCount <= maxLevel)
+  ) {
     upgradeCount += 1
   }
   upgradeCount -= 1
