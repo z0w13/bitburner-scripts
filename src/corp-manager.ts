@@ -2,7 +2,7 @@ import type { CorpIndustryName, CorporationInfo, NS } from "@ns"
 import { CORP_MAIN_CITY, DAEMON_SERVER } from "/config"
 import { SCRIPT_DIVISION_MANAGER } from "/constants"
 import renderTable from "/lib/func/render-table"
-import { formatMoney, formatNum, formatTime } from "/lib/util"
+import { formatMoney, formatTime } from "/lib/util"
 
 function buyUpgradesToLevel(ns: NS, max: number, upgrades: Array<string>): void {
   for (const upgrade of upgrades) {
@@ -74,7 +74,7 @@ function printDivisionInfo(ns: NS, corp: CorporationInfo): void {
       formatMoney(ns, expenses),
       formatMoney(ns, revenue - expenses),
       division.products.length,
-      formatNum(ns, devProgress, "0.00"),
+      ns.formatNumber(devProgress, 2),
     )
 
     ns.getScriptLogs(SCRIPT_DIVISION_MANAGER, DAEMON_SERVER, ...getDivisionManagerArgs(division.name, division.type))

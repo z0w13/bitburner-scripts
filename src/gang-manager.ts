@@ -1,6 +1,6 @@
 import type { GangMemberInfo, NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
-import { formatNum, sortFunc } from "/lib/util"
+import { sortFunc } from "/lib/util"
 
 type StatType = "hack" | "str" | "dex" | "def" | "agi" | "cha"
 type Stats = Record<StatType, number>
@@ -209,34 +209,34 @@ export async function main(ns: NS): Promise<void> {
         task,
         `${info.upgrades.length + info.augmentations.length}/${ns.gang.getEquipmentNames().length}`,
         ns.vsprintf("%7s/%7s/%7s/%7s/%7s/%7s", [
-          formatNum(ns, info.hack, "0,0"),
-          formatNum(ns, info.str, "0,0"),
-          formatNum(ns, info.def, "0,0"),
-          formatNum(ns, info.dex, "0,0"),
-          formatNum(ns, info.agi, "0,0"),
-          formatNum(ns, info.cha, "0,0"),
+          ns.formatNumber(info.hack),
+          ns.formatNumber(info.str),
+          ns.formatNumber(info.def),
+          ns.formatNumber(info.dex),
+          ns.formatNumber(info.agi),
+          ns.formatNumber(info.cha),
         ]),
         ns.vsprintf("%7s/%7s/%7s/%7s/%7s/%7s", [
-          formatNum(ns, Math.min(100, (info.hack / goalStats.hack) * 100)) + "%",
-          formatNum(ns, Math.min(100, (info.str / goalStats.str) * 100)) + "%",
-          formatNum(ns, Math.min(100, (info.def / goalStats.def) * 100)) + "%",
-          formatNum(ns, Math.min(100, (info.dex / goalStats.dex) * 100)) + "%",
-          formatNum(ns, Math.min(100, (info.agi / goalStats.agi) * 100)) + "%",
-          formatNum(ns, Math.min(100, (info.cha / goalStats.cha) * 100)) + "%",
+          ns.formatPercent(Math.min(1, info.hack / goalStats.hack)),
+          ns.formatPercent(Math.min(1, info.str / goalStats.str)),
+          ns.formatPercent(Math.min(1, info.def / goalStats.def)),
+          ns.formatPercent(Math.min(1, info.dex / goalStats.dex)),
+          ns.formatPercent(Math.min(1, info.agi / goalStats.agi)),
+          ns.formatPercent(Math.min(1, info.cha / goalStats.cha)),
         ]),
         ns.vsprintf("%6s*%5s/%6s*%5s/%6s*%5s/%6s*%5s/%6s*%5s/%6s*%5s", [
-          formatNum(ns, info.hack_asc_mult),
-          formatNum(ns, ascMultMod.hack),
-          formatNum(ns, info.str_asc_mult),
-          formatNum(ns, ascMultMod.str),
-          formatNum(ns, info.def_asc_mult),
-          formatNum(ns, ascMultMod.def),
-          formatNum(ns, info.dex_asc_mult),
-          formatNum(ns, ascMultMod.dex),
-          formatNum(ns, info.agi_asc_mult),
-          formatNum(ns, ascMultMod.agi),
-          formatNum(ns, info.cha_asc_mult),
-          formatNum(ns, ascMultMod.cha),
+          ns.formatNumber(info.hack_asc_mult),
+          ns.formatNumber(ascMultMod.hack),
+          ns.formatNumber(info.str_asc_mult),
+          ns.formatNumber(ascMultMod.str),
+          ns.formatNumber(info.def_asc_mult),
+          ns.formatNumber(ascMultMod.def),
+          ns.formatNumber(info.dex_asc_mult),
+          ns.formatNumber(ascMultMod.dex),
+          ns.formatNumber(info.agi_asc_mult),
+          ns.formatNumber(ascMultMod.agi),
+          ns.formatNumber(info.cha_asc_mult),
+          ns.formatNumber(ascMultMod.cha),
         ]),
       ])
     }

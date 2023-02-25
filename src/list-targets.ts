@@ -3,7 +3,7 @@ import { SCRIPT_HACK } from "/constants"
 import renderTable from "/lib/func/render-table"
 import getThreadsAvailable from "/lib/func/get-threads-available"
 import Script from "/lib/Script"
-import { formatMoney, formatNum, formatTime } from "/lib/util"
+import { formatMoney, formatTime } from "/lib/util"
 import getTargets from "/lib/func/get-targets"
 import parseFlags from "/lib/parseFlags"
 
@@ -49,24 +49,24 @@ export async function main(ns: NS): Promise<void> {
         formatMoney(ns, server.maxMoney),
         server.pctMoney * 100,
       ),
-      formatNum(ns, server.growth, "0,0"),
-      formatNum(ns, server.hackSkill, "0,0"),
+      ns.formatNumber(server.growth, 0),
+      ns.formatNumber(server.hackSkill, 0),
       formatTime(server.weakenTime),
-      formatNum(ns, server.initialWeakenThreads, "0,0"),
+      ns.formatNumber(server.initialWeakenThreads, 0),
       formatTime(server.hackTime),
-      formatNum(ns, server.hackThreads, "0,0"),
+      ns.formatNumber(server.hackThreads, 0),
       formatTime(server.growTime),
-      formatNum(ns, server.initialGrowThreads, "0,0"),
+      ns.formatNumber(server.initialGrowThreads, 0),
       formatTime(server.growTime),
-      formatNum(ns, server.growThreads, "0,0"),
-      formatNum(ns, server.score),
-      formatMoney(ns, server.profitPerSecond, "$0,0"),
+      ns.formatNumber(server.growThreads, 0),
+      ns.formatNumber(server.score),
+      formatMoney(ns, server.profitPerSecond, 0),
       formatTime(server.batchDuration),
-      formatNum(ns, server.batches, "0,0"),
-      formatMoney(ns, server.batchProfitPerSecond, "$0,0"),
-      formatNum(ns, server.expPerSecond) + "xp",
+      ns.formatNumber(server.batches),
+      formatMoney(ns, server.batchProfitPerSecond, 0),
+      ns.formatNumber(server.expPerSecond) + "xp",
       server.optimalType,
-      formatMoney(ns, server.optimalProfit, "$0,0"),
+      formatMoney(ns, server.optimalProfit, 0),
     ]
 
     if (flags.all) {

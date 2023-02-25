@@ -2,7 +2,7 @@ import type { NS } from "@ns"
 import { BATCH_INTERVAL } from "/config"
 import renderTable from "/lib/func/render-table"
 import Script from "/lib/Script"
-import { formatGiB, formatNum, formatTime, sum } from "/lib/util"
+import { formatGiB, formatTime, sum } from "/lib/util"
 
 export abstract class Command {
   target: string
@@ -49,10 +49,10 @@ export abstract class Command {
   public print(ns: NS) {
     const renderCmd = {
       script: this.script.file,
-      threads: formatNum(ns, this.threads, "0,00"),
+      threads: ns.formatNumber(this.threads, 0),
       time: formatTime(this.time),
       ram: formatGiB(ns, this.ram),
-      security: formatNum(ns, this.security),
+      security: ns.formatNumber(this.security, 2),
     }
 
     ns.print(renderTable(ns, Object.entries(renderCmd), false))
@@ -132,7 +132,7 @@ export class CommandBatch {
         [
           ["Target", this.target],
           ["Threads", this.threads],
-          ["Delay", formatNum(ns, this.delay / 1000)],
+          ["Delay", ns.formatNumber(this.delay / 1000)],
           ["RAM", formatGiB(ns, this.ram)],
           ["Time", formatTime(this.time)],
         ],
@@ -149,7 +149,7 @@ export class CommandBatch {
             ["Threads", cmd.threads],
             ["RAM", formatGiB(ns, cmd.ram)],
             ["Time", formatTime(cmd.time)],
-            ["Sec", formatNum(ns, cmd.security)],
+            ["Sec", ns.formatNumber(cmd.security, 2)],
           ],
           false,
         ),

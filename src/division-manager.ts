@@ -241,7 +241,7 @@ function getNewPrice(
     newMulti = MAX_MP_MULTIPLIER
   }
 
-  return "MP*" + formatNum(ns, newMulti)
+  return "MP*" + ns.formatNumber(newMulti)
 }
 
 // TODO: Rework to prioritise certain researches (maybe even prioritise having points over researching certain things?)
@@ -412,10 +412,9 @@ function expandWarehouses(ns: NS, division: Division): void {
 
   ns.corporation.upgradeWarehouse(division.name, city, upgrades)
   ns.print(
-    `${division.name}/${city} upgraded warehouse ${upgrades}x to ${formatNum(
-      ns,
+    `${division.name}/${city} upgraded warehouse ${upgrades}x to ${ns.formatNumber(
       ns.corporation.getWarehouse(division.name, city).size,
-      "0,0",
+      0,
     )} for ${formatMoney(ns, cost)}`,
   )
 }
@@ -510,7 +509,7 @@ export async function main(ns: NS): Promise<void> {
       if (division.name in stockHistory) {
         const tableData = Object.entries(stockHistory[division.name]).map(([prod, val]) => [
           prod,
-          ...val.getNonEmpty().map((v) => formatNum(ns, v)),
+          ...val.getNonEmpty().map((v) => ns.formatNumber(v)),
         ])
         tableData.unshift(["Product", "Stock", "Stock -1", "Stock -2", "Stock -3", "Stock -4"])
         if (tableData.length > 0) {

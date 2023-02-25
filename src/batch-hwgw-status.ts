@@ -1,7 +1,7 @@
 import type { NS } from "@ns"
 import { DAEMON_SERVER } from "/config"
 import renderTable, { RawTableData } from "/lib/func/render-table"
-import { formatMoney, formatNum } from "/lib/util"
+import { formatMoney } from "/lib/util"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
@@ -18,8 +18,8 @@ export async function main(ns: NS): Promise<void> {
 
       data.push([
         proc.args[1],
-        formatMoney(ns, ns.getScriptIncome(proc.filename, DAEMON_SERVER, ...proc.args), "$0,0a"),
-        formatNum(ns, ns.getScriptExpGain(proc.filename, DAEMON_SERVER, ...proc.args), "0,0"),
+        formatMoney(ns, ns.getScriptIncome(proc.filename, DAEMON_SERVER, ...proc.args), 0),
+        ns.formatNumber(ns.getScriptExpGain(proc.filename, DAEMON_SERVER, ...proc.args), 0),
       ])
     }
 

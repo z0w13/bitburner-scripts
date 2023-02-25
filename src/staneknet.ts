@@ -1,7 +1,6 @@
 import type { NS } from "@ns"
 import { DAEMON_SERVER } from "/config"
 import getSetupHosts from "/lib/func/get-setup-hosts"
-import { formatNum } from "/lib/util"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
@@ -28,7 +27,7 @@ export async function main(ns: NS): Promise<void> {
       }
 
       ns.exec("stanek.js", host, maxThreads)
-      ns.print(`Started stanek charging on ${host} with ${formatNum(ns, maxThreads)} threads`)
+      ns.print(`Started stanek charging on ${host} with ${ns.formatNumber(maxThreads, 0)} threads`)
       totalThreads += maxThreads
     } else {
       const script = ns.getRunningScript("stanek.js", host)
@@ -40,5 +39,5 @@ export async function main(ns: NS): Promise<void> {
     }
   }
 
-  ns.print(`Stanek charging with ${formatNum(ns, totalThreads)} total threads`)
+  ns.print(`Stanek charging with ${ns.formatNumber(totalThreads)} total threads`)
 }

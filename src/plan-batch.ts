@@ -72,10 +72,10 @@ export async function main(ns: NS): Promise<void> {
         ["Remaining", formatTime(endDate.getTime() - Date.now())],
         ["", renderProgress({ value: Date.now(), min: startTime, max: endDate.getTime(), width: 20 })],
         ["Batches", job.numBatches],
-        ["Processes", formatNum(ns, rem, "0,0")],
+        ["Processes", ns.formatNumber(rem, 0)],
         [
           "Sec (Min/Base/Curr)",
-          ns.sprintf("%s/%s/%s", server.minDifficulty, server.baseDifficulty, formatNum(ns, server.hackDifficulty)),
+          ns.sprintf("%s/%s/%s", server.minDifficulty, server.baseDifficulty, ns.formatNumber(server.hackDifficulty)),
         ],
         [
           "Money (Curr/Max/%)",

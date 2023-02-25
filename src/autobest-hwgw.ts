@@ -5,7 +5,7 @@ import { JobType } from "/JobScheduler/JobObjects"
 import getScriptPid from "/lib/func/get-script-pid"
 import getTargets, { getTarget, Target } from "/lib/func/get-targets"
 import renderTable from "/lib/func/render-table"
-import { formatDate, formatMoney, formatNum, formatTime, renderProgress, sortFunc } from "/lib/util"
+import { formatDate, formatMoney, formatTime, renderProgress, sortFunc } from "/lib/util"
 
 interface AutobestState {
   target: Target | undefined
@@ -86,9 +86,9 @@ export async function main(ns: NS): Promise<void> {
         "Security",
         ns.sprintf(
           "%s/%s/%s",
-          formatNum(ns, targetInfo.minDifficulty, "0,0"),
-          formatNum(ns, targetInfo.baseDifficulty, "0,0"),
-          formatNum(ns, targetInfo.hackDifficulty, "0,0.00"),
+          ns.formatNumber(targetInfo.minDifficulty, 0),
+          ns.formatNumber(targetInfo.baseDifficulty, 0),
+          ns.formatNumber(targetInfo.hackDifficulty, 2),
         ),
       ])
       table.push([
@@ -101,7 +101,7 @@ export async function main(ns: NS): Promise<void> {
           "%s/%s/%s%%",
           formatMoney(ns, targetInfo.moneyAvailable),
           formatMoney(ns, targetInfo.moneyMax),
-          formatNum(ns, (targetInfo.moneyAvailable / targetInfo.moneyMax) * 100),
+          ns.formatPercent(targetInfo.moneyAvailable / targetInfo.moneyMax),
         ),
       ])
       table.push(["", "[" + renderProgress({ value: targetInfo.moneyAvailable, max: targetInfo.moneyMax }) + "]"])

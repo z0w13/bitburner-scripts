@@ -24,23 +24,23 @@ export function filterUndefinedFunc<T>(): (
   return (value: T | undefined, _index: number, _array: (T | undefined)[]): value is T => value !== undefined
 }
 
-export function formatNum(ns: NS, value: number, fmt = "0,0.00"): string {
+export function formatNum(ns: NS, value: number, fractionalDigits = 2): string {
   if (value === Infinity) {
     return "∞"
   }
-  return ns.nFormat(value, fmt).replaceAll(",", " ")
+  return ns.formatNumber(value, fractionalDigits)
 }
 
-export function formatMoney(ns: NS, value: number, fmt = "$0,0.00a"): string {
-  return formatNum(ns, value, fmt)
+export function formatMoney(ns: NS, value: number, fractionalDigits = 2): string {
+  return "$" + ns.formatNumber(value, fractionalDigits)
 }
 
-export function formatBytes(ns: NS, value: number, fmt = "0,0.00ib"): string {
-  return formatNum(ns, value, fmt)
+export function formatBytes(ns: NS, value: number, fractionalDigits = 2): string {
+  return ns.formatRam(value, fractionalDigits)
 }
 
-export function formatGiB(ns: NS, value: number, fmt = "0,0.00ib"): string {
-  return formatBytes(ns, value * 1024 ** 3, fmt)
+export function formatGiB(ns: NS, value: number, fractionalDigits = 2): string {
+  return formatBytes(ns, value * 1024 ** 3, fractionalDigits)
 }
 
 export function formatDate(ns: NS, date: Date, includeDate = true): string {
