@@ -1,14 +1,24 @@
-import type { GangMemberInfo, NS } from "@ns"
+import type { GangMemberAscension, GangMemberInfo, NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
-import { sortFunc } from "/lib/util"
+import { renderProgress, sortFunc, sum } from "/lib/util"
 
 type StatType = "hack" | "str" | "dex" | "def" | "agi" | "cha"
 type Stats = Record<StatType, number>
 
 const TARGET_ASC_MULT = 10
 const TARGET_ASC_MULT_MOD = 1.05 // 5% increase of current multiplier
-const TARGET_ATTRIB_MULT = 100
+const TARGET_ATTRIB_MULT = TARGET_ASC_MULT * 10
 const TARGET_TERRITORY = 1
+
+enum GangAction {
+  TrainHacking = "Train Hacking",
+  TrainCombat = "Train Combat",
+  TrainCharisma = "Train Charisma",
+  TerritoryWarfare = "Territory Warfare",
+  HumanTrafficking = "Human Trafficking",
+  MoneyLaundering = "Money Laundering",
+  Ascend = "Ascend",
+}
 
 function dictGetLowest(input: Record<string, number>): string | undefined {
   return Object.entries(input).sort(sortFunc((v) => v[1]))[0][0]
@@ -102,60 +112,6 @@ function shouldAscend(ns: NS, info: GangMemberInfo): boolean {
   return false
 }
 
-function manageMember(ns: NS, info: GangMemberInfo): string {
-  const goalStats = getGoalStats(info)
-  const numEquipment = ns.gang.getEquipmentNames().length
-  if (ns.getPlayer().money > 1_000_000_000) {
-    upgradeMemberEquipment(ns, info)
-  }
-
-  if (shouldAscend(ns, info)) {
-    if (ns.gang.ascendMember(info.name)) {
-      return manageMember(ns, ns.gang.getMemberInformation(info.name))
-    }
-  }
-
-  if (Math.min(...Object.values(getAscensionMults(info))) < TARGET_ASC_MULT) {
-    const lowestAsc = dictGetLowest(getAscensionMults(info))
-    switch (lowestAsc) {
-      case "hack":
-        return "Train Hacking"
-      case "str":
-      case "def":
-      case "dex":
-      case "agi":
-        return "Train Combat"
-      case "cha":
-        return "Train Charisma"
-    }
-  }
-
-  upgradeMemberEquipment(ns, info)
-
-  if (info.hack < goalStats.hack) {
-    return "Train Hacking"
-  } else if (
-    info.str < goalStats.str ||
-    info.def < goalStats.def ||
-    info.dex < goalStats.dex ||
-    info.agi < goalStats.agi
-  ) {
-    return "Train Combat"
-  } else if (info.cha < goalStats.cha) {
-    return "Train Charisma"
-  } else {
-    if (
-      info.upgrades.length + info.augmentations.length < numEquipment ||
-      ns.gang.getGangInformation().territory >= TARGET_TERRITORY
-    ) {
-      // TODO(zowie): Select task based on stats
-      return ns.gang.getGangInformation().isHacking ? "Money Laundering" : "Human Trafficking"
-    } else {
-      return "Territory Warfare"
-    }
-  }
-}
-
 function upgradeMemberEquipment(ns: NS, info: GangMemberInfo): void {
   if (info.upgrades.length >= ns.gang.getEquipmentNames().length) {
     return
@@ -167,6 +123,144 @@ function upgradeMemberEquipment(ns: NS, info: GangMemberInfo): void {
     }
     ns.gang.purchaseEquipment(info.name, equip)
   }
+}
+
+interface GangMember {
+  info: GangMemberInfo
+  asc: GangMemberAscension | undefined
+  task: GangAction
+}
+
+function getMemberInfo(ns: NS): Array<GangMember> {
+  return ns.gang.getMemberNames().map((name) => ({
+    info: ns.gang.getMemberInformation(name),
+    asc: ns.gang.getAscensionResult(name),
+    task: getMemberTask(ns, name),
+  }))
+}
+
+function getMemberTask(ns: NS, name: string): GangAction {
+  const info = ns.gang.getMemberInformation(name)
+  const goalStats = getGoalStats(info)
+  const numEquipment = ns.gang.getEquipmentNames().length
+
+  if (shouldAscend(ns, info)) {
+    return GangAction.Ascend
+  }
+
+  if (Math.min(...Object.values(getAscensionMults(info))) < TARGET_ASC_MULT) {
+    const lowestAsc = dictGetLowest(getAscensionMults(info))
+    switch (lowestAsc) {
+      case "hack":
+        return GangAction.TrainHacking
+      case "str":
+      case "def":
+      case "dex":
+      case "agi":
+        return GangAction.TrainCombat
+      case "cha":
+        return GangAction.TrainCharisma
+    }
+  }
+
+  if (info.hack < goalStats.hack) {
+    return GangAction.TrainHacking
+  } else if (
+    info.str < goalStats.str ||
+    info.def < goalStats.def ||
+    info.dex < goalStats.dex ||
+    info.agi < goalStats.agi
+  ) {
+    return GangAction.TrainCombat
+  } else if (info.cha < goalStats.cha) {
+    return GangAction.TrainCharisma
+  }
+
+  if (
+    info.upgrades.length + info.augmentations.length < numEquipment ||
+    ns.gang.getGangInformation().territory >= TARGET_TERRITORY
+  ) {
+    // TODO(zowie): Select task based on stats
+    return ns.gang.getGangInformation().isHacking ? GangAction.MoneyLaundering : GangAction.HumanTrafficking
+  } else {
+    return GangAction.TerritoryWarfare
+  }
+}
+
+function printStatus(ns: NS): void {
+  const members = ns.gang.getMemberNames()
+  const gangInfo = ns.gang.getGangInformation()
+
+  ns.print(
+    renderTable(
+      ns,
+      [
+        [
+          "Target Mult",
+          ns.formatNumber(TARGET_ASC_MULT, 1),
+          "Territory",
+          ns.formatPercent(gangInfo.territory, 1),
+          "Power",
+          ns.formatNumber(gangInfo.power, 2),
+          "Clash Chance",
+          ns.formatPercent(gangInfo.territoryClashChance, 1),
+          "Warfare Enabled",
+          gangInfo.territoryWarfareEngaged ? "Y" : "N",
+        ],
+      ],
+      false,
+    ),
+  )
+
+  ns.print("\n")
+
+  const table: RawTableData = [
+    [
+      "Name",
+      "Task",
+      "Equip",
+      "Hack",
+      "Str",
+      "Def",
+      "Dex",
+      "Agi",
+      "Cha",
+      "Ascension %",
+      "Hack ×",
+      "Str ×",
+      "Def ×",
+      "Dex ×",
+      "Agi ×",
+      "Cha ×",
+    ],
+  ]
+  for (const member of members) {
+    const info = ns.gang.getMemberInformation(member)
+
+    const task = getMemberTask(ns, info.name)
+
+    const highestMult = Math.max(1, ...Object.values(getAscensionMultMods(ns, info)))
+    table.push([
+      info.name,
+      task,
+      `${info.upgrades.length + info.augmentations.length}/${ns.gang.getEquipmentNames().length}`,
+      ns.formatNumber(info.hack, 0),
+      ns.formatNumber(info.str, 0),
+      ns.formatNumber(info.def, 0),
+      ns.formatNumber(info.dex, 0),
+      ns.formatNumber(info.agi, 0),
+      ns.formatNumber(info.cha, 0),
+      renderProgress({ min: 1, max: TARGET_ASC_MULT_MOD, value: highestMult, width: 12 }),
+      ns.formatNumber(info.hack_asc_mult, 1),
+      ns.formatNumber(info.str_asc_mult, 1),
+      ns.formatNumber(info.def_asc_mult, 1),
+      ns.formatNumber(info.dex_asc_mult, 1),
+      ns.formatNumber(info.agi_asc_mult, 1),
+      ns.formatNumber(info.cha_asc_mult, 1),
+    ])
+  }
+
+  ns.print(renderTable(ns, table))
 }
 
 export async function main(ns: NS): Promise<void> {
@@ -181,8 +275,6 @@ export async function main(ns: NS): Promise<void> {
   }
 
   while (true) {
-    ns.clearLog()
-
     if (ns.gang.canRecruitMember()) {
       let i = 0
       while (!ns.gang.recruitMember("gang-" + i)) {
@@ -190,60 +282,29 @@ export async function main(ns: NS): Promise<void> {
       }
     }
 
-    const members = ns.gang.getMemberNames()
-
-    const table: RawTableData = [["Name", "Task", "Equip", "Stats", "Target%", "Asc"]]
-    for (const member of members) {
-      const info = ns.gang.getMemberInformation(member)
-
-      const task = manageMember(ns, info)
-      const goalStats = getGoalStats(info)
-      const ascMultMod = getAscensionMultMods(ns, info)
-
-      if (info.task !== task) {
-        ns.gang.setMemberTask(member, task)
+    const info = getMemberInfo(ns)
+    for (const member of info) {
+      if (ns.getPlayer().money > 1_000_000_000) {
+        upgradeMemberEquipment(ns, member.info)
       }
 
-      table.push([
-        info.name,
-        task,
-        `${info.upgrades.length + info.augmentations.length}/${ns.gang.getEquipmentNames().length}`,
-        ns.vsprintf("%7s/%7s/%7s/%7s/%7s/%7s", [
-          ns.formatNumber(info.hack),
-          ns.formatNumber(info.str),
-          ns.formatNumber(info.def),
-          ns.formatNumber(info.dex),
-          ns.formatNumber(info.agi),
-          ns.formatNumber(info.cha),
-        ]),
-        ns.vsprintf("%7s/%7s/%7s/%7s/%7s/%7s", [
-          ns.formatPercent(Math.min(1, info.hack / goalStats.hack)),
-          ns.formatPercent(Math.min(1, info.str / goalStats.str)),
-          ns.formatPercent(Math.min(1, info.def / goalStats.def)),
-          ns.formatPercent(Math.min(1, info.dex / goalStats.dex)),
-          ns.formatPercent(Math.min(1, info.agi / goalStats.agi)),
-          ns.formatPercent(Math.min(1, info.cha / goalStats.cha)),
-        ]),
-        ns.vsprintf("%6s*%5s/%6s*%5s/%6s*%5s/%6s*%5s/%6s*%5s/%6s*%5s", [
-          ns.formatNumber(info.hack_asc_mult),
-          ns.formatNumber(ascMultMod.hack),
-          ns.formatNumber(info.str_asc_mult),
-          ns.formatNumber(ascMultMod.str),
-          ns.formatNumber(info.def_asc_mult),
-          ns.formatNumber(ascMultMod.def),
-          ns.formatNumber(info.dex_asc_mult),
-          ns.formatNumber(ascMultMod.dex),
-          ns.formatNumber(info.agi_asc_mult),
-          ns.formatNumber(ascMultMod.agi),
-          ns.formatNumber(info.cha_asc_mult),
-          ns.formatNumber(ascMultMod.cha),
-        ]),
-      ])
+      switch (member.task) {
+        case GangAction.Ascend:
+          ns.gang.ascendMember(member.info.name)
+          break
+        case GangAction.HumanTrafficking:
+        case GangAction.MoneyLaundering:
+        case GangAction.TerritoryWarfare:
+        case GangAction.TrainCharisma:
+        case GangAction.TrainCombat:
+        case GangAction.TrainHacking:
+          ns.gang.setMemberTask(member.info.name, member.task)
+          break
+      }
     }
 
-    ns.print("Stats: hack/str/def/dex/agi/cha")
-    ns.print(renderTable(ns, table))
-
+    ns.clearLog()
+    printStatus(ns)
     await ns.asleep(1000)
   }
 }
