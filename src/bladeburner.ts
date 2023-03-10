@@ -27,7 +27,7 @@ function formatSuccess(ns: NS, success: [number, number]): string {
     return ns.formatPercent(success[0], 1)
   }
 
-  return `${ns.formatPercent(success[0], 1)}% - ${ns.formatPercent(success[1], 1)}%`
+  return `${ns.formatPercent(success[0], 1)} - ${ns.formatPercent(success[1], 1)}`
 }
 
 function printStatus(ns: NS): void {
