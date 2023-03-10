@@ -48,6 +48,7 @@ function printStatus(ns: NS): void {
   const tableData: RawTableData = [
     ["Rank", ns.formatNumber(ns.bladeburner.getRank(), 0)],
     ["BlackOps", `${getFinishedBlackOps(ns)}/${getTotalBlackOps()}`],
+    ["Bonus Time", ns.bladeburner.getBonusTime() > 5_000 ? ns.tFormat(ns.bladeburner.getBonusTime()) : "0"],
     [],
     ["Type", currentAction.type],
     [
