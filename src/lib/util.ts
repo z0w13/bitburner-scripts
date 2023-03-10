@@ -36,7 +36,7 @@ export function formatMoney(ns: NS, value: number, fractionalDigits = 2): string
 }
 
 export function formatBytes(ns: NS, value: number, fractionalDigits = 2): string {
-  return ns.formatRam(value, fractionalDigits)
+  return ns.formatRam(value / 1024 ** 3, fractionalDigits)
 }
 
 export function formatGiB(ns: NS, value: number, fractionalDigits = 2): string {
