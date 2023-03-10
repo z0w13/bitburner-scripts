@@ -1,6 +1,6 @@
-import type { GangMemberAscension, GangMemberInfo, NS } from "@ns"
+import type { GangMemberAscension, GangMemberInfo, GangTaskStats, NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
-import { renderProgress, sortFunc, sum } from "/lib/util"
+import { renderProgress, sortFunc } from "/lib/util"
 
 type StatType = "hack" | "str" | "dex" | "def" | "agi" | "cha"
 type Stats = Record<StatType, number>
@@ -9,16 +9,36 @@ const TARGET_ASC_MULT = 10
 const TARGET_ASC_MULT_MOD = 1.05 // 5% increase of current multiplier
 const TARGET_ATTRIB_MULT = TARGET_ASC_MULT * 10
 const TARGET_TERRITORY = 1
+const MAX_GANG_MEMBERS = 8
+const WANTED_MULTIPLIER_BEFORE_VIGILANTE = 0.8
+const MEMBER_NAMES: Array<string> = [
+  "Alpha",
+  "Beta",
+  "Gamma",
+  "Delta",
+  "Epsilon",
+  "Zeta",
+  "Kappa",
+  "Lambda",
+  "Omicron",
+  "Sigma",
+]
 
 enum GangAction {
+  Ascend = "Ascend",
+
   TrainHacking = "Train Hacking",
   TrainCombat = "Train Combat",
   TrainCharisma = "Train Charisma",
+
   TerritoryWarfare = "Territory Warfare",
   HumanTrafficking = "Human Trafficking",
   MoneyLaundering = "Money Laundering",
-  Ascend = "Ascend",
+  VigilanteJustice = "Vigilante Justice",
+  MugPeople = "Mug People",
 }
+
+type GangTrainAction = GangAction.TrainHacking | GangAction.TrainCombat | GangAction.TrainCharisma
 
 function dictGetLowest(input: Record<string, number>): string | undefined {
   return Object.entries(input).sort(sortFunc((v) => v[1]))[0][0]
@@ -118,9 +138,14 @@ function upgradeMemberEquipment(ns: NS, info: GangMemberInfo): void {
   }
 
   for (const equip of ns.gang.getEquipmentNames()) {
-    if (ns.gang.getEquipmentCost(equip) > ns.getPlayer().money) {
+    const playerMoney = ns.getPlayer().money
+    const equipCost = ns.gang.getEquipmentCost(equip)
+    const equipCostThreshold = playerMoney > 1_000_000_000 ? equipCost : equipCost * 10
+
+    if (equipCostThreshold < ns.getPlayer().money) {
       continue
     }
+
     ns.gang.purchaseEquipment(info.name, equip)
   }
 }
@@ -139,13 +164,91 @@ function getMemberInfo(ns: NS): Array<GangMember> {
   }))
 }
 
+function getTaskAttribReqs(task: GangTaskStats): Stats {
+  return {
+    hack: task.hackWeight * task.difficulty,
+    str: task.strWeight * task.difficulty,
+    dex: task.dexWeight * task.difficulty,
+    def: task.defWeight * task.difficulty,
+    agi: task.agiWeight * task.difficulty,
+    cha: task.chaWeight * task.difficulty,
+  }
+}
+
+function taskMeetsAttribReqs(member: GangMemberInfo, task: GangTaskStats): boolean {
+  const attribReqs = getTaskAttribReqs(task)
+
+  return (
+    member.hack >= attribReqs.hack &&
+    member.str > attribReqs.str &&
+    member.dex > attribReqs.dex &&
+    member.def > attribReqs.def &&
+    member.agi > attribReqs.agi &&
+    member.cha > attribReqs.cha
+  )
+}
+
+function getRespectTasks(ns: NS): Array<GangTaskStats> {
+  return ns.gang
+    .getTaskNames()
+    .map((n) => ns.gang.getTaskStats(n))
+    .filter((t) => t.baseRespect > 0)
+    .sort(sortFunc((t) => t.baseRespect))
+}
+
+function getBestRespectTask(ns: NS, member: GangMemberInfo): GangAction | undefined {
+  const tasks = getRespectTasks(ns)
+  return (tasks.at(ns.gang.getMemberNames().length - 1)?.name ?? tasks.at(-1)?.name) as GangAction | undefined
+}
+
+function getLowestStatCategory(member: GangMemberInfo): GangTrainAction {
+  const lowestAttr = dictGetLowest({
+    hack: member.hack,
+    str: member.str,
+    def: member.def,
+    dex: member.dex,
+    agi: member.agi,
+    cha: member.cha,
+  }) as StatType
+
+  switch (lowestAttr) {
+    case "hack":
+      return GangAction.TrainHacking
+    case "cha":
+      return GangAction.TrainCharisma
+    case "str":
+    case "def":
+    case "dex":
+    case "agi":
+      return GangAction.TrainCombat
+  }
+}
+
 function getMemberTask(ns: NS, name: string): GangAction {
   const info = ns.gang.getMemberInformation(name)
+  const gangInfo = ns.gang.getGangInformation()
   const goalStats = getGoalStats(info)
   const numEquipment = ns.gang.getEquipmentNames().length
 
   if (shouldAscend(ns, info)) {
     return GangAction.Ascend
+  }
+
+  if (gangInfo.wantedPenalty < WANTED_MULTIPLIER_BEFORE_VIGILANTE && gangInfo.respect > 1 && gangInfo.wantedLevel > 2) {
+    if (taskMeetsAttribReqs(info, ns.gang.getTaskStats(GangAction.VigilanteJustice))) {
+      return GangAction.VigilanteJustice
+    } else {
+      return getLowestStatCategory(info)
+    }
+  }
+
+  if (ns.gang.getMemberNames().length < MAX_GANG_MEMBERS) {
+    const bestRespectTask = getBestRespectTask(ns, info)
+    if (bestRespectTask && taskMeetsAttribReqs(info, ns.gang.getTaskStats(bestRespectTask))) {
+      return bestRespectTask
+    } else {
+      return getLowestStatCategory(info)
+    }
   }
 
   if (Math.min(...Object.values(getAscensionMults(info))) < TARGET_ASC_MULT) {
@@ -176,15 +279,16 @@ function getMemberTask(ns: NS, name: string): GangAction {
     return GangAction.TrainCharisma
   }
 
-  if (
-    info.upgrades.length + info.augmentations.length < numEquipment ||
-    ns.gang.getGangInformation().territory >= TARGET_TERRITORY
-  ) {
+  if (shouldEngageInTerritoryWarfare(info, numEquipment, ns.gang.getGangInformation().territory)) {
+    return GangAction.TerritoryWarfare
+  } else {
     // TODO(zowie): Select task based on stats
     return ns.gang.getGangInformation().isHacking ? GangAction.MoneyLaundering : GangAction.HumanTrafficking
-  } else {
-    return GangAction.TerritoryWarfare
   }
+}
+
+function shouldEngageInTerritoryWarfare(info: GangMemberInfo, numEquipment: number, territory: number): boolean {
+  return info.upgrades.length + info.augmentations.length >= numEquipment - 2 || territory < TARGET_TERRITORY
 }
 
 function printStatus(ns: NS): void {
@@ -212,6 +316,28 @@ function printStatus(ns: NS): void {
     ),
   )
 
+  ns.print(
+    renderTable(
+      ns,
+      [
+        [
+          "Members",
+          members.length,
+          "Respect",
+          ns.formatNumber(gangInfo.respect, 2),
+          "Wanted Level",
+          ns.formatNumber(gangInfo.wantedLevel, 2),
+          "Wanted Penalty",
+          ns.formatPercent(1 - gangInfo.wantedPenalty, 2),
+        ],
+      ],
+      false,
+    )
+      .split("\n")
+      .slice(1)
+      .join("\n"),
+  )
+
   ns.print("\n")
 
   const table: RawTableData = [
@@ -237,12 +363,10 @@ function printStatus(ns: NS): void {
   for (const member of members) {
     const info = ns.gang.getMemberInformation(member)
 
-    const task = getMemberTask(ns, info.name)
-
     const highestMult = Math.max(1, ...Object.values(getAscensionMultMods(ns, info)))
     table.push([
       info.name,
-      task,
+      info.task,
       `${info.upgrades.length + info.augmentations.length}/${ns.gang.getEquipmentNames().length}`,
       ns.formatNumber(info.hack, 0),
       ns.formatNumber(info.str, 0),
@@ -263,6 +387,49 @@ function printStatus(ns: NS): void {
   ns.print(renderTable(ns, table))
 }
 
+/**
+ * 1. Get enough respect for more members
+ * 2. Recruit max members
+ * 3. Train up till target
+ * 4. Territory warfare till 100%
+ * 5. Make money
+ */
+
+function manageMember(ns: NS, member: GangMember): void {
+  upgradeMemberEquipment(ns, member.info)
+
+  switch (member.task) {
+    case GangAction.Ascend:
+      ns.gang.ascendMember(member.info.name)
+      break
+    default:
+      ns.gang.setMemberTask(member.info.name, member.task)
+      break
+  }
+}
+
+function printTaskReqs(ns: NS): void {
+  const respectTasks = getRespectTasks(ns)
+  const tableData: RawTableData = [["Name", "Hack", "Str", "Def", "Dex", "Agi", "Cha", "Base Respect", "Terr Respect"]]
+
+  for (const task of respectTasks) {
+    const taskReqs = getTaskAttribReqs(task)
+    tableData.push([
+      task.name,
+      taskReqs.hack,
+      taskReqs.str,
+      taskReqs.def,
+      taskReqs.dex,
+      taskReqs.agi,
+      taskReqs.cha,
+      task.baseRespect,
+      task.territory.respect,
+    ])
+  }
+
+  ns.print(renderTable(ns, tableData))
+}
+
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")
   ns.disableLog("gang.ascendMember")
@@ -276,35 +443,14 @@ export async function main(ns: NS): Promise<void> {
 
   while (true) {
     if (ns.gang.canRecruitMember()) {
-      let i = 0
-      while (!ns.gang.recruitMember("gang-" + i)) {
-        i++
-      }
+      ns.gang.recruitMember(MEMBER_NAMES[ns.gang.getMemberNames().length - 1])
     }
 
-    const info = getMemberInfo(ns)
-    for (const member of info) {
-      if (ns.getPlayer().money > 1_000_000_000) {
-        upgradeMemberEquipment(ns, member.info)
-      }
-
-      switch (member.task) {
-        case GangAction.Ascend:
-          ns.gang.ascendMember(member.info.name)
-          break
-        case GangAction.HumanTrafficking:
-        case GangAction.MoneyLaundering:
-        case GangAction.TerritoryWarfare:
-        case GangAction.TrainCharisma:
-        case GangAction.TrainCombat:
-        case GangAction.TrainHacking:
-          ns.gang.setMemberTask(member.info.name, member.task)
-          break
-      }
-    }
+    getMemberInfo(ns).forEach((member) => manageMember(ns, member))
 
     ns.clearLog()
     printStatus(ns)
+
     await ns.asleep(1000)
   }
 }
