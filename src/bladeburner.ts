@@ -85,7 +85,7 @@ export async function main(ns: NS): Promise<void> {
   const levelAction = new BladeburnerLevelSkillAction()
 
   while (true) {
-    if (!action.isPerforming(ns)) {
+    if (action.shouldPerform(ns) && !action.isPerforming(ns)) {
       await action.perform(ns)
     }
 
