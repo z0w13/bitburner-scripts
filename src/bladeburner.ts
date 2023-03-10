@@ -69,7 +69,6 @@ function printStatus(ns: NS): void {
     ["Chaos", ns.formatNumber(ns.bladeburner.getCityChaos(city))],
   ]
 
-  ns.clearLog()
   ns.print(renderTable(ns, tableData, false))
 
   const popData: RawTableData = [["City", "Pop"]]
@@ -93,6 +92,7 @@ export async function main(ns: NS): Promise<void> {
       await levelAction.perform(ns)
     }
 
+    ns.clearLog()
     printStatus(ns)
     await ns.asleep(1000)
   }
