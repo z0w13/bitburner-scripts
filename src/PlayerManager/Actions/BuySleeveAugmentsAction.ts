@@ -9,6 +9,10 @@ export default class BuySleeveAugmentsAction extends BaseAction {
   }
 
   async manageSleeve(ns: NS, sleeve: SleeveData): Promise<boolean> {
+    if (sleeve.info.shock > 0) {
+      return false
+    }
+
     const augs = ns.sleeve.getSleevePurchasableAugs(sleeve.index).sort(sortFunc((a) => a.cost))
     if (augs.length === 0) {
       return true
