@@ -25,6 +25,9 @@ export abstract class Job {
     this.createdAt = createdAt
   }
 
+  public get commandsDone(): number {
+    return this.current ? this.getCommands().indexOf(this.current) : 0
+  }
   public get done(): boolean {
     return this._done
   }
@@ -67,14 +70,13 @@ export class SerialJob extends Job {
 
   public async run(ns: NS): Promise<Job> {
     for (const cmd of this.getCommands()) {
-      //job.current = cmd
+      this.current = cmd
       await waitForPids(
         ns,
         runCommand(ns, cmd, {
           args: ["--target", cmd.target],
         }),
       )
-      //job.jobsDone++
     }
 
     this._done = true
@@ -114,8 +116,8 @@ export interface SerializedJob {
   type: JobType
   target: string
   commands: Array<SerializedCommand>
-  current?: Command
-  jobsDone: number
+  current?: SerializedCommand
+  commandsDone: number
   partial: boolean
   createdAt: number
   done: boolean

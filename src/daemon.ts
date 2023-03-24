@@ -27,11 +27,6 @@ export async function main(ns: NS): Promise<void> {
   const serverBuyer = new ServerBuyer(ns, 8)
   const jobScheduler = new JobScheduler(ns, hostMgr, jobMgr, serverBuyer)
 
-  //if (hostMgr.getTotalRam() < 1024) {
-  //  ns.spawn("/libexec/basic-hwgw.js", 1)
-  //  return
-  //}
-
   for (const script of ["autosetup.js", "server-status.js", "daemon-status.js"]) {
     if (!isScriptRunning(ns, script, DAEMON_SERVER)) {
       ns.tail(ns.exec(script, DAEMON_SERVER))

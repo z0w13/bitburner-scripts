@@ -2,7 +2,7 @@ import type { NS } from "@ns"
 import { JobType, SerializedJob } from "/JobScheduler/JobObjects"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import ServerWrapper from "/lib/ServerWrapper"
-import { formatMoney, sum } from "/lib/util"
+import { formatGiB, formatMoney, formatNum, formatTime, sum } from "/lib/util"
 import { SerializedDaemonStatus } from "/lib/serialized"
 
 export async function main(ns: NS): Promise<void> {
@@ -16,7 +16,7 @@ export async function main(ns: NS): Promise<void> {
       continue
     }
 
-    const data = JSON.parse(ns.read("jobs.json.txt") as string) as SerializedDaemonStatus
+    const data = JSON.parse(ns.read("jobs.json.txt")) as SerializedDaemonStatus
     ns.print(renderStatusTable(ns, data))
     ns.print(
       renderJobTable(
@@ -24,13 +24,17 @@ export async function main(ns: NS): Promise<void> {
         data.jobs.filter((j) => j.type == JobType.HackWeakenGrowWeaken),
       ),
     )
-    ns.print("")
-    ns.print(
-      renderJobTable(
-        ns,
-        data.jobs.filter((j) => j.type == JobType.Prep),
-      ),
-    )
+
+    const prepJobs = data.jobs.filter((j) => j.type == JobType.Prep)
+    if (prepJobs.length > 0) {
+      ns.print("")
+      ns.print(
+        renderJobTable(
+          ns,
+          data.jobs.filter((j) => j.type == JobType.Prep),
+        ),
+      )
+    }
     await ns.asleep(1000)
   }
 }
@@ -40,11 +44,11 @@ function renderStatusTable(ns: NS, data: SerializedDaemonStatus) {
   const updatedSecondsAgo = Math.round((Date.now() - data.lastUpdate) / 1000)
 
   const table: RawTableData = [
-    ["Load", ns.nFormat(data.load * 100, "0.00")],
-    ["Prep Load", ns.nFormat(data.prepLoad * 100, "0.00")],
-    ["Profit/s", ns.nFormat(data.profitPerSecond, "$0,0.00a")],
-    ["Exp/s", ns.nFormat(data.expPerSecond, "0,0.00")],
-    ["Prepped", data.preppedTargets.length],
+    ["Load", ns.formatPercent(data.load)],
+    ["Prep Load", ns.formatPercent(data.prepLoad)],
+    ["Profit/s", ns.formatNumber(data.profitPerSecond, 2)],
+    ["Exp/s", ns.formatNumber(data.expPerSecond, 2)],
+    ["Prepped", ns.formatNumber(data.preppedTargets.length, 0)],
     ["Stopping", data.stopping],
     [
       "Last Update",
@@ -82,15 +86,15 @@ function renderJobTable(ns: NS, jobs: Array<SerializedJob>) {
     table.push([
       entry.target,
       ns.sprintf("%5.2f/%5.2f", ns.getServerSecurityLevel(entry.target), ns.getServerMinSecurityLevel(entry.target)),
-      Math.round((ns.getServerMoneyAvailable(entry.target) / ns.getServerMaxMoney(entry.target)) * 100),
+      ns.formatPercent(ns.getServerMoneyAvailable(entry.target) / ns.getServerMaxMoney(entry.target), 0),
       entry.type,
       entry.partial ? "Y" : "N",
-      `${entry.jobsDone}/${entry.commands.length}`,
+      `${entry.commandsDone}/${entry.commands.length}`,
       entry.current?.script.file ?? "",
-      entry.current?.threads ?? 0,
-      Math.round(entry.current?.ram ?? 0),
-      Math.round(totalTime / 1000) + "s",
-      Math.round(timeRemaining / 1000) + "s",
+      formatNum(ns, entry.current?.threads ?? 0, 0, 1_000_000),
+      formatGiB(ns, entry.current?.ram ?? 0, 0),
+      formatTime(totalTime),
+      formatTime(timeRemaining),
       formatMoney(ns, new ServerWrapper(ns, entry.target).getProfitPerSecond()) + "/s",
     ])
   }

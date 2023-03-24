@@ -6,10 +6,8 @@ import HostManager from "/lib/HostManager"
 import Logger from "/lib/Logger"
 import ServerWrapper from "/lib/ServerWrapper"
 import { sum } from "/lib/util"
-import waitForPids from "/lib/func/wait-for-pids"
 import { BatchJob, Job, JobType, SerialJob } from "/JobScheduler/JobObjects"
 import { Command } from "/Command/Objects"
-import runCommand from "/lib/func/run-command"
 
 export default class JobManager {
   private readonly ns: NS
@@ -99,24 +97,7 @@ export default class JobManager {
     this.jobsByType[job.type].add(job)
     this.serversWithJobs.add(job.target.hostname)
 
-    return this._runJob(job)
-  }
-
-  private async _runJob(job: Job): Promise<Job> {
-    // NOTE(zowie): Temporary, mainly to check how often this occurs, and how severely
-    for (const cmd of job.getCommands()) {
-      //job.current = cmd
-      await waitForPids(
-        this.ns,
-        runCommand(this.ns, cmd, {
-          args: ["--target", cmd.target],
-        }),
-      )
-      //job.jobsDone++
-    }
-
-    //job.done = true
-    return job
+    return job.run(this.ns)
   }
 
   calculateMaxLoad(jobs: Array<Job>): number {

@@ -448,8 +448,17 @@ export default class JobScheduler {
         ...j,
 
         // TODO(zowie): Fix with actual data
-        done: false,
-        jobsDone: 0,
+        done: j.done,
+        commandsDone: j.commandsDone,
+        current: j.current
+          ? {
+              ...j.current,
+
+              threads: j.current.threads,
+              ram: j.current.ram,
+              target: j.current.target,
+            }
+          : undefined,
 
         target: j.target.hostname,
         commands: j.getCommands().map((c) => ({
@@ -463,6 +472,6 @@ export default class JobScheduler {
     }
 
     //getGlobalState().daemonState = serialized
-    this.ns.write("jobs.json", JSON.stringify(serialized), "w")
+    this.ns.write("jobs.json.txt", JSON.stringify(serialized), "w")
   }
 }
