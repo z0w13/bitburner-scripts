@@ -14,12 +14,16 @@ import {
   getAction,
   getContractMoney,
   BlackOp,
+  BladeburnerAction,
 } from "/data/Bladeburner"
 import { sortFunc, sum } from "/lib/util"
 
 import BaseAction from "/PlayerManager/Actions/BaseAction"
 
 const MIN_CITY_POP = 1_000_000
+
+const MIN_ACTION_COUNT = 100 // Minimum amount of op/contract available to run
+const MIN_SUCCESS_CHANCE = 0.5 // Only run ops/contracts if > 50% chance to succeed
 
 const SAFE_CONTRACTS = [Contract.Tracking]
 const SAFE_OPS = [Operation.Investigation, Operation.UndercoverOperation]
@@ -41,16 +45,87 @@ function getStaminaPct(curr: number, max: number): number {
   return curr / max
 }
 
-function getAverageSuccessChange(ns: NS, name: Contract | Operation): number {
+function getAverageSuccessChance(ns: NS, name: Contract | Operation): number {
   const action = getAction(name)
   const [min, max] = ns.bladeburner.getActionEstimatedSuccessChance(action.type, action.name)
   return min + (max - min) / 2
 }
 
+export function getLeveledActionEstimatedSuccessChance(
+  ns: NS,
+  action: BladeburnerAction,
+  level: number,
+): [number, number] {
+  const origLevel = ns.bladeburner.getActionCurrentLevel(action.type, action.name)
+
+  // Don't mess with the level if it's the same as current, as otherwise we'll reset action progress
+  if (origLevel === level) {
+    return ns.bladeburner.getActionEstimatedSuccessChance(action.type, action.name)
+  }
+
+  ns.bladeburner.setActionLevel(action.type, action.name, level)
+  const successChance = ns.bladeburner.getActionEstimatedSuccessChance(action.type, action.name)
+  ns.bladeburner.setActionLevel(action.type, action.name, origLevel)
+
+  return successChance
+}
+
+export function getMinSuccessLevel(ns: NS, contract: Contract): number | undefined {
+  while (true) {
+    const currentLevel = ns.bladeburner.getActionCurrentLevel(ActionType.Contract, contract)
+    const successChance = getAverageSuccessChance(ns, contract)
+
+    if (successChance > MIN_SUCCESS_CHANCE) {
+      return currentLevel
+    }
+
+    ns.bladeburner.setActionLevel(ActionType.Contract, contract, currentLevel - 1)
+  }
+}
+
+export function getBestLeveledContract(ns: NS): { contract: Contract; level: number } | undefined {
+  const contractList: Array<{ contract: Contract; level: number; moneyPerSec: number }> = []
+  for (const contract of Object.values(Contract)) {
+    const maxLevel = ns.bladeburner.getActionMaxLevel(ActionType.Contract, contract)
+    const currentLevel = ns.bladeburner.getActionCurrentLevel(ActionType.Contract, contract)
+    if (currentLevel !== maxLevel) {
+      ns.bladeburner.setActionLevel(ActionType.Contract, contract, maxLevel)
+    }
+
+    while (true) {
+      const currentLevel = ns.bladeburner.getActionCurrentLevel(ActionType.Contract, contract)
+      const successChance = getAverageSuccessChance(ns, contract)
+      if (currentLevel === 1) {
+        break
+      }
+
+      if (successChance > MIN_SUCCESS_CHANCE) {
+        break
+      }
+
+      ns.bladeburner.setActionLevel(ActionType.Contract, contract, currentLevel - 1)
+    }
+
+    const highestLevel = ns.bladeburner.getActionCurrentLevel(ActionType.Contract, contract)
+    const money = getContractMoney(ns, contract)
+    const timeInSecs = ns.bladeburner.getActionTime(ActionType.Contract, contract) / 1000
+
+    ns.bladeburner.setActionLevel(ActionType.Contract, contract, currentLevel) // Reset action level to what it was before calling this method
+
+    contractList.push({ contract, level: highestLevel, moneyPerSec: money / timeInSecs })
+  }
+
+  if (contractList.length === 0) {
+    return
+  }
+
+  return contractList.sort(sortFunc((c) => c.moneyPerSec, true))[0]
+}
+
 export function getBestContract(ns: NS): Contract | undefined {
   return Object.values(Contract)
-    .filter((c) => ns.bladeburner.getActionCountRemaining(ActionType.Contract, c) > 100)
-    .filter((c) => getAverageSuccessChange(ns, c) > 0.5)
+    .filter((c) => ns.bladeburner.getActionCountRemaining(ActionType.Contract, c) > MIN_ACTION_COUNT)
+    .filter((c) => getAverageSuccessChance(ns, c) > MIN_SUCCESS_CHANCE)
     .filter((c) => currentCityPopIsAboveMinimum(ns) || SAFE_CONTRACTS.includes(c))
     .sort(sortFunc((c) => getContractMoney(ns, c), true))
     .at(-1)
@@ -59,7 +134,7 @@ export function getBestContract(ns: NS): Contract | undefined {
 function getBestOperation(ns: NS): Operation | undefined {
   return Object.values(Operation)
     .filter((op) => ns.bladeburner.getActionCountRemaining(ActionType.Operation, op) > 100)
-    .filter((op) => getAverageSuccessChange(ns, op) > 0.5)
+    .filter((op) => getAverageSuccessChance(ns, op) > 0.5)
     .filter((op) => currentCityPopIsAboveMinimum(ns) || SAFE_OPS.includes(op))
     .at(-1)
 }
@@ -113,7 +188,7 @@ function isRecoveringStamina(ns: NS): boolean {
   )
 }
 
-function getBestAction(ns: NS): BladeburnerCityAction {
+function getBestAction(ns: NS, state: PerformActionState): BladeburnerCityAction {
   const currentAction = getCurrentAction(ns)
   const city = currentCityPopIsAboveMinimum(ns) ? currentAction.city : getHighestPopCity(ns)
 
@@ -149,36 +224,85 @@ function getBestAction(ns: NS): BladeburnerCityAction {
   const bestContract = getBestContract(ns)
   const bestOperation = getBestOperation(ns)
 
-  if (bestOperation && getTotalOpSuccesses(ns) < getTotalContractSuccesses(ns)) {
+  // 3500 seems about how many contracts we do before we can reliably do ops as well
+  if (bestOperation && state.lastActionFinished !== ActionType.Operation) {
     return newAction(bestOperation, city)
   }
 
-  if (!bestContract) {
+  if (bestContract) {
+    return newAction(bestContract, city)
+  }
+
+  const leveledContract = getBestLeveledContract(ns)
+  if (!leveledContract) {
     return newAction(GeneralAction.FieldAnalysis, city)
   }
 
-  return newAction(bestContract, city)
+  if (ns.bladeburner.getActionCurrentLevel(ActionType.Contract, leveledContract.contract) !== leveledContract.level) {
+    ns.bladeburner.setActionLevel(ActionType.Contract, leveledContract.contract, leveledContract.level)
+  }
+
+  return newAction(leveledContract.contract, city)
 }
 
 function currentCityPopIsAboveMinimum(ns: NS): boolean {
   return ns.bladeburner.getCityEstimatedPopulation(ns.bladeburner.getCity()) > MIN_CITY_POP
 }
 
+interface PerformActionState {
+  opsFinished: number
+  contractsFinished: number
+  lastActionFinished: ActionType.Contract | ActionType.Operation
+}
+
+function newState(): PerformActionState {
+  return {
+    opsFinished: 0,
+    contractsFinished: 0,
+    lastActionFinished: ActionType.Contract,
+  }
+}
+
+function updateState(ns: NS, oldState: PerformActionState): PerformActionState {
+  const newState: PerformActionState = {
+    opsFinished: getTotalOpSuccesses(ns),
+    contractsFinished: getTotalContractSuccesses(ns),
+    lastActionFinished: oldState.lastActionFinished,
+  }
+
+  if (newState.opsFinished > oldState.opsFinished) {
+    newState.lastActionFinished = ActionType.Operation
+  }
+
+  if (newState.contractsFinished > oldState.contractsFinished) {
+    newState.lastActionFinished = ActionType.Contract
+  }
+
+  return newState
+}
+
 export default class BladeburnerPerformAction extends BaseAction {
+  state: PerformActionState
+
+  constructor() {
+    super()
+
+    this.state = newState()
+  }
+
   shouldPerform(_ns: NS): boolean {
     return true
   }
 
   isPerforming(ns: NS): boolean {
-    if (this.isBackground(ns)) {
-      return false
-    }
+    getBestLeveledContract(ns)
 
-    return cityActionIsEqual(getCurrentAction(ns), getBestAction(ns))
+    this.state = updateState(ns, this.state)
+    return cityActionIsEqual(getCurrentAction(ns), getBestAction(ns, this.state))
   }
 
   async perform(ns: NS): Promise<boolean> {
-    const action = getBestAction(ns)
+    const action = getBestAction(ns, this.state)
 
     if (ns.bladeburner.getCity() !== action.city) {
       if (!ns.bladeburner.switchCity(action.city)) {
