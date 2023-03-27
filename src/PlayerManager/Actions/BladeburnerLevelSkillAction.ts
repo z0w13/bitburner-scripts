@@ -36,12 +36,12 @@ function getAffordableUpgradeCount(ns: NS, skill: string): number {
   }
 
   let upgradeCount = 0
-  do {
+  while (
+    ns.bladeburner.getSkillUpgradeCost(skill, upgradeCount + 1) < ns.bladeburner.getSkillPoints() &&
+    (!maxLevel || currentLevel + upgradeCount < maxLevel)
+  ) {
     upgradeCount += 1
-  } while (
-    ns.bladeburner.getSkillUpgradeCost(skill, upgradeCount) < ns.bladeburner.getSkillPoints() &&
-    (!maxLevel || currentLevel + upgradeCount <= maxLevel)
-  )
+  }
 
   return upgradeCount
 }
@@ -58,7 +58,6 @@ function levelSkill(ns: NS): boolean {
   }
 
   const success = ns.bladeburner.upgradeSkill(skill, upgradeCount)
-
   if (success) {
     ns.toast(`BB: Upgraded ${skill} to level ${ns.bladeburner.getSkillLevel(skill)}`)
   }
