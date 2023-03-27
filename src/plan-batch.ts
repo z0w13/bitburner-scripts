@@ -87,7 +87,7 @@ export async function main(ns: NS): Promise<void> {
           ),
         ],
       ]
-      ns.print(renderTable(ns, table, false))
+      ns.print(renderTable(table, false))
     })
   }
 }

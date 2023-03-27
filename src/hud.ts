@@ -122,7 +122,7 @@ export async function main(ns: NS): Promise<void> {
     ]
 
     ns.clearLog()
-    ns.print(renderTable(ns, summaryTableData, false))
+    ns.print(renderTable(summaryTableData, false))
 
     const latestStats = moneyHistory.getNonEmpty().at(-1)
     if (latestStats) {
@@ -143,7 +143,7 @@ export async function main(ns: NS): Promise<void> {
         ])
       }
       ns.print("\n")
-      ns.print(renderTable(ns, detailTableData, true))
+      ns.print(renderTable(detailTableData, true))
     }
 
     ticks++

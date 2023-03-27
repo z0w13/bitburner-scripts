@@ -58,7 +58,7 @@ function printStatus(ns: NS): void {
     ]),
   ])
 
-  ns.print(renderTable(ns, table, true, true))
+  ns.print(renderTable(table, true, true))
 }
 
 export async function main(ns: NS): Promise<void> {

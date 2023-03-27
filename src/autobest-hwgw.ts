@@ -108,7 +108,7 @@ export async function main(ns: NS): Promise<void> {
     }
 
     ns.clearLog()
-    ns.print(renderTable(ns, table, false))
+    ns.print(renderTable(table, false))
 
     const logs = ns.getRunningScript(state.pid)?.logs
     if (logs) {

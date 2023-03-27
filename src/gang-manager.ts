@@ -297,7 +297,6 @@ function printStatus(ns: NS): void {
 
   ns.print(
     renderTable(
-      ns,
       [
         [
           "Target Mult",
@@ -318,7 +317,6 @@ function printStatus(ns: NS): void {
 
   ns.print(
     renderTable(
-      ns,
       [
         [
           "Members",
@@ -384,7 +382,7 @@ function printStatus(ns: NS): void {
     ])
   }
 
-  ns.print(renderTable(ns, table))
+  ns.print(renderTable(table))
 }
 
 /**
@@ -427,7 +425,7 @@ function printTaskReqs(ns: NS): void {
     ])
   }
 
-  ns.print(renderTable(ns, tableData))
+  ns.print(renderTable(tableData))
 }
 
 export async function main(ns: NS): Promise<void> {

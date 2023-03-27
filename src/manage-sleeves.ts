@@ -69,7 +69,7 @@ export async function main(ns: NS): Promise<void> {
     }
 
     ns.clearLog()
-    ns.print(renderTable(ns, tableData))
+    ns.print(renderTable(tableData))
 
     await ns.asleep(1000)
   }

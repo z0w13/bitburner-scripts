@@ -64,7 +64,7 @@ function renderStatusTable(ns: NS, data: SerializedDaemonStatus) {
     table.push([idx + ". " + val.hostname, formatMoney(ns, val.profitPerSecond)])
   })
 
-  return renderTable(ns, table, false)
+  return renderTable(table, false)
 }
 
 function renderJobTable(ns: NS, jobs: Array<SerializedJob>) {
@@ -99,5 +99,5 @@ function renderJobTable(ns: NS, jobs: Array<SerializedJob>) {
     ])
   }
 
-  return renderTable(ns, table)
+  return renderTable(table)
 }

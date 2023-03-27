@@ -69,12 +69,12 @@ function printStatus(ns: NS): void {
     ["Chaos", ns.formatNumber(ns.bladeburner.getCityChaos(city))],
   ]
 
-  ns.print(renderTable(ns, tableData, false))
+  ns.print(renderTable(tableData, false))
 
   const popData: RawTableData = [["City", "Pop"]]
   popData.push(...Object.entries(getCityPops(ns)).map(([city, pop]) => [city, ns.formatNumber(pop, 2)]))
 
-  ns.print(renderTable(ns, popData))
+  ns.print(renderTable(popData))
 }
 
 export async function main(ns: NS): Promise<void> {

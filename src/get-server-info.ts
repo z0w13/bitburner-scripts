@@ -9,5 +9,5 @@ export async function main(ns: NS): Promise<void> {
 
   const snapshot = new ServerWrapper(ns, flags.hostname).getSnapshot()
 
-  ns.tprint("\n" + renderTable(ns, Object.entries(snapshot), false))
+  ns.tprint("\n" + renderTable(Object.entries(snapshot), false))
 }

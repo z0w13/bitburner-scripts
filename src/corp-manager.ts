@@ -129,7 +129,6 @@ export async function main(ns: NS): Promise<void> {
     ns.clearLog()
     ns.print(
       renderTable(
-        ns,
         [
           ["Funds", formatMoney(ns, corp.funds)],
           ["Revenue", formatMoney(ns, corp.revenue)],

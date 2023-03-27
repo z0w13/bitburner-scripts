@@ -55,7 +55,7 @@ export abstract class Command {
       security: ns.formatNumber(this.security, 2),
     }
 
-    ns.print(renderTable(ns, Object.entries(renderCmd), false))
+    ns.print(renderTable(Object.entries(renderCmd), false))
   }
 }
 
@@ -128,7 +128,6 @@ export class CommandBatch {
   public print(ns: NS) {
     ns.print(
       renderTable(
-        ns,
         [
           ["Target", this.target],
           ["Threads", this.threads],
@@ -143,7 +142,6 @@ export class CommandBatch {
     this.commands.forEach((cmd) => {
       ns.print(
         renderTable(
-          ns,
           [
             ["Script", cmd.script.file],
             ["Threads", cmd.threads],

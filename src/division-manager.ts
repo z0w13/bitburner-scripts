@@ -536,7 +536,7 @@ export async function main(ns: NS): Promise<void> {
         ])
         tableData.unshift(["Product", "Stock", "Stock -1", "Stock -2", "Stock -3", "Stock -4"])
         if (tableData.length > 0) {
-          renderTable(ns, tableData)
+          renderTable(tableData)
             .split("\n")
             .forEach((row) => logger.info(row))
         }

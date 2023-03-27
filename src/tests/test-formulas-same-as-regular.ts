@@ -24,7 +24,7 @@ export async function main(ns: NS): Promise<void> {
     table.push(["getWeakenThreads", host, builtin, formula, builtin - formula])
   }
 
-  ns.print(renderTable(ns, table))
+  ns.print(renderTable(table))
 
   for (const host of testHosts) {
     const server = ns.getServer(host)
@@ -35,5 +35,5 @@ export async function main(ns: NS): Promise<void> {
     table.push(["getHackThreads", host, builtin, formula, builtin - formula])
   }
 
-  ns.print(renderTable(ns, table))
+  ns.print(renderTable(table))
 }

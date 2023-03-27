@@ -23,7 +23,7 @@ export async function main(ns: NS): Promise<void> {
       ])
     }
 
-    ns.print(renderTable(ns, data))
+    ns.print(renderTable(data))
     await ns.asleep(1000)
   }
 }
