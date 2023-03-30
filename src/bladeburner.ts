@@ -40,6 +40,9 @@ function printStatus(ns: NS): void {
       ? ns.bladeburner.getActionCurrentLevel(currentAction.type, currentAction.name)
       : null
 
+  const actionLengthMs = ns.bladeburner.getActionTime(currentAction.type, currentAction.name)
+  const actionProgressMs = ns.bladeburner.getActionCurrentTime()
+
   const successChance =
     currentAction.type !== ActionType.Idle
       ? ns.bladeburner.getActionEstimatedSuccessChance(currentAction.type, currentAction.name)
@@ -84,6 +87,11 @@ function printStatus(ns: NS): void {
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
+
+  if (!ns.bladeburner.joinBladeburnerDivision()) {
+    ns.tprint("ERROR: Can't join bladeburner")
+    return
+  }
 
   const action = new BladeburnerAction()
   const levelAction = new BladeburnerLevelSkillAction()
