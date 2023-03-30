@@ -35,7 +35,7 @@ export function formatNum(ns: NS, value: number, fractionalDigits = 2, suffixSta
   if (value === Infinity) {
     return "∞"
   }
-  return ns.formatNumber(value, fractionalDigits, suffixStart).replace(",", " ")
+  return ns.formatNumber(value, fractionalDigits, suffixStart).replaceAll(",", " ")
 }
 
 export function formatMoney(ns: NS, value: number, fractionalDigits = 2, suffixStart = 1_000): string {
