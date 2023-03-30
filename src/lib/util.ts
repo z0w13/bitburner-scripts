@@ -6,12 +6,19 @@ export function sum(values: Array<number>): number {
   return values.reduce((acc, val) => acc + val, 0)
 }
 
-export function sortFunc<T>(getter: (v: T) => number, desc = false): (a: T, b: T) => number {
+type Comparable = string | number | boolean
+
+export function sortFunc<T>(getter: (v: T) => Comparable, desc = false): (a: T, b: T) => number {
   return function (a: T, b: T): number {
-    if (desc) {
-      return getter(b) - getter(a)
+    const aVal = getter(a)
+    const bVal = getter(b)
+
+    if (aVal > bVal) {
+      return desc ? -1 : 1
+    } else if (aVal === bVal) {
+      return 0
     } else {
-      return getter(a) - getter(b)
+      return desc ? 1 : -1
     }
   }
 }
