@@ -17,11 +17,11 @@ export default class RingBuffer<T> {
     this._data.push(value)
   }
 
-  get(): Array<T> {
-    return [...this._data]
+  get(): ReadonlyArray<T> {
+    return this._data.slice()
   }
 
-  getNonEmpty(): Array<T> {
+  getNonEmpty(): ReadonlyArray<T> {
     return this.get().filter((v) => v !== null && v !== undefined)
   }
 }
