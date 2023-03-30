@@ -9,7 +9,7 @@ interface IncomeTypes {
   profit: number
 }
 
-function getMoneySourceAverage(sources: Array<MoneySource>, timeSinceLastAug: number): IncomeTypes {
+function getMoneySourceAverage(sources: ReadonlyArray<MoneySource>, timeSinceLastAug: number): IncomeTypes {
   if (sources.length === 0) {
     return { income: 0, expenses: 0, profit: 0 }
   }
