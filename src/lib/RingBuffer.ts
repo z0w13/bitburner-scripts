@@ -10,7 +10,7 @@ export default class RingBuffer<T> {
   }
 
   push(value: T) {
-    while (this._data.length > this._size) {
+    while (this._data.length >= this._size) {
       this._data.shift()
     }
 
