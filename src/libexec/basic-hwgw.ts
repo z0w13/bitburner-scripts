@@ -7,12 +7,12 @@ export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
   ns.enableLog("exec")
 
-  const flags = parseFlags(ns, { target: "n00dles" })
+  const flags = parseFlags(ns, { target: "n00dles", short: false, long: false })
 
   while (true) {
-    await maxMoney(ns, flags.target)
+    await maxMoney(ns, flags.target, flags.long)
     await minSecurity(ns, flags.target)
-    await hack(ns, flags.target)
+    await hack(ns, flags.target, flags.short)
 
     await ns.asleep(100)
   }

@@ -8,12 +8,13 @@ import HostManager from "/lib/HostManager"
 import { maxMoney, minSecurity } from "/lib/HwgwShared"
 import { formatDate, formatMoney, formatNum, formatTime, renderProgress } from "/lib/util"
 import VirtualNetworkState from "/lib/VirtualNetworkState"
+import { SCRIPT_GROW, SCRIPT_HACK } from "/constants"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
   ns.enableLog("exec")
 
-  const flags = parseFlags(ns, { target: "n00dles" })
+  const flags = parseFlags(ns, { target: "n00dles", short: false, long: false })
 
   while (true) {
     const hostMgr = new HostManager(ns)
@@ -23,7 +24,7 @@ export async function main(ns: NS): Promise<void> {
     const player = ns.getPlayer()
     const job = getBatchJob(ns, server, player, network.copy())
 
-    await maxMoney(ns, flags.target)
+    await maxMoney(ns, flags.target, flags.long)
     await minSecurity(ns, flags.target)
 
     ns.print(`created ${job.numBatches} batches for "${flags.target}"`)
@@ -43,6 +44,14 @@ export async function main(ns: NS): Promise<void> {
         }
 
         delete command.cmd.script.flags["delay"]
+
+        if (command.cmd.script.file === SCRIPT_HACK && flags.short) {
+          command.cmd.script.flags["stock"] = true
+        }
+
+        if (command.cmd.script.file === SCRIPT_GROW && flags.long) {
+          command.cmd.script.flags["stock"] = true
+        }
 
         command.cmd.script.flags["endTime"] = Math.round(startTime + command.relativeEnd)
         command.cmd.script.flags["commandTime"] = Math.round(command.cmd.time)

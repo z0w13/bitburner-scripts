@@ -13,7 +13,7 @@ export function isMinSecurity(ns: NS, target: string): boolean {
   return ns.getServerSecurityLevel(target) <= ns.getServerMinSecurityLevel(target) * (1 + SECURITY_WIGGLE)
 }
 
-export async function maxMoney(ns: NS, target: string): Promise<void> {
+export async function maxMoney(ns: NS, target: string, stock = false): Promise<void> {
   while (!isMaxMoney(ns, target)) {
     await minSecurity(ns, target)
 
@@ -21,7 +21,7 @@ export async function maxMoney(ns: NS, target: string): Promise<void> {
     const startTime = Date.now()
     const endTime = startTime + command.getTotalTime()
 
-    await waitForPids(ns, runCommand(ns, command, { fill: true }), 1000, (_) => {
+    await waitForPids(ns, runCommand(ns, command, { fill: true, args: ["--stock", stock] }), 1000, (_) => {
       ns.clearLog()
       printCommandProgress(ns, "grow", startTime, endTime)
     })
@@ -52,12 +52,12 @@ function printCommandProgress(ns: NS, command: string, startTime: number, endTim
   )
 }
 
-export async function hack(ns: NS, target: string): Promise<void> {
+export async function hack(ns: NS, target: string, stock = false): Promise<void> {
   const command = getHackCommand(ns, ns.getServer(target), ns.getPlayer())
   const startTime = Date.now()
   const endTime = startTime + command.getTotalTime()
 
-  await waitForPids(ns, runCommand(ns, command, { fill: true }), 1000, (_) => {
+  await waitForPids(ns, runCommand(ns, command, { fill: true, args: ["--stock", stock] }), 1000, (_) => {
     ns.clearLog()
     printCommandProgress(ns, "hack", startTime, endTime)
   })

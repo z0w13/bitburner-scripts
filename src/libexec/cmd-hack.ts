@@ -2,6 +2,7 @@ import type { NS, ScriptArg } from "@ns"
 
 interface Flags {
   target: string
+  stock: boolean
   threads: number
   delay: number
   endTime: number
@@ -11,6 +12,7 @@ interface Flags {
 export async function main(ns: NS): Promise<void> {
   const flags = ns.flags([
     ["target", ""],
+    ["stock", false],
     ["threads", 1],
     ["delay", 0],
     ["endTime", 0],
@@ -34,5 +36,5 @@ export async function main(ns: NS): Promise<void> {
     return
   }
 
-  await ns.hack(flags.target, { threads: flags.threads })
+  await ns.hack(flags.target, { threads: flags.threads, stock: flags.stock })
 }
