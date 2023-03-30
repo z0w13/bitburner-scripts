@@ -9,6 +9,14 @@ export default class RingBuffer<T> {
     return this._size
   }
 
+  get filled(): number {
+    return this.getNonEmpty().length
+  }
+
+  get full(): boolean {
+    return this.filled === this.length
+  }
+
   push(value: T) {
     while (this._data.length >= this._size) {
       this._data.shift()
