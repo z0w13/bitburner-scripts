@@ -1,95 +1,48 @@
-import type { NS } from "@ns"
 import { ansiRegex } from "/lib/term"
 
-type TableRow = Array<unknown>
 type TableData = Array<Array<string>>
 export type RawTableData = Array<Array<unknown>>
 
 export default function renderTable(rawData: RawTableData, headers = true, footers = false): string {
-  let data = normalizeRows(rawData)
-  const colLengths = getColumnLengths(data)
-  data = normalizeRowLengths(data, colLengths)
+  const tableData = normalizeRowColumns(stringifyTableData(rawData), getTotalColumns(rawData))
+  const tableInfo = getTableInfo(tableData)
 
   let result = ""
-  result += buildDivider(colLengths) + "\n"
-  for (const rowIdx in data) {
-    if (parseInt(rowIdx) === data.length - 1 && footers) {
-      result += buildDivider(colLengths) + "\n"
+  result += buildDivider(tableInfo.columnLengths) + "\n"
+  for (const rowIdx in tableData) {
+    if (parseInt(rowIdx) === tableData.length - 1 && footers) {
+      result += buildDivider(tableInfo.columnLengths) + "\n"
     }
 
-    result += renderRow(data[rowIdx], colLengths) + "\n"
+    result += renderRow(tableData[rowIdx], tableInfo.columnLengths) + "\n"
 
     if (parseInt(rowIdx) === 0 && headers) {
-      result += buildDivider(colLengths) + "\n"
+      result += buildDivider(tableInfo.columnLengths) + "\n"
     }
   }
-  result += buildDivider(colLengths)
+  result += buildDivider(tableInfo.columnLengths)
   return result
 }
 
-function renderRow(columns: Array<string>, colLengths: Array<number>): string {
-  let rowString = ""
-  for (const colIdx in columns) {
-    rowString += renderColumn(columns[colIdx], colLengths[colIdx])
+interface TableInfo {
+  columns: number
+  columnLengths: Array<number>
+  rows: number
+}
+
+function getTableInfo(data: TableData): TableInfo {
+  const totalColumns = getTotalColumns(data)
+  const columnLengths = getColumnLengths(data, totalColumns)
+
+  return {
+    columnLengths,
+    columns: totalColumns,
+    rows: data.length,
   }
-  rowString += "|" // Closing Divider
-
-  return rowString
 }
 
-function renderColumn(content: string, length: number): string {
-  return [
-    "| ", // Divider
-    " ".repeat(length - realColumnLength(content)), // Alignment padding
-    content, // Content
-    " ", // Padding
-  ].join("")
-}
-
-function normalizeRows(rawData: RawTableData): TableData {
-  const data: TableData = []
-  for (const rowIdx in rawData) {
-    data.push(rawData[rowIdx].map((v: unknown): string => (typeof v !== "string" ? String(v) : v)))
-  }
-
-  return data
-}
-
-function normalizeRowLengths(data: TableData, colLengths: Array<number>): TableData {
-  const colCount = colLengths.length
-
-  for (const row of data) {
-    while (row.length < colCount) {
-      row.push("")
-    }
-  }
-
-  return data
-}
-
-function buildDivider(colLengths: Array<number>) {
-  let result = ""
-  for (const colLength of colLengths) {
-    result += "+-" + "-".repeat(colLength) + "-"
-  }
-  return result + "+"
-}
-
-function buildRowFormatString(row: TableRow, colLengths: Array<number>): string {
-  let formatString = ""
-  for (const colIdx in row) {
-    formatString += "| %" + colLengths[colIdx] + "s "
-  }
-  return formatString + "|"
-}
-
-function realColumnLength(col: string): number {
-  return col.replaceAll(ansiRegex(), "").length
-}
-
-function getColumnLengths(data: TableData): Array<number> {
-  const longestRow = Math.max(...data.map((row) => row?.length ?? 0))
-  const colLengths = new Array<number>(longestRow).fill(0)
+function getColumnLengths(data: TableData, totalColumns: number): Array<number> {
+  const colLengths = new Array<number>(totalColumns).fill(0)
 
   for (const row of data) {
     for (const colIdx in row) {
@@ -101,4 +54,50 @@ function getColumnLengths(data: TableData): Array<number> {
   }
 
   return colLengths
+}
+
+function renderRow(cells: Array<string>, columnLengths: Array<number>): string {
+  let rowString = ""
+  for (const colIdx in cells) {
+    rowString += renderCell(cells[colIdx], columnLengths[colIdx])
+  }
+  rowString += "|" // Closing Divider
+
+  return rowString
+}
+
+function renderCell(content: string, length: number): string {
+  return [
+    "| ", // Divider
+    " ".repeat(length - realColumnLength(content)), // Alignment padding
+    content, // Content
+    " ", // Padding
+  ].join("")
+}
+
+// Return columns of largest row so we can normalise column count across rows
+function getTotalColumns(data: RawTableData): number {
+  return Math.max(...data.map((row) => row?.length ?? 0))
+}
+
+// Convert all cell values to strings
+function stringifyTableData(rawData: RawTableData): TableData {
+  return rawData.map((row) => row.map((cell: unknown): string => (typeof cell !== "string" ? String(cell) : cell)))
+}
+
+// Make sure all row arrays are equally sized (adding empty cells if needed)
+function normalizeRowColumns(data: TableData, columns: number): TableData {
+  return data.map((row) => row.fill("", row.length, columns - row.length))
+}
+
+function buildDivider(colLengths: Array<number>) {
+  let result = ""
+  for (const colLength of colLengths) {
+    result += "+-" + "-".repeat(colLength) + "-"
+  }
+  return result + "+"
+}
+
+function realColumnLength(col: string): number {
+  return col.replaceAll(ansiRegex(), "").length
 }
