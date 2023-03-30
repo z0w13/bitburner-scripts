@@ -2,7 +2,7 @@ import type { Server } from "@ns"
 import { PERCENTAGE_TO_HACK } from "/config"
 import { CONSTANTS } from "/game-constants"
 
-export function sum(values: Array<number>): number {
+export function sum(values: ReadonlyArray<number>): number {
   return values.reduce((acc, val) => acc + val, 0)
 }
 
