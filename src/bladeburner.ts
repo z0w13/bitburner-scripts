@@ -56,7 +56,12 @@ function printStatus(ns: NS): void {
       abbreviateAction(currentAction.name) + (currentAction.type !== ActionType.General ? ` Lv. ${actionLevel}` : ""),
     ],
     ["Success %", formatSuccess(ns, successChance)],
-    ["Time", formatTime(ns.bladeburner.getActionTime(currentAction.type, currentAction.name))],
+    [
+      "Time",
+      `${formatTime(actionProgressMs)} / ${formatTime(actionLengthMs)} (${ns.formatPercent(
+        actionProgressMs / actionLengthMs,
+      )})`,
+    ],
     [],
     ["Contract ✓", ns.formatNumber(getTotalContractSuccesses(ns), 0, 100_000)],
     ["Op ✓", ns.formatNumber(getTotalOpSuccesses(ns), 0, 100_000)],
