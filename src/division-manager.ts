@@ -177,6 +177,7 @@ function adjustPricesSimple(ns: NS, division: Division): void {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function adjustPricesDynamic(ns: NS, division: Division): void {
   const hasOfficeAPI = ns.corporation.hasUnlockUpgrade("Office API")
   const hasTAII = hasOfficeAPI && ns.corporation.hasResearched(division.name, "Market-TA.II")

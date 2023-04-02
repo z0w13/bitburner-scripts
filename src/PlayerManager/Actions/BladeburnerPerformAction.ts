@@ -37,6 +37,7 @@ export function getFinishedBlackOps(ns: NS): number {
     .length
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function areAllBlackOpsFinished(ns: NS): boolean {
   return getTotalBlackOps() === getFinishedBlackOps(ns)
 }
