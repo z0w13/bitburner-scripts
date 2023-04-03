@@ -1,3 +1,4 @@
+import { NS } from "@ns"
 import renderTable, { RawTableData } from "/lib/func/render-table"
 import { formatChangeColor, TermColor } from "/lib/term"
 import { formatMoney, formatNum, sortFunc, sum } from "/lib/util"

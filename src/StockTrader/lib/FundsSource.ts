@@ -1,3 +1,5 @@
+import { NS } from "@ns"
+
 export interface FundsSource {
   getFunds(): number
   update(val: number): void

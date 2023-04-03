@@ -1,3 +1,4 @@
+import { NS } from "@ns"
 import { GymType, Skills as AllSkills, UniversityClassType } from "@ns"
 import { CityName, LocationName } from "/data/StaticDefs"
 import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"

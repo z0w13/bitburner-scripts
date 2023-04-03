@@ -1,3 +1,4 @@
+import { NS } from "@ns"
 import { Command, SerializedCommand } from "/Command/Objects"
 import { BATCH_INTERVAL } from "/config"
 import runCommand from "/lib/func/run-command"

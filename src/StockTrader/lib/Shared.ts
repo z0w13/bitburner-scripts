@@ -1,3 +1,4 @@
+import { NS } from "@ns"
 import { StockSource } from "/StockTrader/lib/StockSource"
 
 export enum Trend {

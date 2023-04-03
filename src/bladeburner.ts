@@ -7,7 +7,7 @@ import BladeburnerAction, {
   getTotalBlackOps,
   getTotalContractSuccesses,
   getTotalOpSuccesses,
-} from "PlayerManager/Actions/BladeburnerPerformAction"
+} from "/PlayerManager/Actions/BladeburnerPerformAction"
 import BladeburnerLevelSkillAction from "/PlayerManager/Actions/BladeburnerLevelSkillAction"
 import { ActionType } from "/data/Bladeburner"
 
