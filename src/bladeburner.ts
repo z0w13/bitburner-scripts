@@ -1,15 +1,15 @@
 import type { NS } from "@ns"
-import renderTable, { RawTableData } from "/lib/func/render-table"
-import { formatTime } from "/lib/util"
+import renderTable, { RawTableData } from "@/lib/func/render-table"
+import { formatTime } from "@/lib/util"
 import BladeburnerAction, {
   getCityPops,
   getFinishedBlackOps,
   getTotalBlackOps,
   getTotalContractSuccesses,
   getTotalOpSuccesses,
-} from "/PlayerManager/Actions/BladeburnerPerformAction"
-import BladeburnerLevelSkillAction from "/PlayerManager/Actions/BladeburnerLevelSkillAction"
-import { ActionType } from "/data/Bladeburner"
+} from "@/PlayerManager/Actions/BladeburnerPerformAction"
+import BladeburnerLevelSkillAction from "@/PlayerManager/Actions/BladeburnerLevelSkillAction"
+import { ActionType } from "@/data/Bladeburner"
 
 function abbreviateAction(actionName: string): string {
   switch (actionName) {

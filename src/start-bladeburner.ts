@@ -1,15 +1,15 @@
 import type { NS } from "@ns"
-import { DAEMON_SERVER } from "/config"
+import { DAEMON_SERVER } from "@/config"
 import {
   SCRIPT_AUTOBEST_HWGW,
   SCRIPT_AUTOBUY,
   SCRIPT_AUTOSETUP,
   SCRIPT_BLADEBURNER,
   SCRIPT_MANAGE_SLEEVES,
-} from "/constants"
-import { Attribute } from "/lib/objects"
-import Script from "/lib/Script"
-import TrainAction from "/PlayerManager/Actions/TrainAction"
+} from "@/constants"
+import { Attribute } from "@/lib/objects"
+import Script from "@/lib/Script"
+import TrainAction from "@/PlayerManager/Actions/TrainAction"
 
 async function trainCombat(ns: NS, targetLevel = 100): Promise<void> {
   const agilityTrainAction = new TrainAction(Attribute.AGILITY, targetLevel)

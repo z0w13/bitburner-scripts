@@ -1,5 +1,5 @@
 import type { NS } from "@ns"
-import { DAEMON_SERVER } from "/config"
+import { DAEMON_SERVER } from "@/config"
 
 export type ScriptArg = string | number | boolean
 

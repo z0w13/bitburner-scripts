@@ -1,13 +1,13 @@
 import { NS } from "@ns"
-import { PositionType, StockSource } from "/StockTrader/lib/StockSource"
-import { StockData, Trend } from "/StockTrader/lib/Shared"
+import { PositionType, StockSource } from "@/StockTrader/lib/StockSource"
+import { StockData, Trend } from "@/StockTrader/lib/Shared"
 import {
   INVERSION_AGREEMENT_THRESHOLD,
   INVERSION_TREND_DIFF_THRESHOLD,
   MAX_FUNDS_SPEND_PER_STOCK,
   MIN_STOCK_HOLD_TICKS,
   MIN_VAL_FOR_STOCK_ORDER,
-} from "/StockTrader/config"
+} from "@/StockTrader/config"
 
 interface StockAlgoData {
   sym: string

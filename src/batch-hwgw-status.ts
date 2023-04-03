@@ -1,7 +1,7 @@
 import type { NS } from "@ns"
-import { DAEMON_SERVER } from "/config"
-import renderTable, { RawTableData } from "/lib/func/render-table"
-import { formatMoney } from "/lib/util"
+import { DAEMON_SERVER } from "@/config"
+import renderTable, { RawTableData } from "@/lib/func/render-table"
+import { formatMoney } from "@/lib/util"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")

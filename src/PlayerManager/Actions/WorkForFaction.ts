@@ -1,10 +1,10 @@
 import type { NS } from "@ns"
-import { FactionWorkType } from "/data/StaticDefs"
-import { AugmentPurchaseInfo, getAvailableAugs } from "/data/Augments"
-import { getHighestFavorFaction } from "/data/Factions"
-import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
-import { sortFunc } from "/lib/util"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import { FactionWorkType } from "@/data/StaticDefs"
+import { AugmentPurchaseInfo, getAvailableAugs } from "@/data/Augments"
+import { getHighestFavorFaction } from "@/data/Factions"
+import getPlayerAction, { PlayerActionType } from "@/lib/func/get-player-action"
+import { sortFunc } from "@/lib/util"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 function setDifference<T>(setA: Set<T>, setB: Set<T>): Set<T> {
   const diff = new Set(setA)

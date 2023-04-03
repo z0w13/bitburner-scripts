@@ -1,6 +1,6 @@
 import type { NS } from "@ns"
-import { DAEMON_SERVER } from "/config"
-import getHostTree, { TreeNode } from "/lib/func/get-host-tree"
+import { DAEMON_SERVER } from "@/config"
+import getHostTree, { TreeNode } from "@/lib/func/get-host-tree"
 
 function recursor(target: string, current: TreeNode, path: Array<string> = []): Array<string> | false {
   if (current.name === target) {

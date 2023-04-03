@@ -1,7 +1,7 @@
 import type { NS } from "@ns"
-import * as formulas from "/lib/calc-threads-formulas"
-import * as basic from "/lib/calc-threads"
-import renderTable, { RawTableData } from "/lib/func/render-table"
+import * as formulas from "@/lib/calc-threads-formulas"
+import * as basic from "@/lib/calc-threads"
+import renderTable, { RawTableData } from "@/lib/func/render-table"
 
 export async function main(ns: NS): Promise<void> {
   const testHosts = ["n00dles", "iron-gym", "fulcrumtech"]

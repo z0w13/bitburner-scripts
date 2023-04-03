@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { StockSource } from "/StockTrader/lib/StockSource"
+import { StockSource } from "@/StockTrader/lib/StockSource"
 
 export enum Trend {
   Up = 1,

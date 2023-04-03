@@ -1,5 +1,5 @@
-import { SerializedJob } from "/JobScheduler/JobObjects"
-import { PreppedTargetInfo } from "/lib/objects"
+import { SerializedJob } from "@/JobScheduler/JobObjects"
+import { PreppedTargetInfo } from "@/lib/objects"
 
 export interface SerializedDaemonStatus {
   preppedTargets: Array<PreppedTargetInfo>

@@ -1,6 +1,6 @@
 import type { NS } from "@ns"
-import { getLowestMetRepAug } from "/data/Augments"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import { getLowestMetRepAug } from "@/data/Augments"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 /**
  * TODO(zowie): Rework how we pick the augmentation to for for next

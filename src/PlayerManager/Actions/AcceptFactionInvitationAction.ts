@@ -1,5 +1,5 @@
 import type { NS } from "@ns"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 export default class AcceptFactionInvitationsAction extends BaseAction {
   shouldPerform(ns: NS): boolean {

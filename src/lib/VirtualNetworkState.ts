@@ -1,11 +1,11 @@
 import type { NS } from "@ns"
-import { LOG_LEVEL, MAX_LOAD, MAX_PREP_LOAD } from "/config"
-import { Command } from "/Command/Objects"
-import { Job, JobType } from "/JobScheduler/JobObjects"
-import Logger from "/lib/Logger"
-import Script from "/lib/Script"
-import ServerWrapper from "/lib/ServerWrapper"
-import { formatGiB, sum } from "/lib/util"
+import { LOG_LEVEL, MAX_LOAD, MAX_PREP_LOAD } from "@/config"
+import { Command } from "@/Command/Objects"
+import { Job, JobType } from "@/JobScheduler/JobObjects"
+import Logger from "@/lib/Logger"
+import Script from "@/lib/Script"
+import ServerWrapper from "@/lib/ServerWrapper"
+import { formatGiB, sum } from "@/lib/util"
 
 class BasicServerSnapshot {
   readonly hostname: string

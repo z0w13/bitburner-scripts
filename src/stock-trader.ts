@@ -1,18 +1,18 @@
 import { NS } from "@ns"
-import { FundsSource, MockFundsSource, PlayerFundsSource } from "/StockTrader/lib/FundsSource"
-import { StockManager } from "/StockTrader/lib/StockManager"
-import { printOwnedStocks, printStatus, printStockAnalysisData } from "/StockTrader/lib/status"
-import { FakeTradeStockSource, StockSource } from "/StockTrader/lib/StockSource"
+import { FundsSource, MockFundsSource, PlayerFundsSource } from "@/StockTrader/lib/FundsSource"
+import { StockManager } from "@/StockTrader/lib/StockManager"
+import { printOwnedStocks, printStatus, printStockAnalysisData } from "@/StockTrader/lib/status"
+import { FakeTradeStockSource, StockSource } from "@/StockTrader/lib/StockSource"
 import {
   MONEY_RESERVE,
   RECENT_STOCK_HISTORY_SIZE,
   STOCK_HISTORY_SIZE,
   TREND_HISTORY_DISPLAY_SIZE,
-} from "/StockTrader/config"
-import { onStockTick, calcAllStockData } from "/StockTrader/lib/Shared"
-import { DAEMON_SERVER } from "/config"
-import parseFlags from "/lib/parseFlags"
-import { SerializedStockTrackerData } from "/StockTrader/lib/Tracker"
+} from "@/StockTrader/config"
+import { onStockTick, calcAllStockData } from "@/StockTrader/lib/Shared"
+import { DAEMON_SERVER } from "@/config"
+import parseFlags from "@/lib/parseFlags"
+import { SerializedStockTrackerData } from "@/StockTrader/lib/Tracker"
 
 const STOCK_TRACKER = "/StockTrader/stock-tracker.js"
 

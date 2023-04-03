@@ -1,12 +1,12 @@
 import type { NS } from "@ns"
-import { PERCENTAGE_TO_HACK } from "/config"
-import { JobType } from "/JobScheduler/JobObjects"
-import { getBatchJob } from "/lib/func/get-batch-job"
-import getHosts from "/lib/func/get-hosts"
-import HostManager from "/lib/HostManager"
-import ServerWrapper from "/lib/ServerWrapper"
-import { sortFunc } from "/lib/util"
-import VirtualNetworkState from "/lib/VirtualNetworkState"
+import { PERCENTAGE_TO_HACK } from "@/config"
+import { JobType } from "@/JobScheduler/JobObjects"
+import { getBatchJob } from "@/lib/func/get-batch-job"
+import getHosts from "@/lib/func/get-hosts"
+import HostManager from "@/lib/HostManager"
+import ServerWrapper from "@/lib/ServerWrapper"
+import { sortFunc } from "@/lib/util"
+import VirtualNetworkState from "@/lib/VirtualNetworkState"
 
 export interface Target {
   name: string

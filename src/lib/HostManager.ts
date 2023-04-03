@@ -1,8 +1,8 @@
 import type { NS } from "@ns"
-import ServerWrapper from "/lib/ServerWrapper"
-import getHosts from "/lib/func/get-hosts"
-import Script from "/lib/Script"
-import { sortFunc } from "/lib/util"
+import ServerWrapper from "@/lib/ServerWrapper"
+import getHosts from "@/lib/func/get-hosts"
+import Script from "@/lib/Script"
+import { sortFunc } from "@/lib/util"
 
 export default class HostManager {
   private ns: NS

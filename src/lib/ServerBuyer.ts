@@ -1,10 +1,10 @@
 import type { NS, Server } from "@ns"
-import { LOG_LEVEL } from "/config"
-import { getMoneyToReserve } from "/lib/func/get-money-to-reserve"
-import Logger from "/lib/Logger"
-import { LogLevel } from "/lib/objects"
-//import { SerializedDaemonStatus } from "/lib/objects"
-import { formatGiB, formatMoney } from "/lib/util"
+import { LOG_LEVEL } from "@/config"
+import { getMoneyToReserve } from "@/lib/func/get-money-to-reserve"
+import Logger from "@/lib/Logger"
+import { LogLevel } from "@/lib/objects"
+//import { SerializedDaemonStatus } from "@/lib/objects"
+import { formatGiB, formatMoney } from "@/lib/util"
 
 export default class ServerBuyer {
   ns: NS

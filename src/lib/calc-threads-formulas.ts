@@ -1,5 +1,5 @@
 import type { NS, Player, Server } from "@ns"
-import { SERVER_WEAKEN_AMOUNT } from "/constants"
+import { SERVER_WEAKEN_AMOUNT } from "@/constants"
 
 // NOTE(zowie): Neither this or ns.growthAnalyze seem to keep in mind that we also get MONEY*THREADS every growth cycle
 //              might have to find a way to factor this in in either, or have an upper limit here, but not sure what that limit

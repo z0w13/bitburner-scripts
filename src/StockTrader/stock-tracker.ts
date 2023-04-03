@@ -1,7 +1,7 @@
 import { NS } from "@ns"
-import { RECENT_STOCK_HISTORY_SIZE, STOCK_HISTORY_SIZE, TREND_HISTORY_DISPLAY_SIZE } from "/StockTrader/config"
-import { onStockTick } from "/StockTrader/lib/Shared"
-import { StockTracker } from "/StockTrader/lib/Tracker"
+import { RECENT_STOCK_HISTORY_SIZE, STOCK_HISTORY_SIZE, TREND_HISTORY_DISPLAY_SIZE } from "@/StockTrader/config"
+import { onStockTick } from "@/StockTrader/lib/Shared"
+import { StockTracker } from "@/StockTrader/lib/Tracker"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")

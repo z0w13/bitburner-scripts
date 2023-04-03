@@ -1,6 +1,6 @@
 import type { NS } from "@ns"
-import RingBuffer from "/lib/RingBuffer"
-import { sum } from "/lib/util"
+import RingBuffer from "@/lib/RingBuffer"
+import { sum } from "@/lib/util"
 
 // Things to spend money on
 // - Buying augments

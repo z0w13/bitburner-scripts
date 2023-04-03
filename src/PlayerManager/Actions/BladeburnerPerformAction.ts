@@ -1,5 +1,5 @@
 import type { NS } from "@ns"
-import { CityName } from "/data/StaticDefs"
+import { CityName } from "@/data/StaticDefs"
 import {
   cityActionIsEqual,
   ActionType,
@@ -15,10 +15,10 @@ import {
   getContractMoney,
   BlackOp,
   BladeburnerAction,
-} from "/data/Bladeburner"
-import { sortFunc, sum } from "/lib/util"
+} from "@/data/Bladeburner"
+import { sortFunc, sum } from "@/lib/util"
 
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 const MIN_CITY_POP = 1_000_000
 

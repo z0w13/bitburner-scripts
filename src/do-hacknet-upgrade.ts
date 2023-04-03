@@ -1,5 +1,5 @@
 import type { NS } from "@ns"
-import UpgradeHacknetAction from "/PlayerManager/Actions/UpgradeHacknetAction"
+import UpgradeHacknetAction from "@/PlayerManager/Actions/UpgradeHacknetAction"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")

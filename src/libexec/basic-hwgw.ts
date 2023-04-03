@@ -1,6 +1,6 @@
 import type { NS } from "@ns"
-import { hack, maxMoney, minSecurity } from "/lib/HwgwShared"
-import parseFlags from "/lib/parseFlags"
+import { hack, maxMoney, minSecurity } from "@/lib/HwgwShared"
+import parseFlags from "@/lib/parseFlags"
 
 // TODO(zowie): Find a way to optimise, probably make command calculation not use ServerWrapper
 export async function main(ns: NS): Promise<void> {

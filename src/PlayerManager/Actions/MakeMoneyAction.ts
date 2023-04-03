@@ -1,9 +1,9 @@
 import type { NS } from "@ns"
-import { getBestCrime } from "/data/Crimes"
-import { getBestJob } from "/data/Jobs"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
-import CrimeAction from "/PlayerManager/Actions/CrimeAction"
-import WorkAction from "/PlayerManager/Actions/WorkAction"
+import { getBestCrime } from "@/data/Crimes"
+import { getBestJob } from "@/data/Jobs"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
+import CrimeAction from "@/PlayerManager/Actions/CrimeAction"
+import WorkAction from "@/PlayerManager/Actions/WorkAction"
 
 export default class MakeMoneyAction extends BaseAction {
   protected crimeAction = new CrimeAction()

@@ -1,6 +1,6 @@
 import type { NS } from "@ns"
-import { LOG_LEVELS } from "/config"
-import { LogLevel } from "/lib/objects"
+import { LOG_LEVELS } from "@/config"
+import { LogLevel } from "@/lib/objects"
 
 type LogFunc = (message: string) => void
 

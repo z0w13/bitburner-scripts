@@ -1,7 +1,7 @@
 import type { NS } from "@ns"
-import { Skill } from "/data/Bladeburner"
-import { sortFunc } from "/lib/util"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import { Skill } from "@/data/Bladeburner"
+import { sortFunc } from "@/lib/util"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 const SKILLS_TO_LEVEL: Record<string, number | null> = {
   [Skill.BladesIntuition]: 5000,

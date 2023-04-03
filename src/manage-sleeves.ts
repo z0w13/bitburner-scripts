@@ -1,8 +1,8 @@
 import { NS, SleeveTask } from "@ns"
-import { FactionWorkType } from "/data/StaticDefs"
-import renderTable, { RawTableData } from "/lib/func/render-table"
-import { formatTime } from "/lib/util"
-import BuySleeveAugmentsAction from "/PlayerManager/Actions/BuySleeveAugmentsAction"
+import { FactionWorkType } from "@/data/StaticDefs"
+import renderTable, { RawTableData } from "@/lib/func/render-table"
+import { formatTime } from "@/lib/util"
+import BuySleeveAugmentsAction from "@/PlayerManager/Actions/BuySleeveAugmentsAction"
 
 function getSleeveTask(task: SleeveTask | null): string {
   if (!task) {

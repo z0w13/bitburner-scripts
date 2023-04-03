@@ -1,9 +1,9 @@
 import type { NS } from "@ns"
-import { getGrowCommand, getHackCommand, getWeakenCommand } from "/Command/Formulas"
-import { MONEY_WIGGLE, SECURITY_WIGGLE } from "/config"
-import runCommand from "/lib/func/run-command"
-import waitForPids from "/lib/func/wait-for-pids"
-import { formatTime, renderProgress } from "/lib/util"
+import { getGrowCommand, getHackCommand, getWeakenCommand } from "@/Command/Formulas"
+import { MONEY_WIGGLE, SECURITY_WIGGLE } from "@/config"
+import runCommand from "@/lib/func/run-command"
+import waitForPids from "@/lib/func/wait-for-pids"
+import { formatTime, renderProgress } from "@/lib/util"
 
 export function isMaxMoney(ns: NS, target: string): boolean {
   return ns.getServerMoneyAvailable(target) >= ns.getServerMaxMoney(target) * (1 - MONEY_WIGGLE)

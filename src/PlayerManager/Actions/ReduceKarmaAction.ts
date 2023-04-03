@@ -1,7 +1,7 @@
 import type { NS } from "@ns"
-import { Crimes } from "/data/Crimes"
-import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import { Crimes } from "@/data/Crimes"
+import getPlayerAction, { PlayerActionType } from "@/lib/func/get-player-action"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 export default class ReduceKarmaAction extends BaseAction {
   shouldPerform(ns: NS): boolean {

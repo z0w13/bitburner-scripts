@@ -1,6 +1,6 @@
-import { CityName } from "/data/StaticDefs"
+import { CityName } from "@/data/StaticDefs"
 import type { NS } from "@ns"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 export default class AcceptFactionInvitationsAction extends BaseAction {
   TIAN_DI_HUI_CITIES: Array<CityName> = [CityName.NewTokyo, CityName.Chongqing, CityName.Ishima]

@@ -1,5 +1,5 @@
 import type { NS, ProcessInfo, Server } from "@ns"
-import { getBatch } from "/Command/Formulas"
+import { getBatch } from "@/Command/Formulas"
 import {
   PERCENTAGE_TO_HACK,
   HACK_MIN_MONEY,
@@ -8,13 +8,13 @@ import {
   TARGET_MAX_PREP_WEAKEN_TIME,
   DAEMON_SERVER,
   SERVER_PREFIX,
-} from "/config"
-import { SCRIPT_HACK } from "/constants"
-import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads-formulas"
-import getThreadsAvailable from "/lib/func/get-threads-available"
-import { ServerSnapshot } from "/lib/objects"
-import Script from "/lib/Script"
-import { sum } from "/lib/util"
+} from "@/config"
+import { SCRIPT_HACK } from "@/constants"
+import { getGrowThreads, getHackThreads, getWeakenThreads } from "@/lib/calc-threads-formulas"
+import getThreadsAvailable from "@/lib/func/get-threads-available"
+import { ServerSnapshot } from "@/lib/objects"
+import Script from "@/lib/Script"
+import { sum } from "@/lib/util"
 
 export default class ServerWrapper {
   private readonly ns: NS

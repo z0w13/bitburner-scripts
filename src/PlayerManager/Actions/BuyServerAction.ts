@@ -1,6 +1,6 @@
 import type { NS } from "@ns"
-import ServerBuyer from "/lib/ServerBuyer"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import ServerBuyer from "@/lib/ServerBuyer"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 export class BuyServerAction extends BaseAction {
   protected nextStep: boolean

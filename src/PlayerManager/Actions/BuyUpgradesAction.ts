@@ -1,6 +1,6 @@
 import type { NS } from "@ns"
-import { DAEMON_SERVER } from "/config"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import { DAEMON_SERVER } from "@/config"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 enum UpgradeType {
   TOR,

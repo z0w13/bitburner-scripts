@@ -1,5 +1,5 @@
 import type { NS } from "@ns"
-import { sortFunc } from "/lib/util"
+import { sortFunc } from "@/lib/util"
 
 export function getFactionsSortedByFavour(ns: NS, factions: Array<string>): Array<{ name: string; favor: number }> {
   const inGang = ns.gang.inGang()

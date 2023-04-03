@@ -1,11 +1,11 @@
 import type { NS } from "@ns"
-import { SCRIPT_HACK } from "/constants"
-import renderTable from "/lib/func/render-table"
-import getThreadsAvailable from "/lib/func/get-threads-available"
-import Script from "/lib/Script"
-import { formatMoney, formatTime } from "/lib/util"
-import getTargets from "/lib/func/get-targets"
-import parseFlags from "/lib/parseFlags"
+import { SCRIPT_HACK } from "@/constants"
+import renderTable from "@/lib/func/render-table"
+import getThreadsAvailable from "@/lib/func/get-threads-available"
+import Script from "@/lib/Script"
+import { formatMoney, formatTime } from "@/lib/util"
+import getTargets from "@/lib/func/get-targets"
+import parseFlags from "@/lib/parseFlags"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")

@@ -1,7 +1,7 @@
 import type { NS } from "@ns"
-import { getBestCrime } from "/data/Crimes"
-import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
-import parseFlags from "/lib/parseFlags"
+import { getBestCrime } from "@/data/Crimes"
+import getPlayerAction, { PlayerActionType } from "@/lib/func/get-player-action"
+import parseFlags from "@/lib/parseFlags"
 
 export async function main(ns: NS): Promise<void> {
   const flags = parseFlags(ns, { karmawhore: false })

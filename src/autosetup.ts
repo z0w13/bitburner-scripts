@@ -1,11 +1,11 @@
 import type { NS } from "@ns"
-import getHosts from "/lib/func/get-hosts"
-import hackHost from "/lib/func/hack-host"
-import isHostSetup from "/lib/func/is-host-setup"
-import { COPY_SCRIPTS } from "/constants"
-import { DAEMON_SERVER } from "/config"
-import rsync from "/lib/func/rsync"
-import parseFlags from "/lib/parseFlags"
+import getHosts from "@/lib/func/get-hosts"
+import hackHost from "@/lib/func/hack-host"
+import isHostSetup from "@/lib/func/is-host-setup"
+import { COPY_SCRIPTS } from "@/constants"
+import { DAEMON_SERVER } from "@/config"
+import rsync from "@/lib/func/rsync"
+import parseFlags from "@/lib/parseFlags"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")

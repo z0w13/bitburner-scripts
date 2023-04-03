@@ -1,10 +1,10 @@
 import { NS } from "@ns"
 import type { LocationName } from "@ns"
-import { CompaniesMetadata } from "/data/CompanyMetadata"
-import { companyPositionMetadata, CompanyPositionMetadata } from "/data/CompanyPositionsMetadata"
-import { CONSTANTS } from "/game-constants"
-import { Attribute } from "/lib/objects"
-import { sortFunc } from "/lib/util"
+import { CompaniesMetadata } from "@/data/CompanyMetadata"
+import { companyPositionMetadata, CompanyPositionMetadata } from "@/data/CompanyPositionsMetadata"
+import { CONSTANTS } from "@/game-constants"
+import { Attribute } from "@/lib/objects"
+import { sortFunc } from "@/lib/util"
 
 export interface Job {
   name: string

@@ -1,11 +1,11 @@
 import { NS } from "@ns"
-import { Command, SerializedCommand } from "/Command/Objects"
-import { BATCH_INTERVAL } from "/config"
-import runCommand from "/lib/func/run-command"
-import waitForPids from "/lib/func/wait-for-pids"
-import { ServerSnapshot } from "/lib/objects"
-import ServerWrapper from "/lib/ServerWrapper"
-import { sum } from "/lib/util"
+import { Command, SerializedCommand } from "@/Command/Objects"
+import { BATCH_INTERVAL } from "@/config"
+import runCommand from "@/lib/func/run-command"
+import waitForPids from "@/lib/func/wait-for-pids"
+import { ServerSnapshot } from "@/lib/objects"
+import ServerWrapper from "@/lib/ServerWrapper"
+import { sum } from "@/lib/util"
 
 export abstract class Job {
   type: JobType

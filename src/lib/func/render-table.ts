@@ -1,4 +1,4 @@
-import { ansiRegex } from "/lib/term"
+import { ansiRegex } from "@/lib/term"
 
 type TableData = Array<Array<string>>
 export type RawTableData = Array<Array<unknown>>

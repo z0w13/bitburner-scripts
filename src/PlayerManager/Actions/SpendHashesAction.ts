@@ -1,6 +1,6 @@
 import type { NS } from "@ns"
-import { sortFunc } from "/lib/util"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import { sortFunc } from "@/lib/util"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 interface HashUpgrade {
   name: string

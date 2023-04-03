@@ -1,8 +1,8 @@
 import type { NS } from "@ns"
-import { BATCH_INTERVAL } from "/config"
-import renderTable from "/lib/func/render-table"
-import Script from "/lib/Script"
-import { formatGiB, formatTime, sum } from "/lib/util"
+import { BATCH_INTERVAL } from "@/config"
+import renderTable from "@/lib/func/render-table"
+import Script from "@/lib/Script"
+import { formatGiB, formatTime, sum } from "@/lib/util"
 
 export abstract class Command {
   target: string

@@ -1,5 +1,5 @@
 import type { NS } from "@ns"
-import { COPY_SCRIPTS } from "/constants"
+import { COPY_SCRIPTS } from "@/constants"
 
 export default function isHostSetup(ns: NS, hostname: string): boolean {
   const hasRoot = ns.getServer(hostname).hasAdminRights

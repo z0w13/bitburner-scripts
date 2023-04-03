@@ -1,11 +1,11 @@
 import type { NS } from "@ns"
-import { SCRIPT_WEAKEN } from "/constants"
-import { getWeakenCommand } from "/Command/Basic"
-import getThreadsAvailable from "/lib/func/get-threads-available"
-import runCommand from "/lib/func/run-command"
-import Script from "/lib/Script"
-import waitForPids from "/lib/func/wait-for-pids"
-import parseFlags from "/lib/parseFlags"
+import { SCRIPT_WEAKEN } from "@/constants"
+import { getWeakenCommand } from "@/Command/Basic"
+import getThreadsAvailable from "@/lib/func/get-threads-available"
+import runCommand from "@/lib/func/run-command"
+import Script from "@/lib/Script"
+import waitForPids from "@/lib/func/wait-for-pids"
+import parseFlags from "@/lib/parseFlags"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")

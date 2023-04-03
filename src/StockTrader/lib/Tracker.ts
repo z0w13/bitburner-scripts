@@ -1,5 +1,5 @@
-import RingBuffer from "/lib/RingBuffer"
-import { StockSource } from "/StockTrader/lib/StockSource"
+import RingBuffer from "@/lib/RingBuffer"
+import { StockSource } from "@/StockTrader/lib/StockSource"
 
 export interface SerializedStockTrackerData {
   ready: boolean

@@ -1,7 +1,7 @@
 import { MoneySource, NS } from "@ns"
-import renderTable, { RawTableData } from "/lib/func/render-table"
-import RingBuffer from "/lib/RingBuffer"
-import { sortFunc } from "/lib/util"
+import renderTable, { RawTableData } from "@/lib/func/render-table"
+import RingBuffer from "@/lib/RingBuffer"
+import { sortFunc } from "@/lib/util"
 
 interface IncomeTypes {
   income: number

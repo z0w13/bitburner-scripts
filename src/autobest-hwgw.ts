@@ -1,11 +1,11 @@
 import type { NS, Server } from "@ns"
-import { tail } from "/lib/util"
-import { DAEMON_SERVER } from "/config"
-import { JobType } from "/JobScheduler/JobObjects"
-import getScriptPid from "/lib/func/get-script-pid"
-import getTargets, { getTarget, Target } from "/lib/func/get-targets"
-import renderTable from "/lib/func/render-table"
-import { formatDate, formatMoney, formatTime, renderProgress, sortFunc } from "/lib/util"
+import { tail } from "@/lib/util"
+import { DAEMON_SERVER } from "@/config"
+import { JobType } from "@/JobScheduler/JobObjects"
+import getScriptPid from "@/lib/func/get-script-pid"
+import getTargets, { getTarget, Target } from "@/lib/func/get-targets"
+import renderTable from "@/lib/func/render-table"
+import { formatDate, formatMoney, formatTime, renderProgress, sortFunc } from "@/lib/util"
 
 interface AutobestState {
   target: Target | undefined

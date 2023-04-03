@@ -1,9 +1,9 @@
 import type { NS, Player, Server } from "@ns"
-import { getBatch } from "/Command/Formulas"
-import { BATCH_INTERVAL } from "/config"
-import VirtualNetworkState from "/lib/VirtualNetworkState"
-import { BatchJob, CommandForBatch } from "/JobScheduler/JobObjects"
-import ServerWrapper from "/lib/ServerWrapper"
+import { getBatch } from "@/Command/Formulas"
+import { BATCH_INTERVAL } from "@/config"
+import VirtualNetworkState from "@/lib/VirtualNetworkState"
+import { BatchJob, CommandForBatch } from "@/JobScheduler/JobObjects"
+import ServerWrapper from "@/lib/ServerWrapper"
 
 export function getBatchJob(ns: NS, target: Server, player: Player, network: VirtualNetworkState): BatchJob {
   const batchLimit = Math.min(100, Math.floor(getBatch(ns, target, player).time / BATCH_INTERVAL))

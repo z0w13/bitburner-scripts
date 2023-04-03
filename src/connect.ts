@@ -1,7 +1,7 @@
 import type { NS } from "@ns"
-import parseFlags from "/lib/parseFlags"
-import { DAEMON_SERVER } from "/config"
-import getHostPath from "/lib/func/get-host-path"
+import parseFlags from "@/lib/parseFlags"
+import { DAEMON_SERVER } from "@/config"
+import getHostPath from "@/lib/func/get-host-path"
 
 export async function main(ns: NS): Promise<void> {
   const flags = parseFlags(ns, { host: DAEMON_SERVER })

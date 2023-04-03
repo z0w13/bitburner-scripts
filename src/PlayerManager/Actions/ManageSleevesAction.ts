@@ -1,6 +1,6 @@
 import type { NS } from "@ns"
-import { getSleeves, SleeveData, SleeveTaskType } from "/lib/SleeveUtil"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import { getSleeves, SleeveData, SleeveTaskType } from "@/lib/SleeveUtil"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 export default class ManageSleevesAction extends BaseAction {
   isPerforming(_ns: NS): boolean {

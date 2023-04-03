@@ -1,7 +1,7 @@
 import type { NS } from "@ns"
-import getSetupHosts from "/lib/func/get-setup-hosts"
-import getThreadsAvailable from "/lib/func/get-threads-available"
-import Script from "/lib/Script"
+import getSetupHosts from "@/lib/func/get-setup-hosts"
+import getThreadsAvailable from "@/lib/func/get-threads-available"
+import Script from "@/lib/Script"
 
 interface RunCommandRawOptions {
   script: Script

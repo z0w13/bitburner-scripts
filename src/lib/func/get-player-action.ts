@@ -1,5 +1,5 @@
 import type { CrimeType, FactionWorkType, GymType, NS, UniversityClassType } from "@ns"
-import { WorkType, Work } from "/AdditionalNetscriptDefinitions"
+import { WorkType, Work } from "@/AdditionalNetscriptDefinitions"
 
 export enum PlayerActionType {
   Idle = "Idle",

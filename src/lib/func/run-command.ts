@@ -1,6 +1,6 @@
 import type { NS } from "@ns"
-import { Command } from "/Command/Objects"
-import runCommandRaw from "/lib/func/run-command-raw"
+import { Command } from "@/Command/Objects"
+import runCommandRaw from "@/lib/func/run-command-raw"
 
 interface RunCommandOptions {
   fill?: boolean // If true ignore lack of space available

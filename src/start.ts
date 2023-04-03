@@ -1,9 +1,9 @@
 import type { NS } from "@ns"
-import { isScriptRunning } from "/lib/func/is-script-running"
-import waitForPids from "/lib/func/wait-for-pids"
-import getScriptPid from "/lib/func/get-script-pid"
-import { DAEMON_SERVER } from "/config"
-import parseFlags, { ScriptArgs } from "/lib/parseFlags"
+import { isScriptRunning } from "@/lib/func/is-script-running"
+import waitForPids from "@/lib/func/wait-for-pids"
+import getScriptPid from "@/lib/func/get-script-pid"
+import { DAEMON_SERVER } from "@/config"
+import parseFlags, { ScriptArgs } from "@/lib/parseFlags"
 
 interface ScriptToRun {
   name: string

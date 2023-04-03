@@ -1,6 +1,6 @@
 import type { GangMemberAscension, GangMemberInfo, GangTaskStats, NS } from "@ns"
-import renderTable, { RawTableData } from "/lib/func/render-table"
-import { renderProgress, sortFunc } from "/lib/util"
+import renderTable, { RawTableData } from "@/lib/func/render-table"
+import { renderProgress, sortFunc } from "@/lib/util"
 
 type StatType = "hack" | "str" | "dex" | "def" | "agi" | "cha"
 type Stats = Record<StatType, number>

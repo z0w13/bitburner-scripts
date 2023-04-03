@@ -1,7 +1,7 @@
 import type { NS } from "@ns"
-import { getBestJob } from "/data/Jobs"
-import getPlayerAction, { PlayerActionType } from "/lib/func/get-player-action"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import { getBestJob } from "@/data/Jobs"
+import getPlayerAction, { PlayerActionType } from "@/lib/func/get-player-action"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 export default class WorkAction extends BaseAction {
   getJob(ns: NS, company: string): string | null {

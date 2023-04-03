@@ -1,10 +1,10 @@
 import { NS } from "@ns"
-import renderTable, { RawTableData } from "/lib/func/render-table"
-import { formatChangeColor, TermColor } from "/lib/term"
-import { formatMoney, formatNum, sortFunc, sum } from "/lib/util"
-import { StockData, Trend } from "/StockTrader/lib/Shared"
-import { StockManager } from "/StockTrader/lib/StockManager"
-import { SerializedStockTrackerData } from "/StockTrader/lib/Tracker"
+import renderTable, { RawTableData } from "@/lib/func/render-table"
+import { formatChangeColor, TermColor } from "@/lib/term"
+import { formatMoney, formatNum, sortFunc, sum } from "@/lib/util"
+import { StockData, Trend } from "@/StockTrader/lib/Shared"
+import { StockManager } from "@/StockTrader/lib/StockManager"
+import { SerializedStockTrackerData } from "@/StockTrader/lib/Tracker"
 
 enum StockTrendSymbol {
   Up = TermColor.Green + "+" + TermColor.Reset,

@@ -1,13 +1,13 @@
 import type { NS } from "@ns"
-import { LOG_LEVEL, MAX_LOAD, MAX_PREP_LOAD } from "/config"
-import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
-import { getGrowCommand, getHackCommand, getWeakenCommand } from "/Command/Formulas"
-import HostManager from "/lib/HostManager"
-import Logger from "/lib/Logger"
-import ServerWrapper from "/lib/ServerWrapper"
-import { sum } from "/lib/util"
-import { BatchJob, Job, JobType, SerialJob } from "/JobScheduler/JobObjects"
-import { Command } from "/Command/Objects"
+import { LOG_LEVEL, MAX_LOAD, MAX_PREP_LOAD } from "@/config"
+import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "@/constants"
+import { getGrowCommand, getHackCommand, getWeakenCommand } from "@/Command/Formulas"
+import HostManager from "@/lib/HostManager"
+import Logger from "@/lib/Logger"
+import ServerWrapper from "@/lib/ServerWrapper"
+import { sum } from "@/lib/util"
+import { BatchJob, Job, JobType, SerialJob } from "@/JobScheduler/JobObjects"
+import { Command } from "@/Command/Objects"
 
 export default class JobManager {
   private readonly ns: NS

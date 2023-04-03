@@ -1,7 +1,7 @@
 import { NS } from "@ns"
-import { DAEMON_SERVER, DEPRIORITIZE_HOME } from "/config"
-import getHosts from "/lib/func/get-hosts"
-import isHostSetup from "/lib/func/is-host-setup"
+import { DAEMON_SERVER, DEPRIORITIZE_HOME } from "@/config"
+import getHosts from "@/lib/func/get-hosts"
+import isHostSetup from "@/lib/func/is-host-setup"
 
 export default function getSetupHosts(ns: NS): Array<string> {
   const hosts = getHosts(ns)

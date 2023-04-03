@@ -1,8 +1,8 @@
 import type { NS } from "@ns"
-import getSetupHosts from "/lib/func/get-setup-hosts"
-import renderTable from "/lib/func/render-table"
-import { formatGiB, SEGMENT_FULL } from "/lib/util"
-import { renderProgress } from "/lib/util"
+import getSetupHosts from "@/lib/func/get-setup-hosts"
+import renderTable from "@/lib/func/render-table"
+import { formatGiB, SEGMENT_FULL } from "@/lib/util"
+import { renderProgress } from "@/lib/util"
 
 function printStatus(ns: NS): void {
   const hosts = getSetupHosts(ns)

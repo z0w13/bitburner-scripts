@@ -7,13 +7,13 @@ import type {
   CorpIndustryName,
   CorpMaterialName,
 } from "@ns"
-import { CityName } from "/data/StaticDefs"
-import parseFlags from "/lib/parseFlags"
-import { CORP_MAIN_CITY, LOG_LEVEL } from "/config"
-import renderTable from "/lib/func/render-table"
-import { formatMoney, sortFunc } from "/lib/util"
-import Logger from "/lib/Logger"
-import RingBuffer from "/lib/RingBuffer"
+import { CityName } from "@/data/StaticDefs"
+import parseFlags from "@/lib/parseFlags"
+import { CORP_MAIN_CITY, LOG_LEVEL } from "@/config"
+import renderTable from "@/lib/func/render-table"
+import { formatMoney, sortFunc } from "@/lib/util"
+import Logger from "@/lib/Logger"
+import RingBuffer from "@/lib/RingBuffer"
 
 const nonProductMap: Record<string, Array<string>> = {
   Mining: ["Metal"],

@@ -1,6 +1,6 @@
 import type { NodeStats, NS } from "@ns"
-import { sortFunc } from "/lib/util"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import { sortFunc } from "@/lib/util"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 type NodeProp = "ram" | "cache" | "cores" | "level"
 type NodeUpgradeType = NodeProp | "node"

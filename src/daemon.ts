@@ -1,12 +1,12 @@
 import type { NS } from "@ns"
-import { isScriptRunning } from "/lib/func/is-script-running"
-import HostManager from "/lib/HostManager"
-import JobManager from "/JobScheduler/JobManager"
-import JobScheduler from "/JobScheduler/JobScheduler"
-import ServerBuyer from "/lib/ServerBuyer"
-import { DAEMON_SERVER, LOAD_BUY_THRESHOLD } from "/config"
-import waitForPids from "/lib/func/wait-for-pids"
-import parseFlags from "/lib/parseFlags"
+import { isScriptRunning } from "@/lib/func/is-script-running"
+import HostManager from "@/lib/HostManager"
+import JobManager from "@/JobScheduler/JobManager"
+import JobScheduler from "@/JobScheduler/JobScheduler"
+import ServerBuyer from "@/lib/ServerBuyer"
+import { DAEMON_SERVER, LOAD_BUY_THRESHOLD } from "@/config"
+import waitForPids from "@/lib/func/wait-for-pids"
+import parseFlags from "@/lib/parseFlags"
 
 // TODO(zowie): Elegantly handle upgrading servers?
 // TODO(zowie): Figure out how to semi-accurately calculate stuff without Formulas.exe

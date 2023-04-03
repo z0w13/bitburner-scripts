@@ -1,9 +1,9 @@
 import type { NS } from "@ns"
-import { BATCH_GROW_MULTIPLIER, BATCH_INTERVAL, BATCH_WEAKEN_MULTIPLIER, PERCENTAGE_TO_HACK } from "/config"
-import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
-import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads"
-import { Command, CommandBatch, GrowCommand, HackCommand, WeakenCommand } from "/Command/Objects"
-import Script from "/lib/Script"
+import { BATCH_GROW_MULTIPLIER, BATCH_INTERVAL, BATCH_WEAKEN_MULTIPLIER, PERCENTAGE_TO_HACK } from "@/config"
+import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "@/constants"
+import { getGrowThreads, getHackThreads, getWeakenThreads } from "@/lib/calc-threads"
+import { Command, CommandBatch, GrowCommand, HackCommand, WeakenCommand } from "@/Command/Objects"
+import Script from "@/lib/Script"
 
 export function getWeakenCommand(ns: NS, target: string, additionalSec = 0): WeakenCommand {
   const threads = getWeakenThreads(ns, target, additionalSec)

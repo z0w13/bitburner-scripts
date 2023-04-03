@@ -1,10 +1,10 @@
 import type { NS, Player, Server } from "@ns"
-import { BATCH_GROW_MULTIPLIER, BATCH_INTERVAL, BATCH_WEAKEN_MULTIPLIER, PERCENTAGE_TO_HACK } from "/config"
-import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "/constants"
-import { getGrowThreads, getHackThreads, getWeakenThreads } from "/lib/calc-threads-formulas"
-import { CommandBatch, GrowCommand, HackCommand, WeakenCommand } from "/Command/Objects"
-import Script from "/lib/Script"
-import { getGrowServer, getHackServer, getWeakenServer } from "/lib/util"
+import { BATCH_GROW_MULTIPLIER, BATCH_INTERVAL, BATCH_WEAKEN_MULTIPLIER, PERCENTAGE_TO_HACK } from "@/config"
+import { SCRIPT_GROW, SCRIPT_HACK, SCRIPT_WEAKEN } from "@/constants"
+import { getGrowThreads, getHackThreads, getWeakenThreads } from "@/lib/calc-threads-formulas"
+import { CommandBatch, GrowCommand, HackCommand, WeakenCommand } from "@/Command/Objects"
+import Script from "@/lib/Script"
+import { getGrowServer, getHackServer, getWeakenServer } from "@/lib/util"
 
 export function getWeakenCommand(ns: NS, target: Server, player: Player): WeakenCommand {
   const weakenThreads = getWeakenThreads(target)

@@ -1,6 +1,6 @@
 import { NS } from "@ns"
-import { filterUndefinedFunc, formatMoney, sum } from "/lib/util"
-import JobManager from "/JobScheduler/JobManager"
+import { filterUndefinedFunc, formatMoney, sum } from "@/lib/util"
+import JobManager from "@/JobScheduler/JobManager"
 import {
   DAEMON_SERVER,
   LOG_LEVEL,
@@ -10,18 +10,18 @@ import {
   PERCENTAGE_TO_HACK,
   TARGET_MAX_PREP_WEAKEN_TIME,
   TARGET_MAX_WEAKEN_TIME,
-} from "/config"
-import { getGrowCommand, getHackCommand, getWeakenCommand } from "/Command/Formulas"
-import HostManager from "/lib/HostManager"
-import Logger from "/lib/Logger"
-import { CantScheduleReason, Job, JobType, SerialJob } from "/JobScheduler/JobObjects"
-import { Command } from "/Command/Objects"
-import { SerializedDaemonStatus } from "/lib/serialized"
-import ServerWrapper from "/lib/ServerWrapper"
-import { sortFunc } from "/lib/util"
-import VirtualNetworkState from "/lib/VirtualNetworkState"
-import ServerBuyer from "/lib/ServerBuyer"
-import { PreppedTargetInfo } from "/lib/objects"
+} from "@/config"
+import { getGrowCommand, getHackCommand, getWeakenCommand } from "@/Command/Formulas"
+import HostManager from "@/lib/HostManager"
+import Logger from "@/lib/Logger"
+import { CantScheduleReason, Job, JobType, SerialJob } from "@/JobScheduler/JobObjects"
+import { Command } from "@/Command/Objects"
+import { SerializedDaemonStatus } from "@/lib/serialized"
+import ServerWrapper from "@/lib/ServerWrapper"
+import { sortFunc } from "@/lib/util"
+import VirtualNetworkState from "@/lib/VirtualNetworkState"
+import ServerBuyer from "@/lib/ServerBuyer"
+import { PreppedTargetInfo } from "@/lib/objects"
 
 // TODO(zowie): Move draining stuff to JobManager
 export default class JobScheduler {

@@ -1,6 +1,6 @@
 import type { NS } from "@ns"
-import { DAEMON_SERVER } from "/config"
-import getSetupHosts from "/lib/func/get-setup-hosts"
+import { DAEMON_SERVER } from "@/config"
+import getSetupHosts from "@/lib/func/get-setup-hosts"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")

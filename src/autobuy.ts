@@ -1,6 +1,6 @@
 import type { NS } from "@ns"
-import parseFlags from "/lib/parseFlags"
-import ServerBuyer from "/lib/ServerBuyer"
+import parseFlags from "@/lib/parseFlags"
+import ServerBuyer from "@/lib/ServerBuyer"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")

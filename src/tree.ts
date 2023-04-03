@@ -1,8 +1,8 @@
 import type { NS } from "@ns"
-import parseFlags from "/lib/parseFlags"
-import { DAEMON_SERVER } from "/config"
-import type { TreeNode } from "/lib/func/get-host-tree"
-import getHostTree from "/lib/func/get-host-tree"
+import parseFlags from "@/lib/parseFlags"
+import { DAEMON_SERVER } from "@/config"
+import type { TreeNode } from "@/lib/func/get-host-tree"
+import getHostTree from "@/lib/func/get-host-tree"
 
 const IMPORTANT_HOSTS = new Set(["The-Cave", "I.I.I.I", "run4theh111z", "CSEC", "avmnite-02h"])
 

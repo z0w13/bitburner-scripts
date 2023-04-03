@@ -1,7 +1,7 @@
 import type { NS } from "@ns"
-import { DAEMON_SERVER } from "/config"
-import getHostPath from "/lib/func/get-host-path"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import { DAEMON_SERVER } from "@/config"
+import getHostPath from "@/lib/func/get-host-path"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 export default class AcceptFactionInvitationsAction extends BaseAction {
   TARGET_SERVERS = ["CSEC", "I.I.I.I", "avmnite-02h", "run4theh111z"]

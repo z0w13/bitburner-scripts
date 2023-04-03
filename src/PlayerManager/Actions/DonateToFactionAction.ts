@@ -1,7 +1,7 @@
 import type { NS } from "@ns"
-import { AugmentPurchaseInfo, getLowestDonateAug } from "/data/Augments"
-import { sortFunc } from "/lib/util"
-import BaseAction from "/PlayerManager/Actions/BaseAction"
+import { AugmentPurchaseInfo, getLowestDonateAug } from "@/data/Augments"
+import { sortFunc } from "@/lib/util"
+import BaseAction from "@/PlayerManager/Actions/BaseAction"
 
 export default class DonateToFactionAction extends BaseAction {
   hackFocus: boolean

@@ -1,8 +1,8 @@
 import type { CorpIndustryName, CorporationInfo, NS } from "@ns"
-import { CORP_MAIN_CITY, DAEMON_SERVER } from "/config"
-import { SCRIPT_DIVISION_MANAGER } from "/constants"
-import renderTable from "/lib/func/render-table"
-import { formatMoney, formatTime } from "/lib/util"
+import { CORP_MAIN_CITY, DAEMON_SERVER } from "@/config"
+import { SCRIPT_DIVISION_MANAGER } from "@/constants"
+import renderTable from "@/lib/func/render-table"
+import { formatMoney, formatTime } from "@/lib/util"
 
 function buyUpgradesToLevel(ns: NS, max: number, upgrades: Array<string>): void {
   for (const upgrade of upgrades) {

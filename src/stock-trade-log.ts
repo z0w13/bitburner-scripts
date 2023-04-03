@@ -1,7 +1,7 @@
 import { NS } from "@ns"
-import renderTable from "/lib/func/render-table"
-import { formatChangeColor, TermColor, wrapColor } from "/lib/term"
-import { formatDate, formatMoney, sortFunc, sum } from "/lib/util"
+import renderTable from "@/lib/func/render-table"
+import { formatChangeColor, TermColor, wrapColor } from "@/lib/term"
+import { formatDate, formatMoney, sortFunc, sum } from "@/lib/util"
 interface StockLog {
   time: number
   sym: string
