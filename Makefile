@@ -1,12 +1,9 @@
-.PHONY: all
-all: lint build
+.PHONY: watch
+watch: node_modules
+	pnpm viteburner dev
 
 .PHONY: lint
 lint: eslint depcruise
-
-.PHONY: watch
-watch: node_modules
-  pnpm viteburner
 
 .PHONY: eslint
 eslint: node_modules
@@ -22,3 +19,4 @@ fix: node_modules
 
 node_modules: package.json pnpm-lock.yaml
 	pnpm install --frozen-lockfile
+	touch node_modules # ensure node_modules timestamp gets updated
