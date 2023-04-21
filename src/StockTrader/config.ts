@@ -4,7 +4,7 @@ export const STOCK_HISTORY_SIZE = 151 // Amount of history to keep
 export const TREND_HISTORY_DISPLAY_SIZE = RECENT_STOCK_HISTORY_SIZE // How much history to show in trend
 
 export const MIN_VAL_FOR_STOCK_ORDER = 2_000_000
-export const MAX_FUNDS_SPEND_PER_STOCK = 0.4 // Maximum amount of available funds to spend on one stock
+export const MAX_FUNDS_SPEND_PER_STOCK = 0.2 // Maximum amount of available funds to spend on one stock
 
 export const INVERSION_AGREEMENT_THRESHOLD = 6 // Consider an inversion to have occured after 6 ticks
 export const INVERSION_TREND_DIFF_THRESHOLD = 0.2 // 15% difference in trend means possible inversion

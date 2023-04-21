@@ -1,13 +1,9 @@
 import { NS } from "@ns"
 import { PositionType, StockSource } from "@/StockTrader/lib/StockSource"
 import { StockData, Trend } from "@/StockTrader/lib/Shared"
-import {
-  INVERSION_AGREEMENT_THRESHOLD,
-  INVERSION_TREND_DIFF_THRESHOLD,
-  MAX_FUNDS_SPEND_PER_STOCK,
-  MIN_STOCK_HOLD_TICKS,
-  MIN_VAL_FOR_STOCK_ORDER,
-} from "@/StockTrader/config"
+import { MAX_FUNDS_SPEND_PER_STOCK, MIN_STOCK_HOLD_TICKS, MIN_VAL_FOR_STOCK_ORDER } from "@/StockTrader/config"
+import { SerialisedAnalyserData } from "@/StockTrader/lib/Analyser"
+import { sum } from "@/lib/util"
 
 interface StockAlgoData {
   sym: string
@@ -15,12 +11,9 @@ interface StockAlgoData {
   lastLongSell: number
   lastShortBuy: number
   lastShortSell: number
-  cycleTick: number // Last tick we detected a cycle on -1 if none
-  inversionProbStreak: number // Streak of ticks that have short term trend reversed from long term
-  currentTrend: Trend
 }
 
-export class StockManager {
+export class Trader {
   ns: NS
   source: StockSource
 
@@ -38,9 +31,6 @@ export class StockManager {
           lastLongSell: 0,
           lastShortBuy: 0,
           lastShortSell: 0,
-          cycleTick: -1,
-          inversionProbStreak: 0,
-          currentTrend: Trend.Same,
         },
       ]),
     )
@@ -67,13 +57,13 @@ export class StockManager {
     return value
   }
   sellLong(sym: string, shares: number, ticks: number): number {
-    const value = this.source.sellStock(sym, shares) * shares
-
     const [_longOwn, longPrice, _shortOwn, _shortPrice] = this.source.getPosition(sym)
     const purchaseCost = shares * longPrice + 100_000
+    const value = this.source.sellStock(sym, shares) * shares
 
     this.algoData[sym].lastLongSell = ticks
     writeLog(this.ns, sym, "sell", "long", shares, value, value - purchaseCost)
+    console.info("sell long", { sym, shares, longPrice, value, purchaseCost })
 
     return value
   }
@@ -86,10 +76,9 @@ export class StockManager {
     return value
   }
   sellShort(sym: string, shares: number, ticks: number): number {
-    const value = this.source.sellShort(sym, shares) * shares
-
     const [_longOwn, _longPrice, _shortOwn, shortPrice] = this.source.getPosition(sym)
     const purchaseCost = shares * shortPrice + 100_000
+    const value = this.source.sellShort(sym, shares) * shares
 
     this.algoData[sym].lastShortSell = ticks
     writeLog(this.ns, sym, "sell", "short", shares, value, value - purchaseCost)
@@ -97,40 +86,27 @@ export class StockManager {
     return value
   }
 
-  manageStocks(moneyAvailable: number, stockData: ReadonlyArray<StockData>, ticks: number): number {
+  run(
+    moneyAvailable: number,
+    stockData: ReadonlyArray<StockData>,
+    analysis: SerialisedAnalyserData,
+    ticks: number,
+  ): number {
+    const portfolioWorth = sum(stockData.map((d) => d.longValue + d.shortValue))
+
     let currentFunds = moneyAvailable
     for (const stock of stockData) {
-      this.trackTrend(stock, ticks)
-      const perStock = currentFunds * MAX_FUNDS_SPEND_PER_STOCK
-      currentFunds += this.manageStock(Math.min(perStock, currentFunds), stock, ticks)
+      const perStock = Math.min((portfolioWorth + currentFunds) * MAX_FUNDS_SPEND_PER_STOCK, currentFunds)
+      currentFunds += this.tradeStock(perStock, stock, analysis, ticks)
     }
     return currentFunds
   }
 
-  trackTrend(stock: StockData, ticks: number): void {
-    const manageData = this.algoData[stock.sym]
-    if (stock.upPctDiff > INVERSION_TREND_DIFF_THRESHOLD && manageData.currentTrend !== Trend.Up) {
-      manageData.inversionProbStreak++
-      if (manageData.inversionProbStreak > INVERSION_AGREEMENT_THRESHOLD) {
-        manageData.inversionProbStreak = 0
-        manageData.cycleTick = ticks
-        manageData.currentTrend = Trend.Up
-      }
-    } else if (stock.upPctDiff < -INVERSION_TREND_DIFF_THRESHOLD && manageData.currentTrend !== Trend.Down) {
-      manageData.inversionProbStreak++
-      if (manageData.inversionProbStreak > INVERSION_AGREEMENT_THRESHOLD) {
-        manageData.inversionProbStreak = 0
-        manageData.cycleTick = ticks
-        manageData.currentTrend = Trend.Down
-      }
-    }
-  }
-
-  manageStock(moneyAvailable: number, stock: StockData, ticks: number): number {
+  tradeStock(moneyAvailable: number, stock: StockData, analysis: SerialisedAnalyserData, ticks: number): number {
     let moneyChange = 0
 
     if (
-      this.algoData[stock.sym].currentTrend === Trend.Up &&
+      analysis.stockCycleData[stock.sym].currentTrend === Trend.Up &&
       stock.longOwned === 0 &&
       !this.soldRecently(stock.sym, "long", ticks) &&
       moneyAvailable > MIN_VAL_FOR_STOCK_ORDER
@@ -142,7 +118,7 @@ export class StockManager {
     }
 
     if (
-      this.algoData[stock.sym].currentTrend === Trend.Down &&
+      analysis.stockCycleData[stock.sym].currentTrend === Trend.Down &&
       stock.shortOwned === 0 &&
       !this.soldRecently(stock.sym, "short", ticks) &&
       moneyAvailable > MIN_VAL_FOR_STOCK_ORDER
@@ -154,7 +130,7 @@ export class StockManager {
     }
 
     if (
-      this.algoData[stock.sym].currentTrend === Trend.Up &&
+      analysis.stockCycleData[stock.sym].currentTrend === Trend.Up &&
       stock.shortOwned > 0 &&
       !this.boughtRecently(stock.sym, "short", ticks)
     ) {
@@ -163,7 +139,7 @@ export class StockManager {
     }
 
     if (
-      this.algoData[stock.sym].currentTrend === Trend.Down &&
+      analysis.stockCycleData[stock.sym].currentTrend === Trend.Down &&
       stock.longOwned > 0 &&
       !this.boughtRecently(stock.sym, "long", ticks)
     ) {
@@ -194,8 +170,9 @@ export function findMaxShareBuy(source: StockSource, sym: string, pos: PositionT
 
   let amt = estimatedAmount
   while (source.getPurchaseCost(sym, amt, pos) > money) {
+    console.log({ sym, amt, pos })
     amt -= 10
   }
 
-  return amt
+  return Math.min(amt, source.getMaxShares(sym))
 }

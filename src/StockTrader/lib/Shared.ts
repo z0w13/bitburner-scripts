@@ -1,10 +1,23 @@
 import { NS } from "@ns"
 import { StockSource } from "@/StockTrader/lib/StockSource"
+import { SerializedStockData, SerializedTrackerData } from "@/StockTrader/lib/Tracker"
 
 export enum Trend {
   Up = 1,
   Same = 0,
   Down = -1,
+}
+
+export function getTrendFromPercentage(val: number): Trend {
+  if (val > 0.5) {
+    return Trend.Up
+  }
+
+  if (val < 0.5) {
+    return Trend.Down
+  }
+
+  return Trend.Same
 }
 
 export interface StockData {
@@ -14,6 +27,7 @@ export interface StockData {
   historicUpPct: number
   recentUpPct: number
   upPctDiff: number
+  volatility: number // Only available with 4S TIX API
   shares: number
   longOwned: number
   longCost: number
@@ -30,44 +44,49 @@ export interface StockData {
   value: number
 }
 
-function calcStockData(
-  sym: string,
-  history: ReadonlyArray<number>,
+export function calcAllStockData(
   source: StockSource,
-  trendHistorySize: number,
+  trackerData: SerializedTrackerData,
   recentStockHistorySize: number,
-): StockData {
-  const trend = getTrend(history)
+): ReadonlyArray<StockData> {
+  return Object.values(trackerData.stocks).map((stock) => calcStockData(source, stock, recentStockHistorySize))
+}
 
-  const start = history.at(0) ?? 0
-  const end = history.at(-1) ?? 0
+function calcStockData(source: StockSource, stock: SerializedStockData, recentStockHistorySize: number): StockData {
+  const trend = getHistoricalTrend(stock.history)
+
+  const start = stock.history.at(0) ?? 0
+  const end = stock.history.at(-1) ?? 0
 
   const changeAbsolute = end - start
   const changePct = changeAbsolute / start
 
-  const historicUpPct = upPct(trend.slice(0, -recentStockHistorySize))
-  const recentUpPct = upPct(trend.slice(-recentStockHistorySize))
+  const historicUpPct = source.has4SDataTIXAPI() ? stock.lastForecast : upPct(trend.slice(0, -recentStockHistorySize))
+  const recentUpPct = source.has4SDataTIXAPI() ? stock.currentForecast : upPct(trend.slice(-recentStockHistorySize))
   const upPctDiff = recentUpPct - historicUpPct
 
-  const [longOwned, longAvgPrice, shortOwned, shortAvgPrice] = source.getPosition(sym)
+  const volatility = source.has4SDataTIXAPI() ? source.getVolatility(stock.sym) : 0
+
+  const [longOwned, longAvgPrice, shortOwned, shortAvgPrice] = source.getPosition(stock.sym)
   const shortCost = shortAvgPrice * shortOwned
-  const shortValue = Math.abs(source.getSaleGain(sym, shortOwned, "short"))
+  const shortValue = Math.abs(source.getSaleGain(stock.sym, shortOwned, "short"))
   const shortProfit = shortValue - shortCost
   const shortProfitPct = (shortValue - shortCost) / shortValue
 
   const longCost = longAvgPrice * longOwned
-  const longValue = source.getSaleGain(sym, longOwned, "long")
+  const longValue = source.getSaleGain(stock.sym, longOwned, "long")
   const longProfit = longValue - longCost
   const longProfitPct = (longValue - longCost) / longValue
 
   return {
-    sym,
-    history,
+    sym: stock.sym,
+    history: stock.history,
     trend,
-    historicUpPct,
-    recentUpPct,
-    upPctDiff,
-    shares: source.getMaxShares(sym),
+    historicUpPct: historicUpPct,
+    recentUpPct: recentUpPct,
+    upPctDiff: upPctDiff,
+    volatility,
+    shares: source.getMaxShares(stock.sym),
     longOwned,
     longCost,
     longValue,
@@ -84,18 +103,7 @@ function calcStockData(
   }
 }
 
-export function calcAllStockData(
-  source: StockSource,
-  stocks: Record<string, ReadonlyArray<number>>,
-  trendHistorySize: number,
-  recentStockHistorySize: number,
-): ReadonlyArray<StockData> {
-  return Object.entries(stocks).map(([sym, history]) =>
-    calcStockData(sym, history, source, trendHistorySize, recentStockHistorySize),
-  )
-}
-
-function getTrend(values: ReadonlyArray<number>): ReadonlyArray<Trend> {
+function getHistoricalTrend(values: ReadonlyArray<number>): ReadonlyArray<Trend> {
   return values.map((val, idx, vals) => {
     const prevVal = vals.at(idx - 1)
 

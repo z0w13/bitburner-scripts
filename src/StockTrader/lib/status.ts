@@ -3,8 +3,8 @@ import renderTable, { RawTableData } from "@/lib/func/render-table"
 import { formatChangeColor, TermColor } from "@/lib/term"
 import { formatMoney, formatNum, sortFunc, sum } from "@/lib/util"
 import { StockData, Trend } from "@/StockTrader/lib/Shared"
-import { StockManager } from "@/StockTrader/lib/StockManager"
-import { SerializedStockTrackerData } from "@/StockTrader/lib/Tracker"
+import { SerializedTrackerData } from "@/StockTrader/lib/Tracker"
+import { SerialisedAnalyserData } from "@/StockTrader/lib/Analyser"
 
 enum StockTrendSymbol {
   Up = TermColor.Green + "+" + TermColor.Reset,
@@ -27,35 +27,39 @@ function renderStockTrend(trends: ReadonlyArray<Trend>): string {
     .join("")
 }
 
-export function printOwnedStocks(ns: NS, mgr: StockManager, stocks: ReadonlyArray<StockData>): void {
-  const tableData: RawTableData = [["Stock", "Trnd", "Val", "Owned", "Long $", "Long %", "Short $", "Short %"]]
+export function printOwnedStocks(ns: NS, stocks: ReadonlyArray<StockData>, analysis: SerialisedAnalyserData): void {
+  const tableData: RawTableData = [["Stock", "Trnd", "Val", "Pos", "Owned (%)", "$", "%"]]
 
   const displayStocks = stocks.filter((v) => v.longOwned > 0 || v.shortOwned > 0)
 
   for (const data of displayStocks.slice().sort(sortFunc((s) => s.sym))) {
-    const stockData = mgr.algoData[data.sym]
+    const analysisData = analysis.stockCycleData[data.sym]
+
+    const owned = data.longOwned > 0 ? data.longOwned : data.shortOwned
+    const profit = data.longOwned > 0 ? data.longProfit : data.shortOwned
+    const profitPct = data.longOwned > 0 ? data.longProfitPct : data.shortProfitPct
+
     tableData.push([
       formatChangeColor(data.changeAbsolute, data.sym),
-      formatChangeColor(stockData.currentTrend, Trend[stockData.currentTrend]),
+      formatChangeColor(analysisData.currentTrend, Trend[analysisData.currentTrend]),
       formatMoney(ns, data.value, 0, 1_000_000),
-      `${formatNum(ns, data.longOwned, 0, 1_000_000)}/${formatNum(ns, data.shortOwned, 0, 1_000_000)}`,
-      data.longOwned > 0 ? formatChangeColor(data.longProfit, formatNum(ns, data.longProfit, 2, 1_000_000)) : "",
-      data.longOwned > 0 ? formatChangeColor(data.longProfit, ns.formatPercent(data.longProfitPct, 2)) : "",
-      data.shortOwned > 0 ? formatChangeColor(data.shortProfit, formatNum(ns, data.shortProfit, 2, 1_000_000)) : "",
-      data.shortOwned > 0 ? formatChangeColor(data.shortProfit, ns.formatPercent(data.shortProfitPct, 2)) : "",
+      data.longOwned > 0 ? "Long" : "Short",
+      `${formatNum(ns, owned, 0, 1_000_000)} (${ns.formatPercent(owned / data.shares, 0)})`,
+      formatChangeColor(profit, formatNum(ns, profit, 2, 1_000_000)),
+      formatChangeColor(profit, ns.formatPercent(profitPct, 2)),
     ])
   }
+
+  const totalOwned = sum(stocks.map((v) => v.longOwned + v.shortOwned))
+  const totalShares = sum(stocks.map((v) => v.shares))
 
   tableData.push([
     "",
     "",
     "",
-    formatNum(ns, sum(stocks.map((v) => v.longOwned)), 0) +
-      "/" +
-      formatNum(ns, sum(stocks.map((v) => v.shortOwned)), 0),
-    formatNum(ns, sum(stocks.map((v) => v.longProfit)), 2, 1_000_000),
     "",
-    formatNum(ns, sum(stocks.map((v) => v.shortProfit)), 2, 1_000_000),
+    `${formatNum(ns, totalOwned, 0)} (${ns.formatPercent(totalOwned / totalShares, 0)})`,
+    formatNum(ns, sum(stocks.map((v) => v.longProfit + v.shortProfit)), 2, 1_000_000),
     "",
   ])
 
@@ -67,8 +71,8 @@ export function printOwnedStocks(ns: NS, mgr: StockManager, stocks: ReadonlyArra
 }
 export function printStockAnalysisData(
   ns: NS,
-  mgr: StockManager,
   stocks: ReadonlyArray<StockData>,
+  analysis: SerialisedAnalyserData,
   trendHistorySize: number,
   ticks: number,
 ) {
@@ -82,21 +86,23 @@ export function printStockAnalysisData(
       "Cycl Trnd",
       "Cycl Tick",
       "Inv T Ago",
+      "Vol",
       "Val",
     ],
   ]
 
   for (const data of stocks.slice().sort(sortFunc((s) => s.sym))) {
-    const stockData = mgr.algoData[data.sym]
+    const analysisData = analysis.stockCycleData[data.sym]
     const rowData = [
       formatChangeColor(data.changeAbsolute, data.sym),
       renderStockTrend(data.trend.slice(-trendHistorySize)),
       formatChangeColor(data.historicUpPct - 0.5, ns.formatPercent(data.historicUpPct)),
       formatChangeColor(data.recentUpPct - 0.5, ns.formatPercent(data.recentUpPct)),
       formatChangeColor(data.upPctDiff, ns.formatPercent(data.upPctDiff)),
-      formatChangeColor(stockData.currentTrend, Trend[stockData.currentTrend]),
-      stockData.cycleTick > 0 ? stockData.cycleTick : "",
-      stockData.cycleTick > 0 ? ticks - stockData.cycleTick : "",
+      formatChangeColor(analysisData.currentTrend, Trend[analysisData.currentTrend]),
+      analysisData.cycleTick > 0 ? analysisData.cycleTick : "",
+      analysisData.cycleTick > 0 ? ticks - analysisData.cycleTick : "",
+      data.volatility === 0 ? "???" : ns.formatPercent(data.volatility),
       formatMoney(ns, data.value, 0, 1_000_000),
     ]
 
@@ -108,10 +114,9 @@ export function printStockAnalysisData(
 
 export function printStatus(
   ns: NS,
-  tracker: SerializedStockTrackerData,
+  tracker: SerializedTrackerData,
   funds: number,
   stockData: ReadonlyArray<StockData>,
-  mgr: StockManager,
   stockHistorySize: number,
 ) {
   const totalShortValue = sum(stockData.map((stock) => stock.shortValue))
@@ -123,21 +128,21 @@ export function printStatus(
         [
           "Funds",
           formatMoney(ns, funds),
-          "Ready",
-          formatChangeColor(tracker.ready, tracker.ready ? "YES" : "NO"),
-          "History Available",
-          `${tracker.historyLength}/${stockHistorySize} (${ns.formatPercent(
-            tracker.historyLength / stockHistorySize,
-          )})`,
+          "History",
+          `${tracker.historyLength}/${stockHistorySize}`,
           "Long Value $",
           formatMoney(ns, totalLongValue, 2, 1_000_000),
-          "Short Value $",
-          formatMoney(ns, totalShortValue, 2, 1_000_000),
+        ],
+        [
           "Ticks",
           formatNum(ns, tracker.ticks, 0, 1_000_000),
+          "Ready",
+          formatChangeColor(tracker.ready, tracker.ready ? "YES" : "NO"),
+          "Short Value $",
+          formatMoney(ns, totalShortValue, 2, 1_000_000),
         ],
       ],
-      false,
+      true,
     ),
   )
 }

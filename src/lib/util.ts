@@ -1,7 +1,6 @@
 import { NS } from "@ns"
 import type { Server } from "@ns"
 import { PERCENTAGE_TO_HACK } from "@/config"
-import { CONSTANTS } from "@/game-constants"
 
 export function sum(values: ReadonlyArray<number>): number {
   return values.reduce((acc, val) => acc + val, 0)
@@ -67,8 +66,9 @@ export function padZeros(val: number | string, length = 2): string {
   return val.toString().padStart(length, "0")
 }
 
-const MillisecondsPerDay = 24 * CONSTANTS.MillisecondsPerHour
 const MillisecondsPerMinute = 60 * 1_000
+const MillisecondsPerHour = 60 * MillisecondsPerMinute
+const MillisecondsPerDay = 24 * MillisecondsPerHour
 export function formatTime(ms: number, showMs = false): string {
   let sign = ""
   if (ms < 0) {
@@ -80,8 +80,8 @@ export function formatTime(ms: number, showMs = false): string {
   const days = Math.floor(ms / MillisecondsPerDay)
   const msTruncDays = ms % MillisecondsPerDay
 
-  const hours = Math.floor(msTruncDays / CONSTANTS.MillisecondsPerHour)
-  const msTruncHours = msTruncDays % CONSTANTS.MillisecondsPerHour
+  const hours = Math.floor(msTruncDays / MillisecondsPerHour)
+  const msTruncHours = msTruncDays % MillisecondsPerHour
 
   const minutes = Math.floor(msTruncHours / MillisecondsPerMinute)
   const msTruncMinutes = msTruncHours % MillisecondsPerMinute

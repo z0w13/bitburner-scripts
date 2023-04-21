@@ -1,11 +1,11 @@
 import { NS } from "@ns"
 
-export interface FundsSource {
+export interface Wallet {
   getFunds(): number
   update(val: number): void
 }
 
-export class PlayerFundsSource implements FundsSource {
+export class PlayerWallet implements Wallet {
   ns: NS
 
   constructor(ns: NS) {
@@ -21,7 +21,7 @@ export class PlayerFundsSource implements FundsSource {
   }
 }
 
-export class MockFundsSource implements FundsSource {
+export class MockWallet implements Wallet {
   money: number
   constructor(initial = 0) {
     this.money = initial

@@ -13,6 +13,9 @@ export interface StockSource {
   buyShort(sym: string, shares: number): number
   sellStock(sym: string, shares: number): number
   sellShort(sym: string, shares: number): number
+  has4SDataTIXAPI(): boolean
+  getVolatility(sym: string): number
+  getForecast(sym: string): number
 }
 
 export class FakeTradeStockSource implements StockSource {
@@ -32,25 +35,6 @@ export class FakeTradeStockSource implements StockSource {
   getPosition(sym: string): [number, number, number, number] {
     return [this.longs[sym].amt, this.longs[sym].price, this.shorts[sym].amt, this.shorts[sym].price]
   }
-  getSaleGain(sym: string, shares: number, posType: PositionType): number {
-    return this.source.getSaleGain(sym, shares, posType)
-  }
-  getPurchaseCost(sym: string, shares: number, posType: PositionType): number {
-    return this.source.getPurchaseCost(sym, shares, posType)
-  }
-  getMaxShares(sym: string): number {
-    return this.source.getMaxShares(sym)
-  }
-  getPrice(sym: string): number {
-    return this.source.getPrice(sym)
-  }
-  getAskPrice(sym: string): number {
-    return this.source.getAskPrice(sym)
-  }
-  getBidPrice(sym: string): number {
-    return this.source.getBidPrice(sym)
-  }
-
   buyStock(sym: string, shares: number): number {
     this.longs[sym].amt += shares
     this.longs[sym].price = this.getPrice(sym)
@@ -70,5 +54,33 @@ export class FakeTradeStockSource implements StockSource {
   sellShort(sym: string, shares: number): number {
     this.shorts[sym].amt -= shares
     return Math.abs(this.getSaleGain(sym, shares, "short")) / shares
+  }
+
+  has4SDataTIXAPI(): boolean {
+    return this.source.has4SDataTIXAPI()
+  }
+  getVolatility(sym: string): number {
+    return this.source.getVolatility(sym)
+  }
+  getForecast(sym: string): number {
+    return this.source.getForecast(sym)
+  }
+  getSaleGain(sym: string, shares: number, posType: PositionType): number {
+    return this.source.getSaleGain(sym, shares, posType)
+  }
+  getPurchaseCost(sym: string, shares: number, posType: PositionType): number {
+    return this.source.getPurchaseCost(sym, shares, posType)
+  }
+  getMaxShares(sym: string): number {
+    return this.source.getMaxShares(sym)
+  }
+  getPrice(sym: string): number {
+    return this.source.getPrice(sym)
+  }
+  getAskPrice(sym: string): number {
+    return this.source.getAskPrice(sym)
+  }
+  getBidPrice(sym: string): number {
+    return this.source.getBidPrice(sym)
   }
 }
