@@ -10,6 +10,14 @@ interface IndexedNodeStats extends NodeStats {
 }
 
 export default class UpgradeHacknetAction extends BaseAction {
+  private ramOnly: boolean
+
+  constructor(ramOnly = false) {
+    super()
+
+    this.ramOnly = ramOnly
+  }
+
   getNodes(ns: NS): Array<IndexedNodeStats> {
     return [...Array(ns.hacknet.numNodes())].map((_val, idx) => {
       return { idx, ...ns.hacknet.getNodeStats(idx) }
@@ -29,6 +37,7 @@ export default class UpgradeHacknetAction extends BaseAction {
 
   getCheapestUpgrade(ns: NS): { type: NodeUpgradeType; idx: number; cost: number } | undefined {
     return Object.values(this.getUpgradeCosts(ns))
+      .filter((u) => (this.ramOnly ? u.type === "ram" || u.type === "node" : true))
       .sort(sortFunc((v) => v.cost))
       .at(0)
   }

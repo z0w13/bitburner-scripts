@@ -1,10 +1,12 @@
 import type { NS } from "@ns"
 import UpgradeHacknetAction from "@/PlayerManager/Actions/UpgradeHacknetAction"
+import parseFlags from "@/lib/parseFlags"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")
 
-  const upgrader = new UpgradeHacknetAction()
+  const flags = parseFlags(ns, { ramOnly: false })
+  const upgrader = new UpgradeHacknetAction(flags.ramOnly)
 
   while (true) {
     while (ns.hacknet.numHashes() > 4) {
