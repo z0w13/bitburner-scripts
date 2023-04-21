@@ -2,9 +2,10 @@ import { NS } from "@ns"
 import type { LocationName } from "@ns"
 import { CompaniesMetadata } from "@/data/CompanyMetadata"
 import { companyPositionMetadata, CompanyPositionMetadata } from "@/data/CompanyPositionsMetadata"
-import { CONSTANTS } from "@/game-constants"
 import { Attribute } from "@/lib/objects"
 import { sortFunc } from "@/lib/util"
+
+const MilliPerCycle = 200
 
 export interface Job {
   name: string
@@ -77,7 +78,7 @@ export function getBestJob(ns: NS): Job | null {
     return {
       ...job,
 
-      salary: job.salary * (ns.getPlayer().mults.work_money || 1) * 0.1 * (1000 / CONSTANTS.MilliPerCycle),
+      salary: job.salary * (ns.getPlayer().mults.work_money || 1) * 0.1 * (1000 / MilliPerCycle),
     }
   }
 
