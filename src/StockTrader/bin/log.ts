@@ -15,7 +15,7 @@ interface StockLog {
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")
-  const flags = parseFlags(ns, { mock: false })
+  const _flags = parseFlags(ns, { mock: false })
 
   while (true) {
     ns.clearLog()
