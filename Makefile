@@ -5,6 +5,10 @@ watch: node_modules
 .PHONY: lint
 lint: eslint depcruise
 
+.PHONY: typescript
+typescript:
+	pnpm tsc --noEmit
+
 .PHONY: eslint
 eslint: node_modules
 	pnpm lint
