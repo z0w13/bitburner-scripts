@@ -36,7 +36,7 @@ export function printOwnedStocks(ns: NS, stocks: ReadonlyArray<StockData>, analy
     const analysisData = analysis.stockCycleData[data.sym]
 
     const owned = data.longOwned > 0 ? data.longOwned : data.shortOwned
-    const profit = data.longOwned > 0 ? data.longProfit : data.shortOwned
+    const profit = data.longOwned > 0 ? data.longProfit : data.shortProfit
     const profitPct = data.longOwned > 0 ? data.longProfitPct : data.shortProfitPct
 
     tableData.push([
