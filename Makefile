@@ -2,6 +2,9 @@
 watch: node_modules
 	pnpm viteburner dev
 
+.PHONY: ci
+ci: lint typescript
+
 .PHONY: lint
 lint: eslint depcruise
 
