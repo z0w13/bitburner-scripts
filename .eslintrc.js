@@ -19,13 +19,14 @@ module.exports = {
     project: ["./tsconfig.json"],
     tsconfigRootDir: __dirname,
   },
-  plugins: ["@typescript-eslint", "prettier", "no-relative-import-paths"],
+  plugins: ["@typescript-eslint", "prettier", "no-relative-import-paths", "deprecation"],
   ignorePatterns: ["*.d.ts", "*.js", "game-constants.ts"],
   rules: {
-    "no-constant-condition": "off",
-    "@typescript-eslint/no-unused-vars": ["error", { varsIgnorePattern: "^_", argsIgnorePattern: "^_" }],
     "@typescript-eslint/await-thenable": "error",
     "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/no-unused-vars": ["error", { varsIgnorePattern: "^_", argsIgnorePattern: "^_" }],
+    "deprecation/deprecation": "error",
+    "no-constant-condition": "off",
     "no-relative-import-paths/no-relative-import-paths": "error",
   }
 }
