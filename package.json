@@ -27,8 +27,6 @@
     "viteburner": "^0.5.3"
   },
   "dependencies": {
-    "@types/numeral": "^2.0.2",
-    "eslint-plugin-no-relative-import-paths": "^1.5.2",
-    "numeral": "^2.0.6"
+    "eslint-plugin-no-relative-import-paths": "^1.5.2"
   }
 }
