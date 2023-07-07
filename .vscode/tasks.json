@@ -1,0 +1,36 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Custom: Check entire project",
+        "dependsOn": [
+          "TypeScript: Check entire project",
+          "ESLint: Lint entire project"
+        ],
+        "problemMatcher": []
+      },
+      {
+        "label": "TypeScript: Check entire project",
+        "type": "typescript",
+        "tsconfig": "tsconfig.json",
+        "problemMatcher": [
+          "$tsc"
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "ESLint: Lint entire project",
+        "type": "eslint",
+        "problemMatcher": [
+          "$eslint-stylish"
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      }
+    ]
+}
