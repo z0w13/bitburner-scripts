@@ -130,13 +130,13 @@ export function getAnalyserPid(ns: NS): number {
   return getScriptPid(ns, STOCK_ANALYSER_SCRIPT, DAEMON_SERVER)
 }
 
-export function getAnalyserPidOrStart(ns: NS): number {
+export function getAnalyserPidOrStart(ns: NS, mock = false): number {
   const currPid = getAnalyserPid(ns)
   if (currPid > 0) {
     return currPid
   }
 
-  return ns.exec(STOCK_ANALYSER_SCRIPT, DAEMON_SERVER)
+  return ns.exec(STOCK_ANALYSER_SCRIPT, DAEMON_SERVER, {}, ...(mock ? ["--mock"] : []))
 }
 
 export interface SerialisedAnalyserData {

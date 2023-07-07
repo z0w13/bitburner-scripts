@@ -111,13 +111,13 @@ export function getTrackerPid(ns: NS): number {
   return getScriptPid(ns, STOCK_TRACKER_SCRIPT, DAEMON_SERVER)
 }
 
-export function getTrackerPidOrStart(ns: NS): number {
+export function getTrackerPidOrStart(ns: NS, mock = false): number {
   const currTrackerPid = getTrackerPid(ns)
   if (currTrackerPid > 0) {
     return currTrackerPid
   }
 
-  return ns.exec(STOCK_TRACKER_SCRIPT, DAEMON_SERVER)
+  return ns.exec(STOCK_TRACKER_SCRIPT, DAEMON_SERVER, {}, ...(mock ? ["--mock"] : []))
 }
 
 export function getTrackerData(ns: NS, trackerPid: number): SerializedTrackerData {
