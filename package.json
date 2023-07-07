@@ -1,20 +1,16 @@
 {
-  "name": "bitburner-typescript-template",
+  "name": "@z0w13/bitburner-scripts",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "lint": "eslint . --ext .ts"
-  },
+  "description": "My collection of scripts for BitBurner UwU",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bitburner-official/vscode-template.git"
+    "url": "git+https://github.com/z0w13/bitburner-scripts.git"
   },
-  "author": "SlyCedix",
+  "author": "Zowie",
   "bugs": {
-    "url": "https://github.com/bitburner-official/vscode-template/issues"
+    "url": "https://github.com/z0w13/bitburner-scripts/issues"
   },
-  "homepage": "https://github.com/bitburner-official/vscode-template#readme",
+  "homepage": "https://github.com/z0w13/bitburner-scripts#readme",
   "devDependencies": {
     "@types/node": "~20.4.0",
     "@types/ws": "^8.5.5",
