@@ -6,7 +6,7 @@ import parseFlags from "@/lib/parseFlags"
 import { FakeTradeStockSource } from "@/StockTrader/lib/StockSource"
 
 export async function main(ns: NS): Promise<void> {
-  ns.disableLog("asleep")
+  ns.disableLog("ALL")
   const flags = parseFlags(ns, { mock: false })
 
   const source = flags.mock ? new FakeTradeStockSource(ns.stock) : ns.stock
