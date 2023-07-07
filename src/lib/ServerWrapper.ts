@@ -42,24 +42,24 @@ export default class ServerWrapper {
     const server = ns.getServer(hostname)
 
     // Static values
-    this.moneyMax = server.moneyMax
+    this.moneyMax = server.moneyMax ?? 0
     this.moneyAfterHack = this.moneyMax * (1 - PERCENTAGE_TO_HACK)
-    this.serverGrowth = server.serverGrowth
+    this.serverGrowth = server.serverGrowth ?? 0
     this.maxRam = server.maxRam
 
-    this.minDifficulty = server.minDifficulty
-    this.baseDifficulty = server.baseDifficulty
-    this.requiredHackingSkill = server.requiredHackingSkill
+    this.minDifficulty = server.minDifficulty ?? 0
+    this.baseDifficulty = server.baseDifficulty ?? 0
+    this.requiredHackingSkill = server.requiredHackingSkill ?? 0
 
-    this.numOpenPortsRequired = server.numOpenPortsRequired
+    this.numOpenPortsRequired = server.numOpenPortsRequired ?? 0
 
     this.root = server.hasAdminRights
-    this.backdoor = server.backdoorInstalled
+    this.backdoor = server.backdoorInstalled ?? false
     this.purchasedByPlayer = server.purchasedByPlayer
   }
 
   getOpenPortCount(): number {
-    return this.getServer().openPortCount
+    return this.getServer().openPortCount ?? 0
   }
 
   getServer(): Server {
@@ -105,7 +105,7 @@ export default class ServerWrapper {
   }
 
   isBackdoored(): boolean {
-    return this.backdoor ? true : (this.backdoor = this.getServer().backdoorInstalled)
+    return this.backdoor ? true : (this.backdoor = this.getServer().backdoorInstalled ?? false)
   }
 
   isPrepped(): boolean {
@@ -168,12 +168,12 @@ export default class ServerWrapper {
     const totalTime =
       this.getHackTime() +
       this.ns.formulas.hacking.weakenTime(
-        this.getPreppedServer({ hackDifficulty: server.minDifficulty + hackSecurityIncrease }),
+        this.getPreppedServer({ hackDifficulty: (server.minDifficulty ?? 0) + hackSecurityIncrease }),
         player,
       ) +
       this.getGrowTime() +
       this.ns.formulas.hacking.weakenTime(
-        this.getPreppedServer({ hackDifficulty: server.minDifficulty + growSecurityIncrease }),
+        this.getPreppedServer({ hackDifficulty: (server.minDifficulty ?? 0) + growSecurityIncrease }),
         player,
       )
 
@@ -189,7 +189,7 @@ export default class ServerWrapper {
     const player = this.ns.getPlayer()
 
     return this.ns.formulas.hacking.weakenTime(
-      { ...server, hackDifficulty: server.hackDifficulty + additionalSec },
+      { ...server, hackDifficulty: (server.hackDifficulty ?? 0) + additionalSec },
       player,
     )
   }

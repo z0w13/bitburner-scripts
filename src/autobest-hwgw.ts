@@ -86,25 +86,30 @@ export async function main(ns: NS): Promise<void> {
         "Security",
         ns.sprintf(
           "%s/%s/%s",
-          ns.formatNumber(targetInfo.minDifficulty, 0),
-          ns.formatNumber(targetInfo.baseDifficulty, 0),
-          ns.formatNumber(targetInfo.hackDifficulty, 2),
+          ns.formatNumber(targetInfo.minDifficulty ?? 0, 0),
+          ns.formatNumber(targetInfo.baseDifficulty ?? 0, 0),
+          ns.formatNumber(targetInfo.hackDifficulty ?? 0, 2),
         ),
       ])
       table.push([
         "",
-        "[" + renderProgress({ value: targetInfo.hackDifficulty, min: targetInfo.minDifficulty, max: 100 }) + "]",
+        "[" +
+          renderProgress({ value: targetInfo.hackDifficulty ?? 0, min: targetInfo.minDifficulty ?? 0, max: 100 }) +
+          "]",
       ])
       table.push([
         "Money (Curr/Max/%)",
         ns.sprintf(
           "%s/%s/%s%%",
-          formatMoney(ns, targetInfo.moneyAvailable),
-          formatMoney(ns, targetInfo.moneyMax),
-          ns.formatPercent(targetInfo.moneyAvailable / targetInfo.moneyMax),
+          formatMoney(ns, targetInfo.moneyAvailable ?? 0),
+          formatMoney(ns, targetInfo.moneyMax ?? 0),
+          ns.formatPercent((targetInfo.moneyAvailable ?? 0) / (targetInfo.moneyMax ?? 0)),
         ),
       ])
-      table.push(["", "[" + renderProgress({ value: targetInfo.moneyAvailable, max: targetInfo.moneyMax }) + "]"])
+      table.push([
+        "",
+        "[" + renderProgress({ value: targetInfo.moneyAvailable ?? 0, max: targetInfo.moneyMax ?? 0 }) + "]",
+      ])
     }
 
     ns.clearLog()

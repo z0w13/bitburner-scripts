@@ -11,7 +11,7 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
 
     return this.TARGET_SERVERS.filter((s) => !ns.getServer(s).backdoorInstalled)
       .filter((s) => ns.getServerRequiredHackingLevel(s) < player.skills.hacking)
-      .filter((s) => ns.getServerNumPortsRequired(s) <= ns.getServer(s).openPortCount)
+      .filter((s) => ns.getServerNumPortsRequired(s) <= (ns.getServer(s).openPortCount ?? 0))
   }
 
   shouldPerform(ns: NS): boolean {
@@ -28,7 +28,7 @@ export default class AcceptFactionInvitationsAction extends BaseAction {
         continue
       }
 
-      if (ns.getServerNumPortsRequired(server) < ns.getServer(server).openPortCount) {
+      if (ns.getServerNumPortsRequired(server) < (ns.getServer(server).openPortCount ?? 0)) {
         continue
       }
 

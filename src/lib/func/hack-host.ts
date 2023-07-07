@@ -12,7 +12,7 @@ export default function hackHost(ns: NS, target: string): boolean {
   }
 
   if (!server.hasAdminRights) {
-    if (player.skills.hacking < server.requiredHackingSkill) {
+    if (player.skills.hacking < (server.requiredHackingSkill ?? 0)) {
       return false
     }
 
@@ -44,7 +44,7 @@ export default function hackHost(ns: NS, target: string): boolean {
         break
     }
 
-    if (server.numOpenPortsRequired > ns.getServer(server.hostname).openPortCount) {
+    if ((server.numOpenPortsRequired ?? 0) > (ns.getServer(server.hostname).openPortCount ?? 0)) {
       return false
     }
 

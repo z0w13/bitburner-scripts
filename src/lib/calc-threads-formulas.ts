@@ -9,17 +9,18 @@ import { SERVER_WEAKEN_AMOUNT } from "@/constants"
 export function getGrowThreads(ns: NS, server: Server, player: Player): number {
   // https://github.com/danielyxie/bitburner/blob/6c3ad48ef518dc9b72d9f0f6fde5c9b04deab0c1/src/Server/formulas/grow.ts#L6
   const growPercent = ns.formulas.hacking.growPercent(server, 1, player)
-  const growAmount = server.moneyMax / server.moneyAvailable
+  const growAmount = (server.moneyMax ?? 0) / (server.moneyAvailable ?? 0)
 
   return Math.ceil(Math.log(growAmount) / Math.log(growPercent))
 }
 
 export function getHackThreads(ns: NS, server: Server, player: Player, pctToHack: number): number {
   return Math.floor(
-    (server.moneyAvailable * pctToHack) / (server.moneyAvailable * ns.formulas.hacking.hackPercent(server, player)),
+    (((server.moneyAvailable ?? 0) * pctToHack) / (server.moneyAvailable ?? 0)) *
+      ns.formulas.hacking.hackPercent(server, player),
   )
 }
 
 export function getWeakenThreads(server: Server, additionalSec = 0): number {
-  return Math.ceil((server.hackDifficulty - server.minDifficulty + additionalSec) / SERVER_WEAKEN_AMOUNT)
+  return Math.ceil(((server.hackDifficulty ?? 0) - (server.minDifficulty ?? 0) + additionalSec) / SERVER_WEAKEN_AMOUNT)
 }

@@ -14,7 +14,7 @@ export default class SpendHashesAction extends BaseAction {
       { name: "Increase Maximum Money", cost: ns.hacknet.hashCost("Increase Maximum Money"), target: "megacorp" },
     ]
 
-    if (ns.getServer("megacorp").minDifficulty > 2.1) {
+    if ((ns.getServer("megacorp").minDifficulty ?? 0) > 2.1) {
       upgrades.push({
         name: "Reduce Minimum Security",
         cost: ns.hacknet.hashCost("Reduce Minimum Security"),

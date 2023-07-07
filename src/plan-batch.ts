@@ -84,15 +84,20 @@ export async function main(ns: NS): Promise<void> {
         ["Processes", ns.formatNumber(rem, 0)],
         [
           "Sec (Min/Base/Curr)",
-          ns.sprintf("%s/%s/%s", server.minDifficulty, server.baseDifficulty, ns.formatNumber(server.hackDifficulty)),
+          ns.sprintf(
+            "%s/%s/%s",
+            server.minDifficulty,
+            server.baseDifficulty,
+            ns.formatNumber(server.hackDifficulty ?? 0),
+          ),
         ],
         [
           "Money (Curr/Max/%)",
           ns.sprintf(
             "%s/%s/%s%%",
-            formatMoney(ns, server.moneyAvailable),
-            formatMoney(ns, server.moneyMax),
-            formatNum(ns, (server.moneyAvailable / server.moneyMax) * 100),
+            formatMoney(ns, server.moneyAvailable ?? 0),
+            formatMoney(ns, server.moneyMax ?? 0),
+            formatNum(ns, ((server.moneyAvailable ?? 0) / (server.moneyMax ?? 0)) * 100),
           ),
         ],
       ]
