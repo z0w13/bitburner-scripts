@@ -32,9 +32,14 @@ export function filterUndefinedFunc<T>(): (
 }
 
 export function formatNum(ns: NS, value: number, fractionalDigits = 2, suffixStart = 1_000): string {
-  if (value === Infinity) {
+  if (!Number.isFinite(value)) {
     return "∞"
   }
+
+  if (Number.isNaN(value)) {
+    return "NaN"
+  }
+
   return ns.formatNumber(value, fractionalDigits, suffixStart).replaceAll(",", " ")
 }
 
@@ -167,8 +172,8 @@ export function getGrowServer(server: Server): Server {
   return {
     ...server,
 
-    moneyAvailable: server.moneyMax * (1 - PERCENTAGE_TO_HACK),
-    hackDifficulty: server.minDifficulty,
+    moneyAvailable: (server.moneyMax ?? 0) * (1 - PERCENTAGE_TO_HACK),
+    hackDifficulty: server.minDifficulty ?? 0,
   }
 }
 
@@ -176,7 +181,7 @@ export function getWeakenServer(server: Server, additionalSec: number): Server {
   return {
     ...server,
 
-    hackDifficulty: server.minDifficulty + additionalSec,
+    hackDifficulty: (server.minDifficulty ?? 0) + additionalSec,
   }
 }
 
