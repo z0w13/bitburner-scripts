@@ -148,7 +148,7 @@ export function getAnalyserData(ns: NS, pid: number): SerialisedAnalyserData {
   try {
     return JSON.parse(ns.getRunningScript(pid)?.logs.at(-1) ?? "") as SerialisedAnalyserData
   } catch (e) {
-    ns.tprint(e)
+    ns.tprint(e?.toString())
     return {
       cycleData: {
         cycleTick: -1,

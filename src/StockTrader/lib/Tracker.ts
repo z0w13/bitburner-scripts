@@ -124,7 +124,7 @@ export function getTrackerData(ns: NS, trackerPid: number): SerializedTrackerDat
   try {
     return JSON.parse(ns.getRunningScript(trackerPid)?.logs.at(-1) ?? "") as SerializedTrackerData
   } catch (e) {
-    ns.tprint(e)
+    ns.tprint(e?.toString())
     return {
       ready: false,
       ticks: 0,
