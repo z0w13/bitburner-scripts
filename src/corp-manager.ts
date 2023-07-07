@@ -1,8 +1,8 @@
-import type { CorpIndustryName, CorporationInfo, NS } from "@ns"
 import { CORP_MAIN_CITY, DAEMON_SERVER } from "@/config"
 import { SCRIPT_DIVISION_MANAGER } from "@/constants"
 import renderTable from "@/lib/func/render-table"
 import { formatMoney, formatTime } from "@/lib/util"
+import type { CorpIndustryName, CorporationInfo, NS } from "@ns"
 
 function buyUpgradesToLevel(ns: NS, max: number, upgrades: Array<string>): void {
   for (const upgrade of upgrades) {
@@ -21,8 +21,8 @@ function buyUpgradesToLevel(ns: NS, max: number, upgrades: Array<string>): void 
 function unlockUpgrade(ns: NS, name: string): void {
   const funds = ns.corporation.getCorporation().funds
 
-  if (ns.corporation.getUnlockUpgradeCost(name) < funds && !ns.corporation.hasUnlockUpgrade(name)) {
-    ns.corporation.unlockUpgrade(name)
+  if (ns.corporation.getUnlockCost(name) < funds && !ns.corporation.hasUnlock(name)) {
+    ns.corporation.purchaseUnlock(name)
   }
 }
 
@@ -64,7 +64,8 @@ function printDivisionInfo(ns: NS, corp: CorporationInfo): void {
     const expenses = Math.max(division.lastCycleExpenses, division.thisCycleExpenses)
     const devProgress =
       division.products.length > 0
-        ? ns.corporation.getProduct(division.name, division.products.at(-1) as string).developmentProgress
+        ? ns.corporation.getProduct(division.name, CORP_MAIN_CITY, division.products.at(-1) as string)
+            .developmentProgress
         : 0
 
     ns.printf(

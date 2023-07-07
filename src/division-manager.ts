@@ -38,7 +38,7 @@ const MAX_MP_MULTIPLIER = 100 // Maximum multiplier above market price for produ
 const stockHistory: Record<string, Record<string, RingBuffer<number>>> = {}
 
 function getProductLimit(ns: NS, division: string): number {
-  if (!ns.corporation.hasUnlockUpgrade("Office API")) {
+  if (!ns.corporation.hasUnlock("Office API")) {
     return 3
   }
 
@@ -55,7 +55,7 @@ function getProductLimit(ns: NS, division: string): number {
 
 function getFinishedProducts(ns: NS, division: Division): Array<string> {
   return division.products.filter(
-    (product) => ns.corporation.getProduct(division.name, product).developmentProgress === 100,
+    (product) => ns.corporation.getProduct(division.name, CORP_MAIN_CITY, product).developmentProgress === 100,
   )
 }
 
@@ -77,7 +77,7 @@ function buyMaterials(ns: NS, corp: CorporationInfo, division: Division): void {
 
     for (const material of PROD_MULTI_MATERIALS) {
       const materialSize = ns.corporation.getMaterialData(material).size
-      const storedMaterialQty = ns.corporation.getMaterial(division.name, city, material).qty
+      const storedMaterialQty = ns.corporation.getMaterial(division.name, city, material).stored
       const storedMaterialSize = storedMaterialQty * materialSize
 
       if (storedMaterialSize < spacePerMaterial) {
@@ -114,8 +114,9 @@ function buyMaterials(ns: NS, corp: CorporationInfo, division: Division): void {
 
 function isDevelopingProduct(ns: NS, division: Division): boolean {
   return (
-    division.products.map((p) => ns.corporation.getProduct(division.name, p)).filter((p) => p.developmentProgress < 100)
-      .length > 0
+    division.products
+      .map((p) => ns.corporation.getProduct(division.name, CORP_MAIN_CITY, p))
+      .filter((p) => p.developmentProgress < 100).length > 0
   )
 }
 
@@ -131,8 +132,8 @@ function developAndDiscontinue(ns: NS, division: Division, ticks: number): void 
   // If we are at the product limit remove one with lowest quality
   if (division.products.length >= getProductLimit(ns, division.name)) {
     const lowestQual = division.products
-      .map((p) => ns.corporation.getProduct(division.name, p))
-      .sort(sortFunc((m) => m.rat))[0].name
+      .map((p) => ns.corporation.getProduct(division.name, CORP_MAIN_CITY, p))
+      .sort(sortFunc((m) => m.rating))[0].name
 
     ns.corporation.discontinueProduct(division.name, lowestQual)
     ns.print(`${division.name} discontinued ${lowestQual}`)
@@ -155,7 +156,7 @@ function parseMultiplier(multi: string): number {
 }
 
 function adjustPricesSimple(ns: NS, division: Division): void {
-  const hasOfficeAPI = ns.corporation.hasUnlockUpgrade("Office API")
+  const hasOfficeAPI = ns.corporation.hasUnlock("Office API")
   const hasTAII = hasOfficeAPI && ns.corporation.hasResearched(division.name, "Market-TA.II")
 
   if (division.type in nonProductMap) {
@@ -179,7 +180,7 @@ function adjustPricesSimple(ns: NS, division: Division): void {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function adjustPricesDynamic(ns: NS, division: Division): void {
-  const hasOfficeAPI = ns.corporation.hasUnlockUpgrade("Office API")
+  const hasOfficeAPI = ns.corporation.hasUnlock("Office API")
   const hasTAII = hasOfficeAPI && ns.corporation.hasResearched(division.name, "Market-TA.II")
 
   // Clear old products
@@ -202,11 +203,10 @@ function adjustPricesDynamic(ns: NS, division: Division): void {
         } else {
           // Adjust price based on historical stock + current price
           const mat = ns.corporation.getMaterial(division.name, CORP_MAIN_CITY, materialName)
-          const qty = mat.qty
-          const price = getNewPrice(ns, division, mat.name, qty, 100, mat.sCost)
+          const price = getNewPrice(ns, division, mat.name, mat.stored, 100, mat.desiredSellPrice)
 
           // Only update if price changed
-          if (price !== mat.sCost) {
+          if (price !== mat.desiredSellPrice) {
             ns.corporation.sellMaterial(division.name, city, mat.name, "MAX", price)
           }
         }
@@ -221,12 +221,18 @@ function adjustPricesDynamic(ns: NS, division: Division): void {
       ns.corporation.setProductMarketTA2(division.name, productName, true)
     } else {
       // Adjust price based on historical stock + current price
-      const product = ns.corporation.getProduct(division.name, productName)
-      const [qty] = product.cityData[CORP_MAIN_CITY]
-      const price = getNewPrice(ns, division, product.name, qty, product.developmentProgress, product.sCost)
+      const product = ns.corporation.getProduct(division.name, CORP_MAIN_CITY, productName)
+      const price = getNewPrice(
+        ns,
+        division,
+        product.name,
+        product.stored,
+        product.developmentProgress,
+        product.desiredSellPrice,
+      )
 
       // Only update if price changed
-      if (price !== product.sCost) {
+      if (price !== product.desiredSellPrice) {
         ns.corporation.sellProduct(division.name, CORP_MAIN_CITY, product.name, "MAX", price, true)
       }
     }
@@ -270,7 +276,7 @@ function getNewPrice(
 
 // TODO: Rework to prioritise certain researches (maybe even prioritise having points over researching certain things?)
 function buyResearch(ns: NS, division: Division) {
-  if (!ns.corporation.hasUnlockUpgrade("Office API")) {
+  if (!ns.corporation.hasUnlock("Office API")) {
     return
   }
 
@@ -280,7 +286,7 @@ function buyResearch(ns: NS, division: Division) {
       continue
     }
 
-    if (division.research > ns.corporation.getResearchCost(division.name, research)) {
+    if (division.researchPoints > ns.corporation.getResearchCost(division.name, research)) {
       ns.corporation.research(division.name, research)
     } else {
       break
@@ -289,7 +295,7 @@ function buyResearch(ns: NS, division: Division) {
 }
 
 function upgradeOffice(ns: NS, division: string, city: CityName, limit: number): void {
-  if (!ns.corporation.hasUnlockUpgrade("Office API")) {
+  if (!ns.corporation.hasUnlock("Office API")) {
     return
   }
 
@@ -319,7 +325,7 @@ function upgradeOffice(ns: NS, division: string, city: CityName, limit: number):
 }
 
 async function manageOffices(ns: NS, division: Division): Promise<void> {
-  if (!ns.corporation.hasUnlockUpgrade("Office API")) {
+  if (!ns.corporation.hasUnlock("Office API")) {
     return
   }
 
@@ -336,7 +342,7 @@ async function manageOffices(ns: NS, division: Division): Promise<void> {
     }
 
     while (
-      ns.corporation.getOffice(division.name, city).employees < ns.corporation.getOffice(division.name, city).size
+      ns.corporation.getOffice(division.name, city).numEmployees < ns.corporation.getOffice(division.name, city).size
     ) {
       ns.corporation.hireEmployee(division.name, city)
     }
@@ -351,13 +357,13 @@ async function redistributeEmployees(ns: NS, division: string, city: CityName): 
     Management: 0.25,
     Operations: 0.35,
     "Research & Development": 0.166,
-    Training: 0,
+    Intern: 0,
     Unassigned: 0,
   }
 
   const employeeJobs = ns.corporation.getOffice(division, city).employeeJobs
 
-  if (employeeJobs.Unassigned > 0 || employeeJobs.Training > 0) {
+  if (employeeJobs.Unassigned > 0 || employeeJobs.Intern > 0) {
     for (const pos in ratio) {
       const posRatio = ratio[pos as CorpEmployeePosition]
       const newEmployees = Math.floor(posRatio * ns.corporation.getOffice(division, city).size)
@@ -374,7 +380,7 @@ async function redistributeEmployees(ns: NS, division: string, city: CityName): 
     }
 
     const jobs = ns.corporation.getOffice(division, city).employeeJobs
-    const researchCount = jobs.Unassigned + jobs.Training + jobs["Research & Development"]
+    const researchCount = jobs.Unassigned + jobs.Intern + jobs["Research & Development"]
 
     ns.corporation.setAutoJobAssignment(division, city, "Research & Development", researchCount)
 
@@ -391,7 +397,7 @@ function getWarehouses(ns: NS, division: string): Array<Warehouse> {
 }
 
 function manageWarehouses(ns: NS, division: Division): void {
-  const hasSmartSupply = ns.corporation.hasUnlockUpgrade("Smart Supply")
+  const hasSmartSupply = ns.corporation.hasUnlock("Smart Supply")
 
   for (const city of division.cities) {
     if (!ns.corporation.hasWarehouse(division.name, city)) {
@@ -415,7 +421,7 @@ function expandWarehouses(ns: NS, division: Division): void {
   }
 
   const smallestWarehouse = warehouses[0]
-  const city = smallestWarehouse.loc
+  const city = smallestWarehouse.city
 
   if (smallestWarehouse.size > 15_000 && ns.corporation.getCorporation().funds < 1_000_000_000_000) {
     return
@@ -444,7 +450,7 @@ function expandWarehouses(ns: NS, division: Division): void {
 }
 
 function manageAdVert(ns: NS, division: Division): void {
-  if (!ns.corporation.hasUnlockUpgrade("Office API")) {
+  if (!ns.corporation.hasUnlock("Office API")) {
     return
   }
 
