@@ -1,9 +1,9 @@
-export const STATIC_DATA = "/data/static.txt"
+export const STATIC_DATA = "data/static.txt"
 
-export const SCRIPT_WEAKEN = "/libexec/cmd-weaken.js"
-export const SCRIPT_HACK = "/libexec/cmd-hack.js"
-export const SCRIPT_GROW = "/libexec/cmd-grow.js"
-export const SCRIPT_WRITE_FILE = "/libexec/cmd-write-file.js"
+export const SCRIPT_WEAKEN = "libexec/cmd-weaken.js"
+export const SCRIPT_HACK = "libexec/cmd-hack.js"
+export const SCRIPT_GROW = "libexec/cmd-grow.js"
+export const SCRIPT_WRITE_FILE = "libexec/cmd-write-file.js"
 export const COPY_SCRIPTS = [SCRIPT_WEAKEN, SCRIPT_HACK, SCRIPT_GROW, SCRIPT_WRITE_FILE]
 
 export const SCRIPT_WGWH_LOOP = "wgwh-loop.js"
