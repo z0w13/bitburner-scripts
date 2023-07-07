@@ -6,19 +6,20 @@ import { MONEY_RESERVE, RECENT_STOCK_HISTORY_SIZE } from "@/StockTrader/config"
 import { onStockTick, calcAllStockData } from "@/StockTrader/lib/Shared"
 import { DAEMON_SERVER } from "@/config"
 import parseFlags from "@/lib/parseFlags"
-import { getTrackerData, getTrackerPidOrStart } from "@/StockTrader/lib/Tracker"
-import { getAnalyserData, getAnalyserPidOrStart } from "@/StockTrader/lib/Analyser"
+import { getTrackerData, waitForTrackerPid } from "@/StockTrader/lib/Tracker"
+import { getAnalyserData, waitForAnalyserPid } from "@/StockTrader/lib/Analyser"
+import { sum } from "@/lib/util"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")
   const flags = parseFlags(ns, { mock: false })
 
-  const trackerPid = getTrackerPidOrStart(ns)
+  const trackerPid = await waitForTrackerPid(ns, 10)
   if (trackerPid === 0) {
     ns.tprint("Failed to start tracker, exiting.")
     ns.exit()
   }
-  const analyserPid = getAnalyserPidOrStart(ns)
+  const analyserPid = await waitForAnalyserPid(ns, 10)
   if (analyserPid === 0) {
     ns.tprint("Failed to start tracker, exiting.")
     ns.exit()
@@ -63,8 +64,11 @@ function tick(
 
   // Manage stocks
   if (trackerData.ready) {
-    wallet.update(
-      trader.run(wallet.getFunds() - MONEY_RESERVE, stockData, analysisData, trackerData.ticks) + MONEY_RESERVE,
-    )
+    const stockValue = sum(stockData.map((s) => s.longValue + s.shortValue))
+    const walletFunds = wallet.getFunds()
+    const totalWorth = stockValue + walletFunds
+    const spendable = walletFunds - Math.max(totalWorth * 0.1, MONEY_RESERVE)
+
+    wallet.update(trader.run(spendable, stockData, analysisData, trackerData.ticks) + spendable)
   }
 }

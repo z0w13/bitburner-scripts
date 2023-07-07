@@ -3,6 +3,8 @@ import RingBuffer from "@/lib/RingBuffer"
 import { StockSource } from "@/StockTrader/lib/StockSource"
 import { STOCK_TRACKER_SCRIPT } from "@/StockTrader/constants"
 import { DAEMON_SERVER } from "@/config"
+import { waitForScript } from "@/lib/func/waitForScript"
+import getScriptPid from "@/lib/func/get-script-pid"
 
 export interface SerializedTrackerData {
   ready: boolean
@@ -101,18 +103,21 @@ export class Tracker {
   }
 }
 
+export async function waitForTrackerPid(ns: NS, timeout = 0): Promise<number> {
+  return waitForScript(ns, STOCK_TRACKER_SCRIPT, DAEMON_SERVER, timeout)
+}
+
+export function getTrackerPid(ns: NS): number {
+  return getScriptPid(ns, STOCK_TRACKER_SCRIPT, DAEMON_SERVER)
+}
+
 export function getTrackerPidOrStart(ns: NS): number {
-  const running = ns.getRunningScript(STOCK_TRACKER_SCRIPT)
-  if (running) {
-    return running.pid
+  const currTrackerPid = getTrackerPid(ns)
+  if (currTrackerPid > 0) {
+    return currTrackerPid
   }
 
-  const trackerPid = ns.exec(STOCK_TRACKER_SCRIPT, DAEMON_SERVER)
-  if (trackerPid > 0) {
-    return trackerPid
-  }
-
-  return 0
+  return ns.exec(STOCK_TRACKER_SCRIPT, DAEMON_SERVER)
 }
 
 export function getTrackerData(ns: NS, trackerPid: number): SerializedTrackerData {

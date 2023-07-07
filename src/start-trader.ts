@@ -1,5 +1,6 @@
 import {
   STOCK_ANALYSER_SCRIPT,
+  STOCK_COORDINATOR_SCRIPT,
   STOCK_HUD_SCRIPT,
   STOCK_LOG_SCRIPT,
   STOCK_TRACKER_SCRIPT,
@@ -21,6 +22,7 @@ export async function main(ns: NS): Promise<void> {
     STOCK_TRADER_SCRIPT,
     STOCK_LOG_SCRIPT,
     STOCK_HUD_SCRIPT,
+    STOCK_COORDINATOR_SCRIPT,
   ]
 
   scripts.forEach((script) => {

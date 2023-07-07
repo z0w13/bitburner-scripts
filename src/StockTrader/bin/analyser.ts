@@ -2,7 +2,7 @@ import { RECENT_STOCK_HISTORY_SIZE } from "@/StockTrader/config"
 import { Analyser } from "@/StockTrader/lib/Analyser"
 import { calcAllStockData, onStockTick } from "@/StockTrader/lib/Shared"
 import { FakeTradeStockSource } from "@/StockTrader/lib/StockSource"
-import { getTrackerData, getTrackerPidOrStart } from "@/StockTrader/lib/Tracker"
+import { getTrackerData, waitForTrackerPid } from "@/StockTrader/lib/Tracker"
 import parseFlags from "@/lib/parseFlags"
 import { NS } from "@ns"
 
@@ -10,11 +10,12 @@ export async function main(ns: NS): Promise<void> {
   ns.disableLog("asleep")
   const flags = parseFlags(ns, { mock: false })
 
-  const trackerPid = getTrackerPidOrStart(ns)
+  const trackerPid = await waitForTrackerPid(ns, 10)
   if (trackerPid === 0) {
     ns.tprint("Failed to start tracker, exiting.")
     ns.exit()
   }
+
   const source = flags.mock ? new FakeTradeStockSource(ns.stock) : ns.stock
   const analyser = new Analyser(ns, source)
 

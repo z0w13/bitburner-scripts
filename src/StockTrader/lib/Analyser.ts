@@ -3,6 +3,8 @@ import { STOCK_ANALYSER_SCRIPT } from "@/StockTrader/constants"
 import { StockData, Trend, getTrendFromPercentage } from "@/StockTrader/lib/Shared"
 import { StockSource } from "@/StockTrader/lib/StockSource"
 import { DAEMON_SERVER } from "@/config"
+import getScriptPid from "@/lib/func/get-script-pid"
+import { waitForScript } from "@/lib/func/waitForScript"
 import { NS } from "@ns"
 
 interface StockCycleData {
@@ -120,18 +122,21 @@ export class Analyser {
   }
 }
 
+export async function waitForAnalyserPid(ns: NS, timeout = 0): Promise<number> {
+  return waitForScript(ns, STOCK_ANALYSER_SCRIPT, DAEMON_SERVER, timeout)
+}
+
+export function getAnalyserPid(ns: NS): number {
+  return getScriptPid(ns, STOCK_ANALYSER_SCRIPT, DAEMON_SERVER)
+}
+
 export function getAnalyserPidOrStart(ns: NS): number {
-  const running = ns.getRunningScript(STOCK_ANALYSER_SCRIPT)
-  if (running) {
-    return running.pid
+  const currPid = getAnalyserPid(ns)
+  if (currPid > 0) {
+    return currPid
   }
 
-  const pid = ns.exec(STOCK_ANALYSER_SCRIPT, DAEMON_SERVER)
-  if (pid > 0) {
-    return pid
-  }
-
-  return 0
+  return ns.exec(STOCK_ANALYSER_SCRIPT, DAEMON_SERVER)
 }
 
 export interface SerialisedAnalyserData {
