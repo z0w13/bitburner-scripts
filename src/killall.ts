@@ -1,5 +1,6 @@
 import type { NS } from "@ns"
 import getHosts from "@/lib/func/get-hosts"
+import { formatNum } from "@/lib/util"
 
 export async function main(ns: NS): Promise<void> {
   const hosts = getHosts(ns)
@@ -17,5 +18,5 @@ export async function main(ns: NS): Promise<void> {
     ns.tprintf("Killed %d processes on %s", procs.length, host)
   }
 
-  ns.tprintf("Killed %s total processes!", ns.nFormat(totalKilled, "0,0"))
+  ns.tprintf("Killed %s total processes!", formatNum(ns, totalKilled, 0, 9_999_999))
 }
