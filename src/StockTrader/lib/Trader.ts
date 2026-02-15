@@ -1,9 +1,10 @@
 import { NS } from "@ns"
 import { PositionType, StockSource } from "@/StockTrader/lib/StockSource"
 import { StockData, Trend } from "@/StockTrader/lib/Shared"
-import { MAX_FUNDS_SPEND_PER_STOCK, MIN_STOCK_HOLD_TICKS, MIN_VAL_FOR_STOCK_ORDER } from "@/StockTrader/config"
+import { MIN_STOCK_HOLD_TICKS } from "@/StockTrader/defaults"
 import { SerialisedAnalyserData } from "@/StockTrader/lib/Analyser"
 import { sum } from "@/lib/util"
+import { Config } from "@/StockTrader/lib/Config"
 
 interface StockAlgoData {
   sym: string
@@ -15,12 +16,14 @@ interface StockAlgoData {
 
 export class Trader {
   ns: NS
+  conf: Config
   source: StockSource
 
   algoData: Record<string, StockAlgoData>
 
-  constructor(ns: NS, source: StockSource) {
+  constructor(ns: NS, conf: Config, source: StockSource) {
     this.ns = ns
+    this.conf = conf
     this.source = source
     this.algoData = Object.fromEntries(
       this.source.getSymbols().map((sym) => [
@@ -96,7 +99,7 @@ export class Trader {
 
     let currentFunds = moneyAvailable
     for (const stock of stockData) {
-      const perStock = Math.min((portfolioWorth + currentFunds) * MAX_FUNDS_SPEND_PER_STOCK, currentFunds)
+      const perStock = Math.min((portfolioWorth + currentFunds) * this.conf.maxFundsPerStock, currentFunds)
       currentFunds += this.tradeStock(perStock, stock, analysis, ticks)
     }
     return currentFunds
@@ -109,7 +112,7 @@ export class Trader {
       analysis.stockCycleData[stock.sym].currentTrend === Trend.Up &&
       stock.longOwned === 0 &&
       !this.soldRecently(stock.sym, "long", ticks) &&
-      moneyAvailable > MIN_VAL_FOR_STOCK_ORDER
+      moneyAvailable > this.conf.minOrder
     ) {
       const toBuy = findMaxShareBuy(this.source, stock.sym, "long", moneyAvailable)
       if (toBuy > 0) {
@@ -121,7 +124,7 @@ export class Trader {
       analysis.stockCycleData[stock.sym].currentTrend === Trend.Down &&
       stock.shortOwned === 0 &&
       !this.soldRecently(stock.sym, "short", ticks) &&
-      moneyAvailable > MIN_VAL_FOR_STOCK_ORDER
+      moneyAvailable > this.conf.minOrder
     ) {
       const toBuy = findMaxShareBuy(this.source, stock.sym, "short", moneyAvailable)
       if (toBuy > 0) {

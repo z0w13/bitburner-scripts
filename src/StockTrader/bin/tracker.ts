@@ -1,15 +1,15 @@
 import { NS } from "@ns"
-import { STOCK_HISTORY_SIZE } from "@/StockTrader/config"
+import { STOCK_HISTORY_SIZE } from "@/StockTrader/defaults"
 import { onStockTick } from "@/StockTrader/lib/Shared"
 import { Tracker } from "@/StockTrader/lib/Tracker"
-import parseFlags from "@/lib/parseFlags"
 import { FakeTradeStockSource } from "@/StockTrader/lib/StockSource"
+import { loadConfig } from "@/StockTrader/lib/Config"
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL")
-  const flags = parseFlags(ns, { mock: false })
+  const conf = loadConfig(ns)
 
-  const source = flags.mock ? new FakeTradeStockSource(ns.stock) : ns.stock
+  const source = conf.mock ? new FakeTradeStockSource(ns.stock) : ns.stock
   const tracker = new Tracker(STOCK_HISTORY_SIZE, source.getSymbols())
   await onStockTick(ns, source, () => {
     ns.clearLog()

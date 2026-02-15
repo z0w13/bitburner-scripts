@@ -1,3 +1,4 @@
+import { MAX_FUNDS_SPEND_PER_STOCK, MIN_VAL_FOR_STOCK_ORDER, MONEY_RESERVE } from "@/StockTrader/defaults"
 import {
   STOCK_ANALYSER_SCRIPT,
   STOCK_COORDINATOR_SCRIPT,
@@ -6,6 +7,7 @@ import {
   STOCK_TRACKER_SCRIPT,
   STOCK_TRADER_SCRIPT,
 } from "@/StockTrader/constants"
+import { writeConfig } from "@/StockTrader/lib/Config"
 import { DAEMON_SERVER } from "@/config"
 import getScriptPid from "@/lib/func/get-script-pid"
 import tailExec from "@/lib/func/tail-exec"
@@ -13,7 +15,20 @@ import parseFlags from "@/lib/parseFlags"
 import { NS } from "@ns"
 
 export async function main(ns: NS): Promise<void> {
-  const flags = parseFlags(ns, { mock: false })
+  const flags = parseFlags(ns, {
+    mock: false,
+    "money-reserve": MONEY_RESERVE,
+    "min-order": MIN_VAL_FOR_STOCK_ORDER,
+    "max-funds-per-stock": MAX_FUNDS_SPEND_PER_STOCK,
+  })
+
+  writeConfig(ns, {
+    mock: flags["mock"],
+    moneyReserve: flags["money-reserve"],
+    minOrder: flags["min-order"],
+    maxFundsPerStock: flags["max-funds-per-stock"],
+  })
+
   const args = flags.mock ? ["--mock"] : []
 
   const scripts = [

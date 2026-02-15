@@ -1,4 +1,4 @@
-import { INVERSION_AGREEMENT_THRESHOLD, INVERSION_TREND_DIFF_THRESHOLD } from "@/StockTrader/config"
+import { INVERSION_AGREEMENT_THRESHOLD, INVERSION_TREND_DIFF_THRESHOLD } from "@/StockTrader/defaults"
 import { STOCK_ANALYSER_SCRIPT } from "@/StockTrader/constants"
 import { StockData, Trend, getTrendFromPercentage } from "@/StockTrader/lib/Shared"
 import { StockSource } from "@/StockTrader/lib/StockSource"

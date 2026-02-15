@@ -1,4 +1,4 @@
-export const MONEY_RESERVE = 35_000_000 // Keep 35 mill in bank
+export const MONEY_RESERVE = 1_000_000 // Keep 35 mill in bank
 export const RECENT_STOCK_HISTORY_SIZE = 30 // Ticks considered "recent"
 export const STOCK_HISTORY_SIZE = 151 // Amount of history to keep
 export const TREND_HISTORY_DISPLAY_SIZE = RECENT_STOCK_HISTORY_SIZE // How much history to show in trend
