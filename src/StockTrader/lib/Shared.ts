@@ -123,7 +123,7 @@ function upPct(vals: ReadonlyArray<number>): number {
   return vals.filter((v) => v > 0).length / vals.length
 }
 
-export async function onStockTick(ns: NS, source: StockSource, callback: () => void) {
+export async function onStockTick(ns: NS, source: StockSource, callback: () => void | Promise<void>) {
   let oldPrice = source.getPrice("UNV")
   while (true) {
     await ns.asleep(2_000)
@@ -134,7 +134,7 @@ export async function onStockTick(ns: NS, source: StockSource, callback: () => v
       continue
     }
 
-    callback()
+    await callback()
 
     // Reset the tick detection
     oldPrice = newPrice
