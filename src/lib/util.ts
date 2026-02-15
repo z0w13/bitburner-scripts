@@ -43,6 +43,18 @@ export function formatNum(ns: NS, value: number, fractionalDigits = 2, suffixSta
   return ns.formatNumber(value, fractionalDigits, suffixStart).replaceAll(",", " ")
 }
 
+export function formatPercent(ns: NS, value: number, fractionalDigits = 2, multStart?: number): string {
+  if (!Number.isFinite(value)) {
+    return "∞"
+  }
+
+  if (Number.isNaN(value)) {
+    return "NaN"
+  }
+
+  return ns.formatPercent(value, fractionalDigits, multStart)
+}
+
 export function formatMoney(ns: NS, value: number, fractionalDigits = 2, suffixStart = 1_000): string {
   return "$" + formatNum(ns, value, fractionalDigits, suffixStart)
 }

@@ -1,7 +1,7 @@
 import { NS } from "@ns"
 import renderTable, { RawTableData } from "@/lib/func/render-table"
 import { formatChangeColor, TermColor } from "@/lib/term"
-import { formatMoney, formatNum, sortFunc, sum } from "@/lib/util"
+import { formatMoney, formatNum, formatPercent, sortFunc, sum } from "@/lib/util"
 import { StockData, Trend } from "@/StockTrader/lib/Shared"
 import { SerializedTrackerData } from "@/StockTrader/lib/Tracker"
 import { SerialisedAnalyserData } from "@/StockTrader/lib/Analyser"
@@ -44,9 +44,9 @@ export function printOwnedStocks(ns: NS, stocks: ReadonlyArray<StockData>, analy
       formatChangeColor(analysisData.currentTrend, Trend[analysisData.currentTrend]),
       formatMoney(ns, data.value, 0, 1_000_000),
       data.longOwned > 0 ? "Long" : "Short",
-      `${formatNum(ns, owned, 0, 1_000_000)} (${ns.formatPercent(owned / data.shares, 0)})`,
+      `${formatNum(ns, owned, 0, 1_000_000)} (${formatPercent(ns, owned / data.shares, 0)})`,
       formatChangeColor(profit, formatNum(ns, profit, 2, 1_000_000)),
-      formatChangeColor(profit, ns.formatPercent(profitPct, 2)),
+      formatChangeColor(profit, formatPercent(ns, profitPct, 2)),
     ])
   }
 
@@ -58,7 +58,7 @@ export function printOwnedStocks(ns: NS, stocks: ReadonlyArray<StockData>, analy
     "",
     "",
     "",
-    `${formatNum(ns, totalOwned, 0)} (${ns.formatPercent(totalOwned / totalShares, 0)})`,
+    `${formatNum(ns, totalOwned, 0)} (${formatPercent(ns, totalOwned / totalShares, 0)})`,
     formatNum(ns, sum(stocks.map((v) => v.longProfit + v.shortProfit)), 2, 1_000_000),
     "",
   ])
@@ -96,13 +96,13 @@ export function printStockAnalysisData(
     const rowData = [
       formatChangeColor(data.changeAbsolute, data.sym),
       renderStockTrend(data.trend.slice(-trendHistorySize)),
-      formatChangeColor(data.historicUpPct - 0.5, ns.formatPercent(data.historicUpPct)),
-      formatChangeColor(data.recentUpPct - 0.5, ns.formatPercent(data.recentUpPct)),
-      formatChangeColor(data.upPctDiff, ns.formatPercent(data.upPctDiff)),
+      formatChangeColor(data.historicUpPct - 0.5, formatPercent(ns, data.historicUpPct)),
+      formatChangeColor(data.recentUpPct - 0.5, formatPercent(ns, data.recentUpPct)),
+      formatChangeColor(data.upPctDiff, formatPercent(ns, data.upPctDiff)),
       formatChangeColor(analysisData.currentTrend, Trend[analysisData.currentTrend]),
       analysisData.cycleTick > 0 ? analysisData.cycleTick : "",
       analysisData.cycleTick > 0 ? ticks - analysisData.cycleTick : "",
-      data.volatility === 0 ? "???" : ns.formatPercent(data.volatility),
+      data.volatility === 0 ? "???" : formatPercent(ns, data.volatility),
       formatMoney(ns, data.value, 0, 1_000_000),
     ]
 
@@ -126,20 +126,24 @@ export function printStatus(
     renderTable(
       [
         [
-          "Funds",
-          formatMoney(ns, funds),
+          "Mode",
+          ns.stock.has4SDataTIXAPI() ? "4S" : "Predict",
           "History",
           `${tracker.historyLength}/${stockHistorySize}`,
-          "Long Value $",
-          formatMoney(ns, totalLongValue, 2, 1_000_000),
-        ],
-        [
-          "Ticks",
-          formatNum(ns, tracker.ticks, 0, 1_000_000),
           "Ready",
           formatChangeColor(tracker.ready, tracker.ready ? "YES" : "NO"),
+          "Ticks",
+          formatNum(ns, tracker.ticks, 0, 1_000_000),
+        ],
+        [
+          "Funds",
+          formatMoney(ns, funds),
+          "Long Value $",
+          formatMoney(ns, totalLongValue, 2, 1_000_000),
           "Short Value $",
           formatMoney(ns, totalShortValue, 2, 1_000_000),
+          "Total Value $",
+          formatMoney(ns, totalLongValue + totalShortValue + funds),
         ],
       ],
       true,
