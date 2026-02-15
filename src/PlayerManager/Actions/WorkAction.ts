@@ -14,7 +14,6 @@ export default class WorkAction extends BaseAction {
   }
 
   shouldPerform(ns: NS): boolean {
-    ns.print(getBestJob(ns)?.salary)
     return getBestJob(ns) !== null
   }
 
